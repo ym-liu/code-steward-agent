@@ -7,8 +7,8 @@ from Services.SystemService import SystemService
 
 class ServiceContainer:
     def __init__(self):
-        self.config_service = ConfigService()
         self.logs_service = LogsService()
+        self.config_service = ConfigService(logs_service=self.logs_service)
         self.artifacts_service = ArtifactsService()
         self.scan_service = ScanService(
             config_service=self.config_service,
