@@ -7,27 +7,34 @@ from watchdog.observers import Observer
 logger = logging.getLogger("code-steward.file-events")
 
 class ScanTriggerHandler(FileSystemEventHandler):
-    """Logs any file or directory event to the terminal."""
-    def on_any_event(self, event: FileSystemEvent) -> None:
-        print(f"Event: {event}")
+    """Collects file changes and triggers one scan after a quiet period."""
         
     def __init__(self, scan_service,debounce_seconds: float = 2.0):
         self.scan_service = scan_service
         self.debounce_seconds = debounce_seconds
         self._timer = None
         self._lock = threading.Lock()
+        self._pending_events = []
         
     def on_any_event(self, event: FileSystemEvent) -> None:
         # Ignore directory-level events (e.g. a folder being touched);
         # we only care about actual file changes.
         if event.is_directory:
             return
+
+        if event.event_type not in {"created", "modified", "moved", "deleted"}:
+            return
  
         logger.info("File event detected: %s (%s)", event.src_path, event.event_type)
-        self._schedule_scan()
+        self._schedule_scan(event)
  
-    def _schedule_scan(self):
+    def _schedule_scan(self, event):
         with self._lock:
+            self._pending_events.append({
+                "event_type": event.event_type,
+                "source_path": event.src_path,
+                "destination_path": getattr(event, "dest_path", None),
+            })
             if self._timer is not None:
                 self._timer.cancel()
             self._timer = threading.Timer(self.debounce_seconds, self._run_scan)
@@ -37,7 +44,10 @@ class ScanTriggerHandler(FileSystemEventHandler):
     def _run_scan(self):
         logger.info("Debounce window elapsed, triggering scan.")
         try:
-            self.scan_service.enqueue_manual_scan()
+            with self._lock:
+                events = self._pending_events
+                self._pending_events = []
+            self.scan_service.enqueue_manual_scan(events=events)
         except Exception:
             logger.exception("Scan triggered by file event failed.")
 

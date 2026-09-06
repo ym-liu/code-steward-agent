@@ -2,15 +2,16 @@ import os
 import hashlib
 import json
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 
 logger = logging.getLogger("code-steward.scanner")
 CHECKPOINT_FILE = "scan_checkpoint.json"
 
 class ScanService:
-    def __init__(self, config_service, logs_service, code_steward_service=None):
+    def __init__(self, config_service, logs_service, artifacts_service=None, code_steward_service=None):
         self.config_service = config_service
         self.logs_service = logs_service
+        self.artifacts_service = artifacts_service
         self.code_steward_service = code_steward_service
         self._is_scanning   = False
         self._last_scan_at  = None
@@ -28,21 +29,21 @@ class ScanService:
             return True
         return self.code_steward_service.state.value == "running"
 
-    def enqueue_manual_scan(self):
+    def enqueue_manual_scan(self, events=None):
         if not self._is_service_running():
             return {"message": "Service is not running. Start the service before scanning."}
         if self._is_scanning:
             return {"message": "Scan already in progress."}
-        results = self._run_scan()
+        results = self._run_scan(events=events)
         return {
             "message": "Scan complete.",
             "files_found": len(results),
             "results": results,
     }
     
-    def _run_scan(self):
+    def _run_scan(self, events=None):
         self._is_scanning  = True
-        self._last_scan_at = datetime.utcnow()
+        self._last_scan_at = datetime.now(timezone.utc)
         results = []
     
         try:
@@ -55,6 +56,7 @@ class ScanService:
             
             # Load checkpoint to skip already seen files
             checkpoint = self._load_checkpoint()
+            event_hints = self._build_event_hints(events or [], checkpoint)
             
             for root_path in root_paths:
                 if not os.path.exists(root_path):
@@ -100,8 +102,8 @@ class ScanService:
                         
                         # Get last modified timestamp
                         try:
-                            modified = datetime.utcfromtimestamp(
-                                os.path.getmtime(filepath)
+                            modified = datetime.fromtimestamp(
+                                os.path.getmtime(filepath), timezone.utc
                             ).isoformat()
                         except PermissionError:
                             modified = None
@@ -114,8 +116,24 @@ class ScanService:
                         }
                         
                         # Only add to results if the file is new or changed
-                        if checkpoint.get(filepath) != file_hash:
-                            results.append(record)
+                        old_hash = checkpoint.get(filepath)
+                        if old_hash != file_hash:
+                            hint = event_hints.get(os.path.abspath(filepath), {})
+                            change_type = hint.get(
+                                "change_type",
+                                "created" if old_hash is None else "modified",
+                            )
+                            previous_path = hint.get("previous_path")
+
+                            classified = record
+                            if self.artifacts_service is not None:
+                                classified = self.artifacts_service.classify(
+                                    record,
+                                    change_type=change_type,
+                                    previous_path=previous_path,
+                                )
+
+                            results.append(classified)
                             checkpoint[filepath] = file_hash
                             logger.info("Found: %s", filepath)
                         
@@ -172,3 +190,35 @@ class ScanService:
                 json.dump(checkpoint, f, indent=2)
         except Exception as e:
             logger.warning("Could not save checkpoint: %s", e)
+
+    def _build_event_hints(self, events, checkpoint):
+        """Translate debounced watcher events into scan classification hints."""
+        hints = {}
+        priorities = {"modified": 1, "created": 2, "moved": 3}
+
+        for event in events:
+            event_type = event.get("event_type")
+            source_path = os.path.abspath(event["source_path"])
+
+            if event_type == "deleted":
+                checkpoint.pop(source_path, None)
+                if self.artifacts_service is not None:
+                    self.artifacts_service.remove(source_path)
+                continue
+
+            target_path = source_path
+            previous_path = None
+            if event_type == "moved":
+                target_path = os.path.abspath(event["destination_path"])
+                previous_path = source_path
+                checkpoint.pop(source_path, None)
+
+            current = hints.get(target_path)
+            if current and priorities[current["change_type"]] > priorities[event_type]:
+                continue
+            hints[target_path] = {
+                "change_type": event_type,
+                "previous_path": previous_path,
+            }
+
+        return hints

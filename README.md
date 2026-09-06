@@ -66,6 +66,15 @@ Current endpoint scaffolding:
 - `GET /config`
 - `POST /config/reload`
 
+## Verify artifact classification
+
+1. Start the API and call `POST /system/start` from `/docs`.
+2. Create, edit, or move a supported file inside a configured `root_paths` directory.
+3. Call `GET /artifacts` to see its current name, path, type, size, hash, and change type.
+
+The artifact ID stays the same when a known file is edited or moved. Its hash changes
+when its contents change.
+
 ## MVP: A Local-First Architecture
 
 ```mermaid

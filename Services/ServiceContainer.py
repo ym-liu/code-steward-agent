@@ -15,6 +15,7 @@ class ServiceContainer:
         self.scan_service = ScanService(
             config_service=self.config_service,
             logs_service=self.logs_service,
+            artifacts_service=self.artifacts_service,
         )
 
         root_paths = self.config_service.get("scanning", "root_paths", default=[])
