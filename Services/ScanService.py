@@ -80,14 +80,16 @@ class ScanService:
                         ):
                             continue
      
-                        filepath = os.path.join(dirpath, filename)
+                        filepath = os.path.abspath(os.path.join(dirpath, filename))
+                        if self.artifacts_service is not None and self.artifacts_service.is_storage_file(filepath):
+                            continue
                         
                         # Skip files that are too large
                         
                         try:
                             size = os.path.getsize(filepath)
-                        except PermissionError:
-                            logger.warning("Permision denied reading size: %s", filepath)
+                        except OSError as error:
+                            logger.warning("Could not read file size %s: %s", filepath, error)
                             continue
                         if size > max_file_size:
                             logger.info("Skipping large file %s (%d bytes)", filepath, size)
@@ -105,8 +107,9 @@ class ScanService:
                             modified = datetime.fromtimestamp(
                                 os.path.getmtime(filepath), timezone.utc
                             ).isoformat()
-                        except PermissionError:
-                            modified = None
+                        except OSError as error:
+                            logger.warning("Could not read modification time %s: %s", filepath, error)
+                            continue
                             
                         record = {
                             "path":		filepath,
@@ -166,14 +169,19 @@ class ScanService:
             logger.warning("Permission denied reading file: %s", filepath)
             return None
         except OSError as e:
-            logger.warning("Could not read file %s", filepath, e)
+            logger.warning("Could not read file %s: %s", filepath, e)
             return None
                 
     
     #checkpoint for resumable scans
                 
     def _load_checkpoint(self) -> dict:
-        """Load the last scan checkpint form disk."""
+        """Use saved artifacts as the checkpoint; keep JSON for standalone scans."""
+        if self.artifacts_service is not None:
+            return {
+                artifact["path"]: artifact["hash"]
+                for artifact in self.artifacts_service.list_artifacts()["items"]
+            }
         if not os.path.exists(CHECKPOINT_FILE):
             return {}
         try:
@@ -185,6 +193,9 @@ class ScanService:
             
     def _save_checkpoint(self, checkpoint: dict):
         """Save the current scan checkpoint to disk"""
+        if self.artifacts_service is not None:
+            # classify/remove already committed the metadata and hash together.
+            return
         try:
             with open(CHECKPOINT_FILE, "w") as f:
                 json.dump(checkpoint, f, indent=2)

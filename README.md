@@ -75,6 +75,45 @@ Current endpoint scaffolding:
 The artifact ID stays the same when a known file is edited or moved. Its hash changes
 when its contents change.
 
+## Saved artifact records
+
+Artifact records are saved automatically in `artifacts.sqlite3` in the project
+directory. Restarting the API keeps the records and their IDs. SQLite is included
+with Python, so the existing installation commands still work.
+
+The existing `ArtifactsService` handles saving and querying. `ScanService` uses
+these saved records to check which files have changed. The API endpoints and
+response fields stay the same.
+
+When upgrading from the previous version, start the service and trigger one scan
+to populate the database. The old `scan_checkpoint.json` does not contain complete
+artifact records or IDs, so it is ignored when the artifact service is connected.
+The scanner still supports that JSON file when used without an artifact service.
+
+To check persistence:
+
+1. Set `scanning.root_paths` in `config.yaml` to your test folder.
+2. Start the API, call `POST /system/start`, then `POST /scan/trigger`.
+3. Call `GET /artifacts` and note a file's ID.
+4. Stop and restart the API. Call `GET /artifacts` again: the file and ID remain.
+5. Start the service and scan again. Unchanged files stay in the list even when
+   the scan reports `files_found: 0` (this count means new or changed files).
+
+The database contains the latest file information. File contents stay in their
+original locations. Keep the database to keep these records; Git ignores the
+database and its temporary files. The scanner skips its own database files.
+
+This change also lets a scan continue when a file disappears while its size or
+modification time is being read. Other scanning work is still pending: preserving
+events during pause or a busy scan, detecting deletions missed by the watcher,
+handling consecutive renames, periodic scans, and avoiding repeated full hashing.
+
+Run the regression tests from the project directory:
+
+```sh
+python -m unittest discover -s tests -v
+```
+
 ## MVP: A Local-First Architecture
 
 ```mermaid

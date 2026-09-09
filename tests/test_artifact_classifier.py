@@ -29,7 +29,7 @@ class ArtifactClassifierTests(unittest.TestCase):
     def test_create_modify_and_move_keep_one_artifact(self):
         with tempfile.TemporaryDirectory() as directory:
             checkpoint = os.path.join(directory, "checkpoint.json")
-            artifacts = ArtifactsService()
+            artifacts = ArtifactsService(os.path.join(directory, "artifacts.sqlite3"))
             scanner = ScanService(
                 config_service=FakeConfigService(directory),
                 logs_service=None,
