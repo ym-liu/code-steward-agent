@@ -1,0 +1,32 @@
+# Code Steward Agent - Configuration File
+
+scanning:
+  # Directories the scanner will walk through
+  root_paths:
+    - 'C:\CAPSTONE CODE\TEST DIRECTORY'
+   
+  # File extensions to include (leave empty to include everything)
+  include_extensions:
+    - ".py"
+    - ".sh"
+    - ".bat"
+    - ".js"
+    - ".ts"
+    - ".rb"
+    - ".pl"
+
+  # Folder names to always skip
+  exclude_folders:
+    - ".git"
+    - "__pycache__"
+    - "node_modules"
+    - "venv"
+    - ".venv"
+    - "dist"
+    - "build"
+
+  # Maximum file size in bytes to scan (10MB default)
+  max_file_size_bytes: 10485760
+
+  # How often the periodic scan runs (in seconds)
+  scan_interval_seconds: 60

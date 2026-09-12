@@ -1,2 +1,4 @@
 __pycache__
 venv
+artifacts.sqlite3
+artifacts.sqlite3-*

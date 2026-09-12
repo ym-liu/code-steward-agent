@@ -1,0 +1,2014 @@
+2026-04-11 21:00:18,592 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-04-11 21:02:12,206 [INFO] service starting...
+2026-04-11 21:02:12,207 [INFO] Service loop started (tick interval: 5s)
+2026-04-11 21:02:12,207 [INFO] Tick #1 - service running.
+2026-04-11 21:02:17,207 [INFO] Tick #2 - service running.
+2026-04-11 21:02:22,208 [INFO] Tick #3 - service running.
+2026-04-11 21:02:27,209 [INFO] Tick #4 - service running.
+2026-04-11 21:02:32,210 [INFO] Tick #5 - service running.
+2026-04-11 21:02:37,210 [INFO] Tick #6 - service running.
+2026-04-11 21:02:41,842 [INFO] Service paused
+2026-04-11 21:02:54,938 [WARNING] Service is already running.
+2026-04-11 21:03:10,961 [INFO] Service resumed
+2026-04-11 21:03:12,212 [INFO] Tick #7 - service running.
+2026-04-11 21:03:17,214 [INFO] Tick #8 - service running.
+2026-04-11 21:03:22,215 [INFO] Tick #9 - service running.
+2026-04-11 21:03:23,548 [INFO] Service stopping...
+2026-04-11 21:03:27,215 [INFO] Service shutting down after 9 ticks (uptime: 75.0s)
+2026-04-11 21:03:35,369 [INFO] service starting...
+2026-04-11 21:03:35,369 [INFO] Service loop started (tick interval: 5s)
+2026-04-11 21:03:35,370 [INFO] Tick #1 - service running.
+2026-04-11 21:03:40,371 [INFO] Tick #2 - service running.
+2026-04-11 21:03:45,372 [INFO] Tick #3 - service running.
+2026-04-11 21:03:50,373 [INFO] Tick #4 - service running.
+2026-04-11 21:03:55,373 [INFO] Tick #5 - service running.
+2026-04-11 21:04:00,374 [INFO] Tick #6 - service running.
+2026-04-11 21:04:03,996 [INFO] Service stopping...
+2026-04-11 21:04:05,375 [INFO] Service shutting down after 6 ticks (uptime: 30.0s)
+2026-04-11 21:04:09,879 [INFO] service starting...
+2026-04-11 21:04:09,879 [INFO] Service loop started (tick interval: 5s)
+2026-04-11 21:04:09,879 [INFO] Tick #1 - service running.
+2026-04-11 21:04:14,881 [INFO] Tick #2 - service running.
+2026-04-11 21:04:19,881 [INFO] Tick #3 - service running.
+2026-04-11 21:04:24,882 [INFO] Tick #4 - service running.
+2026-04-11 21:04:29,883 [INFO] Tick #5 - service running.
+2026-04-11 21:04:34,884 [INFO] Tick #6 - service running.
+2026-04-11 21:04:39,885 [INFO] Tick #7 - service running.
+2026-04-11 21:04:44,886 [INFO] Tick #8 - service running.
+2026-04-11 21:04:49,887 [INFO] Tick #9 - service running.
+2026-04-11 21:04:54,887 [INFO] Tick #10 - service running.
+2026-04-11 21:04:59,888 [INFO] Tick #11 - service running.
+2026-04-11 21:05:04,889 [INFO] Tick #12 - service running.
+2026-04-11 21:05:04,959 [INFO] Service paused
+2026-04-11 21:05:35,614 [WARNING] Service is already running.
+2026-04-11 21:05:49,903 [INFO] Service resumed
+2026-04-11 21:05:54,893 [INFO] Tick #13 - service running.
+2026-04-11 21:05:59,893 [INFO] Tick #14 - service running.
+2026-04-11 21:06:00,138 [INFO] Service stopping...
+2026-04-11 21:06:04,895 [INFO] Service shutting down after 14 ticks (uptime: 115.0s)
+2026-04-11 21:07:18,825 [INFO] service starting...
+2026-04-11 21:07:18,825 [INFO] Service loop started (tick interval: 5s)
+2026-04-11 21:07:18,827 [INFO] Tick #1 - service running.
+2026-04-11 21:07:23,827 [INFO] Tick #2 - service running.
+2026-04-11 21:07:28,828 [INFO] Tick #3 - service running.
+2026-04-11 21:07:33,829 [INFO] Tick #4 - service running.
+2026-04-11 21:07:38,830 [INFO] Tick #5 - service running.
+2026-04-11 21:07:43,830 [INFO] Tick #6 - service running.
+2026-04-11 21:07:48,831 [INFO] Tick #7 - service running.
+2026-04-11 21:07:53,831 [INFO] Tick #8 - service running.
+2026-04-11 21:07:54,185 [INFO] Service paused
+2026-04-11 21:08:18,340 [INFO] Service stopping...
+2026-04-11 21:08:18,833 [INFO] Service shutting down after 8 ticks (uptime: 60.0s)
+2026-04-11 21:09:30,094 [INFO] service starting...
+2026-04-11 21:09:30,095 [INFO] Service loop started (tick interval: 5s)
+2026-04-11 21:09:30,095 [INFO] Tick #1 - service running.
+2026-04-11 21:09:35,095 [INFO] Tick #2 - service running.
+2026-04-11 21:09:40,096 [INFO] Tick #3 - service running.
+2026-04-11 21:09:45,096 [INFO] Tick #4 - service running.
+2026-04-11 21:09:47,183 [INFO] Service stopping...
+2026-04-11 21:09:50,097 [INFO] Service shutting down after 4 ticks (uptime: 20.0s)
+2026-04-11 21:12:06,538 [INFO] Received signal SIGINT requesting shutdown
+2026-04-11 21:12:06,538 [WARNING] Service is already stopped.
+2026-04-11 21:12:33,456 [INFO] service starting...
+2026-04-11 21:12:33,457 [INFO] Service loop started (tick interval: 5s)
+2026-04-11 21:12:33,457 [INFO] Tick #1 - service running.
+2026-04-11 21:12:38,458 [INFO] Tick #2 - service running.
+2026-04-11 21:12:43,459 [INFO] Tick #3 - service running.
+2026-04-11 21:12:48,460 [INFO] Tick #4 - service running.
+2026-04-11 21:12:53,461 [INFO] Tick #5 - service running.
+2026-04-11 21:12:58,462 [INFO] Tick #6 - service running.
+2026-04-11 21:12:58,848 [INFO] Service stopping...
+2026-04-11 21:13:03,463 [INFO] Service shutting down after 6 ticks (uptime: 30.0s)
+2026-04-11 21:13:58,441 [INFO] service starting...
+2026-04-11 21:13:58,442 [INFO] Service loop started (tick interval: 5s)
+2026-04-11 21:13:58,442 [INFO] Tick #1 - service running.
+2026-04-11 21:14:03,443 [INFO] Tick #2 - service running.
+2026-04-11 21:14:06,569 [WARNING] Service is already running.
+2026-04-11 21:14:08,444 [INFO] Tick #3 - service running.
+2026-04-11 21:14:13,123 [INFO] Service stopping...
+2026-04-11 21:14:13,444 [INFO] Service shutting down after 3 ticks (uptime: 15.0s)
+2026-04-11 21:16:17,396 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-04-11 21:16:25,912 [INFO] service starting...
+2026-04-11 21:16:25,913 [INFO] Service loop started (tick interval: 5s)
+2026-04-11 21:16:25,913 [INFO] Tick #1 - service running.
+2026-04-11 21:16:30,914 [INFO] Tick #2 - service running.
+2026-04-11 21:16:35,914 [INFO] Tick #3 - service running.
+2026-04-11 21:16:40,915 [INFO] Tick #4 - service running.
+2026-04-11 21:16:45,915 [INFO] Tick #5 - service running.
+2026-04-11 21:16:46,007 [INFO] Service stopping...
+2026-04-11 21:16:50,916 [INFO] Service shutting down after 5 ticks (uptime: 25.0s)
+2026-04-11 21:16:50,916 [INFO] Service loop started (tick interval: 5s)
+2026-04-11 21:16:50,917 [INFO] Tick #6 - service running.
+2026-04-11 21:16:55,917 [INFO] Tick #7 - service running.
+2026-04-11 21:17:00,918 [INFO] Tick #8 - service running.
+2026-04-11 21:17:05,919 [INFO] Tick #9 - service running.
+2026-04-11 21:17:10,919 [INFO] Tick #10 - service running.
+2026-04-11 21:17:15,920 [INFO] Tick #11 - service running.
+2026-04-11 21:17:20,921 [INFO] Tick #12 - service running.
+2026-04-11 21:17:25,922 [INFO] Tick #13 - service running.
+2026-04-11 21:17:30,922 [INFO] Tick #14 - service running.
+2026-04-11 21:17:33,915 [WARNING] Service is already stopped.
+2026-04-11 21:17:35,923 [INFO] Tick #15 - service running.
+2026-04-11 21:17:40,923 [INFO] Tick #16 - service running.
+2026-04-11 21:17:45,924 [INFO] Tick #17 - service running.
+2026-04-11 21:17:50,924 [INFO] Tick #18 - service running.
+2026-04-11 21:17:55,925 [INFO] Tick #19 - service running.
+2026-04-11 21:17:57,578 [INFO] Received signal SIGINT requesting shutdown
+2026-04-11 21:17:57,579 [WARNING] Service is already stopped.
+2026-04-11 21:18:00,925 [INFO] Tick #20 - service running.
+2026-04-11 21:18:05,926 [INFO] Tick #21 - service running.
+2026-04-11 21:18:10,927 [INFO] Tick #22 - service running.
+2026-04-11 21:18:15,928 [INFO] Tick #23 - service running.
+2026-04-11 21:18:20,929 [INFO] Tick #24 - service running.
+2026-04-11 21:18:25,929 [INFO] Tick #25 - service running.
+2026-04-11 21:18:30,930 [INFO] Tick #26 - service running.
+2026-04-11 21:18:35,931 [INFO] Tick #27 - service running.
+2026-04-11 21:18:40,932 [INFO] Tick #28 - service running.
+2026-04-11 21:18:45,933 [INFO] Tick #29 - service running.
+2026-04-11 21:18:50,935 [INFO] Tick #30 - service running.
+2026-04-11 21:18:55,936 [INFO] Tick #31 - service running.
+2026-04-11 21:19:00,936 [INFO] Tick #32 - service running.
+2026-04-11 21:19:05,937 [INFO] Tick #33 - service running.
+2026-04-11 21:19:10,938 [INFO] Tick #34 - service running.
+2026-04-11 21:19:15,938 [INFO] Tick #35 - service running.
+2026-04-11 21:19:20,939 [INFO] Tick #36 - service running.
+2026-04-11 21:19:25,940 [INFO] Tick #37 - service running.
+2026-04-11 21:19:30,941 [INFO] Tick #38 - service running.
+2026-04-11 21:19:35,942 [INFO] Tick #39 - service running.
+2026-04-11 21:19:40,943 [INFO] Tick #40 - service running.
+2026-04-11 21:19:45,943 [INFO] Tick #41 - service running.
+2026-04-11 21:19:50,944 [INFO] Tick #42 - service running.
+2026-04-11 21:19:55,945 [INFO] Tick #43 - service running.
+2026-04-11 21:20:00,946 [INFO] Tick #44 - service running.
+2026-04-11 21:20:05,947 [INFO] Tick #45 - service running.
+2026-04-11 21:20:10,948 [INFO] Tick #46 - service running.
+2026-04-11 21:20:15,948 [INFO] Tick #47 - service running.
+2026-04-11 21:20:20,949 [INFO] Tick #48 - service running.
+2026-04-11 21:20:25,949 [INFO] Tick #49 - service running.
+2026-04-11 21:20:30,950 [INFO] Tick #50 - service running.
+2026-04-11 21:20:35,951 [INFO] Tick #51 - service running.
+2026-04-11 21:20:40,951 [INFO] Tick #52 - service running.
+2026-04-11 21:20:45,953 [INFO] Tick #53 - service running.
+2026-04-11 21:20:50,953 [INFO] Tick #54 - service running.
+2026-04-11 21:20:55,954 [INFO] Tick #55 - service running.
+2026-04-11 21:21:00,955 [INFO] Tick #56 - service running.
+2026-04-11 21:21:05,956 [INFO] Tick #57 - service running.
+2026-04-11 21:21:10,956 [INFO] Tick #58 - service running.
+2026-04-11 21:21:14,123 [WARNING] Service is already stopped.
+2026-04-11 21:21:15,957 [INFO] Tick #59 - service running.
+2026-04-11 21:21:20,957 [INFO] Tick #60 - service running.
+2026-04-11 21:21:23,134 [INFO] service starting...
+2026-04-11 21:21:23,134 [INFO] Service loop started (tick interval: 5s)
+2026-04-11 21:21:23,135 [INFO] Tick #1 - service running.
+2026-04-11 21:21:25,958 [INFO] Tick #2 - service running.
+2026-04-11 21:21:28,137 [INFO] Tick #3 - service running.
+2026-04-11 21:21:30,959 [INFO] Tick #4 - service running.
+2026-04-11 21:21:33,138 [INFO] Tick #5 - service running.
+2026-04-11 21:21:35,960 [INFO] Tick #6 - service running.
+2026-04-11 21:21:38,139 [INFO] Tick #7 - service running.
+2026-04-11 21:21:40,960 [INFO] Tick #8 - service running.
+2026-04-11 21:21:43,139 [INFO] Tick #9 - service running.
+2026-04-11 21:21:45,961 [INFO] Tick #10 - service running.
+2026-04-11 21:21:48,140 [INFO] Tick #11 - service running.
+2026-04-11 21:21:50,488 [INFO] Received signal SIGINT requesting shutdown
+2026-04-11 21:21:50,488 [INFO] Service stopping...
+2026-04-11 21:21:50,962 [INFO] Service shutting down after 11 ticks (uptime: 27.8s)
+2026-04-11 21:21:51,246 [INFO] Received signal SIGINT requesting shutdown
+2026-04-11 21:21:51,246 [WARNING] Service is already stopped.
+2026-04-11 21:21:53,141 [INFO] Tick #12 - service running.
+2026-04-11 21:21:58,142 [INFO] Tick #13 - service running.
+2026-04-11 21:22:03,142 [INFO] Tick #14 - service running.
+2026-04-11 21:22:08,144 [INFO] Tick #15 - service running.
+2026-04-11 21:22:13,145 [INFO] Tick #16 - service running.
+2026-04-11 21:22:18,146 [INFO] Tick #17 - service running.
+2026-04-11 21:22:23,146 [INFO] Tick #18 - service running.
+2026-04-11 21:22:28,150 [INFO] Tick #19 - service running.
+2026-04-11 21:23:30,181 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-04-11 21:24:12,942 [INFO] service starting...
+2026-04-11 21:24:12,943 [INFO] Service loop started (tick interval: 5s)
+2026-04-11 21:24:12,944 [INFO] Tick #1 - service running.
+2026-04-11 21:24:17,946 [INFO] Tick #2 - service running.
+2026-04-11 21:24:22,946 [INFO] Tick #3 - service running.
+2026-04-11 21:24:27,947 [INFO] Tick #4 - service running.
+2026-04-11 21:24:32,948 [INFO] Tick #5 - service running.
+2026-04-11 21:24:37,949 [INFO] Tick #6 - service running.
+2026-04-11 21:24:42,949 [INFO] Tick #7 - service running.
+2026-04-11 21:24:43,493 [INFO] Service paused
+2026-04-11 21:24:52,725 [INFO] Service resumed
+2026-04-11 21:24:52,950 [INFO] Tick #8 - service running.
+2026-04-11 21:24:57,951 [INFO] Tick #9 - service running.
+2026-04-11 21:25:02,952 [INFO] Tick #10 - service running.
+2026-04-11 21:25:07,953 [INFO] Tick #11 - service running.
+2026-04-11 21:25:12,954 [INFO] Tick #12 - service running.
+2026-04-11 21:25:17,955 [INFO] Tick #13 - service running.
+2026-04-11 21:25:20,770 [INFO] Service stopping...
+2026-04-11 21:25:22,019 [INFO] Service stopping...
+2026-04-11 21:25:22,955 [INFO] Service shutting down after 13 ticks (uptime: 70.0s)
+2026-04-11 21:25:30,081 [WARNING] Service is already stopped.
+2026-04-11 21:44:57,596 [INFO] service starting...
+2026-04-11 21:44:57,598 [INFO] Service loop started (tick interval: 5s)
+2026-04-11 21:44:57,598 [INFO] Tick #1 - service running.
+2026-04-11 21:45:02,599 [INFO] Tick #2 - service running.
+2026-04-11 21:45:07,601 [INFO] Tick #3 - service running.
+2026-04-11 21:45:12,602 [INFO] Tick #4 - service running.
+2026-04-11 21:45:17,602 [INFO] Tick #5 - service running.
+2026-04-11 21:45:22,606 [INFO] Tick #6 - service running.
+2026-04-11 21:45:27,607 [INFO] Tick #7 - service running.
+2026-04-11 21:45:30,683 [INFO] Service paused
+2026-04-11 21:45:49,627 [WARNING] Service is already running.
+2026-04-11 21:46:00,813 [INFO] Service resumed
+2026-04-11 21:46:02,610 [INFO] Tick #8 - service running.
+2026-04-11 21:46:07,610 [INFO] Tick #9 - service running.
+2026-04-11 21:46:12,611 [INFO] Tick #10 - service running.
+2026-04-11 21:46:17,611 [INFO] Tick #11 - service running.
+2026-04-11 21:46:22,612 [INFO] Tick #12 - service running.
+2026-04-11 21:46:27,615 [INFO] Tick #13 - service running.
+2026-04-11 21:46:32,616 [INFO] Tick #14 - service running.
+2026-04-11 21:46:37,623 [INFO] Tick #15 - service running.
+2026-04-11 21:46:42,637 [INFO] Tick #16 - service running.
+2026-04-11 21:46:47,638 [INFO] Tick #17 - service running.
+2026-04-11 21:46:52,639 [INFO] Tick #18 - service running.
+2026-04-11 21:46:54,647 [INFO] Service stopping...
+2026-04-11 21:46:57,640 [INFO] Service shutting down after 18 ticks (uptime: 120.0s)
+2026-04-11 21:47:24,540 [INFO] service starting...
+2026-04-11 21:47:24,541 [INFO] Service loop started (tick interval: 5s)
+2026-04-11 21:47:24,543 [INFO] Tick #1 - service running.
+2026-04-11 21:47:29,545 [INFO] Tick #2 - service running.
+2026-04-11 21:47:34,545 [INFO] Tick #3 - service running.
+2026-04-11 21:47:39,546 [INFO] Tick #4 - service running.
+2026-04-11 21:47:44,546 [INFO] Tick #5 - service running.
+2026-04-11 21:47:49,547 [INFO] Tick #6 - service running.
+2026-04-11 21:47:54,551 [INFO] Tick #7 - service running.
+2026-04-11 21:47:59,555 [INFO] Tick #8 - service running.
+2026-04-11 21:48:04,556 [INFO] Tick #9 - service running.
+2026-04-11 21:48:09,556 [INFO] Tick #10 - service running.
+2026-04-11 21:48:14,557 [INFO] Tick #11 - service running.
+2026-04-11 21:48:19,560 [INFO] Tick #12 - service running.
+2026-04-11 21:48:20,706 [INFO] Service paused
+2026-04-11 21:48:48,652 [INFO] Service resumed
+2026-04-11 21:48:49,564 [INFO] Tick #13 - service running.
+2026-04-11 21:48:54,565 [INFO] Tick #14 - service running.
+2026-04-11 21:48:55,504 [INFO] Service stopping...
+2026-04-11 21:48:59,576 [INFO] Service shutting down after 14 ticks (uptime: 95.0s)
+2026-04-11 22:03:49,173 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-04-11 22:04:11,293 [INFO] service starting...
+2026-04-11 22:04:11,294 [INFO] Service loop started (tick interval: 5s)
+2026-04-11 22:04:11,294 [INFO] Tick #1 - service running.
+2026-04-11 22:04:16,296 [INFO] Tick #2 - service running.
+2026-04-11 22:04:21,296 [INFO] Tick #3 - service running.
+2026-04-11 22:04:26,298 [INFO] Tick #4 - service running.
+2026-04-11 22:04:31,299 [INFO] Tick #5 - service running.
+2026-04-11 22:04:33,036 [INFO] Service paused
+2026-04-11 22:04:39,754 [INFO] Service resumed
+2026-04-11 22:04:41,300 [INFO] Tick #6 - service running.
+2026-04-11 22:04:46,305 [INFO] Tick #7 - service running.
+2026-04-11 22:04:51,308 [INFO] Tick #8 - service running.
+2026-04-11 22:04:52,971 [INFO] Service stopping...
+2026-04-11 22:04:56,311 [INFO] Service shutting down after 8 ticks (uptime: 45.0s)
+2026-04-11 22:05:06,782 [INFO] service starting...
+2026-04-11 22:05:06,798 [INFO] Service loop started (tick interval: 5s)
+2026-04-11 22:05:06,801 [INFO] Tick #1 - service running.
+2026-04-11 22:05:11,803 [INFO] Tick #2 - service running.
+2026-04-11 22:05:16,804 [INFO] Tick #3 - service running.
+2026-04-11 22:05:21,806 [INFO] Tick #4 - service running.
+2026-04-11 22:05:26,816 [INFO] Tick #5 - service running.
+2026-04-11 22:05:31,012 [INFO] Service paused
+2026-04-11 22:05:43,432 [INFO] Service resumed
+2026-04-11 22:05:46,823 [INFO] Tick #6 - service running.
+2026-04-11 22:05:51,827 [INFO] Tick #7 - service running.
+2026-04-11 22:05:56,833 [INFO] Tick #8 - service running.
+2026-04-11 22:05:59,720 [INFO] Service stopping...
+2026-04-11 22:06:01,834 [INFO] Service shutting down after 8 ticks (uptime: 55.0s)
+2026-04-11 22:21:00,884 [INFO] Received signal SIGINT requesting shutdown
+2026-04-11 22:21:00,884 [WARNING] Service is already stopped.
+2026-04-17 21:48:44,939 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-04-17 21:49:10,523 [INFO] service starting...
+2026-04-17 21:49:10,524 [INFO] Service loop started (tick interval: 5s)
+2026-04-17 21:49:10,524 [INFO] Tick #1 - service running.
+2026-04-17 21:49:15,525 [INFO] Tick #2 - service running.
+2026-04-17 21:49:20,526 [INFO] Tick #3 - service running.
+2026-04-17 21:49:25,527 [INFO] Tick #4 - service running.
+2026-04-17 21:49:30,528 [INFO] Tick #5 - service running.
+2026-04-17 21:49:35,529 [INFO] Tick #6 - service running.
+2026-04-17 21:49:40,529 [INFO] Tick #7 - service running.
+2026-04-17 21:49:45,530 [INFO] Tick #8 - service running.
+2026-04-17 21:49:50,530 [INFO] Tick #9 - service running.
+2026-04-17 21:49:55,531 [INFO] Tick #10 - service running.
+2026-04-17 21:50:00,532 [INFO] Tick #11 - service running.
+2026-04-17 21:50:05,532 [INFO] Tick #12 - service running.
+2026-04-17 21:50:10,532 [INFO] Tick #13 - service running.
+2026-04-17 21:50:15,533 [INFO] Tick #14 - service running.
+2026-04-17 21:50:20,534 [INFO] Tick #15 - service running.
+2026-04-17 21:50:25,534 [INFO] Tick #16 - service running.
+2026-04-17 21:50:29,777 [INFO] Service stopping...
+2026-04-17 21:50:30,534 [INFO] Service shutting down after 16 ticks (uptime: 80.0s)
+2026-07-21 15:52:28,580 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-07-21 15:52:52,974 [INFO] service starting...
+2026-07-21 15:52:52,974 [INFO] Service loop started (tick interval: 5s)
+2026-07-21 15:52:52,975 [INFO] Tick #1 - service running.
+2026-07-21 15:52:57,975 [INFO] Tick #2 - service running.
+2026-07-21 15:53:02,976 [INFO] Tick #3 - service running.
+2026-07-21 15:53:07,978 [INFO] Tick #4 - service running.
+2026-07-21 15:53:12,981 [INFO] Tick #5 - service running.
+2026-07-21 15:53:17,981 [INFO] Tick #6 - service running.
+2026-07-21 15:53:22,982 [INFO] Tick #7 - service running.
+2026-07-21 15:53:27,982 [INFO] Tick #8 - service running.
+2026-07-21 15:53:29,678 [INFO] Service stopping...
+2026-07-21 15:53:32,983 [INFO] Service shutting down after 8 ticks (uptime: 40.0s)
+2026-07-21 15:56:21,014 [INFO] Received signal SIGINT requesting shutdown
+2026-07-21 15:56:21,015 [WARNING] Service is already stopped.
+2026-07-27 16:12:24,697 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-07-27 16:12:24,699 [INFO] Config loaded form config.yaml
+2026-07-27 16:19:28,758 [INFO] service starting...
+2026-07-27 16:19:28,758 [INFO] Service loop started (tick interval: 5s)
+2026-07-27 16:19:28,759 [INFO] Tick #1 - service running.
+2026-07-27 16:19:33,759 [INFO] Tick #2 - service running.
+2026-07-27 16:19:38,760 [INFO] Tick #3 - service running.
+2026-07-27 16:19:43,760 [INFO] Tick #4 - service running.
+2026-07-27 16:19:48,761 [INFO] Tick #5 - service running.
+2026-07-27 16:19:51,958 [INFO] Service stopping...
+2026-07-27 16:19:53,761 [INFO] Service shutting down after 5 ticks (uptime: 25.0s)
+2026-08-03 14:47:16,167 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-08-03 14:52:33,086 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-08-03 14:52:33,088 [INFO] Config loaded form config.yaml
+2026-08-03 14:54:44,337 [INFO] Received signal SIGINT requesting shutdown
+2026-08-03 14:54:44,338 [WARNING] Service is already stopped.
+2026-08-03 14:54:55,876 [INFO] Received signal SIGINT requesting shutdown
+2026-08-03 14:54:55,876 [WARNING] Service is already stopped.
+2026-08-03 14:54:57,321 [INFO] Received signal SIGINT requesting shutdown
+2026-08-03 14:54:57,322 [WARNING] Service is already stopped.
+2026-08-03 14:54:57,987 [INFO] Received signal SIGINT requesting shutdown
+2026-08-03 14:54:57,987 [WARNING] Service is already stopped.
+2026-08-03 15:12:18,977 [INFO] Received signal SIGINT requesting shutdown
+2026-08-03 15:12:18,977 [WARNING] Service is already stopped.
+2026-08-03 15:12:24,375 [INFO] Received signal SIGINT requesting shutdown
+2026-08-03 15:12:24,375 [WARNING] Service is already stopped.
+2026-08-03 15:31:59,505 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-08-03 15:31:59,507 [INFO] Config loaded form config.yaml
+2026-08-03 15:32:06,396 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-03 15:32:06,397 [INFO] Found: C:\CAPSTONE CODE\TEST DIRECTORY\TEST.py
+2026-08-03 15:32:06,397 [INFO] Found: C:\CAPSTONE CODE\TEST DIRECTORY\TEST\TEST.py
+2026-08-03 15:32:06,398 [INFO] Scan complete. 2 new/changed files found.
+2026-08-03 15:36:17,952 [INFO] Received signal SIGINT requesting shutdown
+2026-08-03 15:36:17,952 [WARNING] Service is already stopped.
+2026-08-03 15:36:18,169 [INFO] Received signal SIGINT requesting shutdown
+2026-08-03 15:36:18,170 [WARNING] Service is already stopped.
+2026-08-03 15:37:01,382 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-08-03 15:37:01,384 [INFO] Config loaded form config.yaml
+2026-08-03 15:37:36,799 [INFO] service starting...
+2026-08-03 15:37:36,800 [INFO] Service loop started (tick interval: 5s)
+2026-08-03 15:37:36,800 [INFO] Tick #1 - service running.
+2026-08-03 15:37:41,801 [INFO] Tick #2 - service running.
+2026-08-03 15:37:46,801 [INFO] Tick #3 - service running.
+2026-08-03 15:37:51,802 [INFO] Tick #4 - service running.
+2026-08-03 15:37:56,802 [INFO] Tick #5 - service running.
+2026-08-03 15:38:01,803 [INFO] Tick #6 - service running.
+2026-08-03 15:38:06,803 [INFO] Tick #7 - service running.
+2026-08-03 15:38:11,804 [INFO] Tick #8 - service running.
+2026-08-03 15:38:16,804 [INFO] Tick #9 - service running.
+2026-08-03 15:38:21,805 [INFO] Tick #10 - service running.
+2026-08-03 15:38:26,805 [INFO] Tick #11 - service running.
+2026-08-03 15:38:31,806 [INFO] Tick #12 - service running.
+2026-08-03 15:38:36,806 [INFO] Tick #13 - service running.
+2026-08-03 15:38:41,807 [INFO] Tick #14 - service running.
+2026-08-03 15:38:46,808 [INFO] Tick #15 - service running.
+2026-08-03 15:38:51,809 [INFO] Tick #16 - service running.
+2026-08-03 15:38:56,809 [INFO] Tick #17 - service running.
+2026-08-03 15:39:01,810 [INFO] Tick #18 - service running.
+2026-08-03 15:39:06,810 [INFO] Tick #19 - service running.
+2026-08-03 15:39:11,811 [INFO] Tick #20 - service running.
+2026-08-03 15:39:16,811 [INFO] Tick #21 - service running.
+2026-08-03 15:39:21,813 [INFO] Tick #22 - service running.
+2026-08-03 15:39:26,814 [INFO] Tick #23 - service running.
+2026-08-03 15:39:31,814 [INFO] Tick #24 - service running.
+2026-08-03 15:39:36,815 [INFO] Tick #25 - service running.
+2026-08-03 15:39:41,815 [INFO] Tick #26 - service running.
+2026-08-03 15:39:46,816 [INFO] Tick #27 - service running.
+2026-08-03 15:39:51,817 [INFO] Tick #28 - service running.
+2026-08-03 15:39:56,817 [INFO] Tick #29 - service running.
+2026-08-03 15:40:01,818 [INFO] Tick #30 - service running.
+2026-08-03 15:40:06,818 [INFO] Tick #31 - service running.
+2026-08-03 15:40:11,819 [INFO] Tick #32 - service running.
+2026-08-03 15:40:16,819 [INFO] Tick #33 - service running.
+2026-08-03 15:40:21,820 [INFO] Tick #34 - service running.
+2026-08-03 15:40:26,820 [INFO] Tick #35 - service running.
+2026-08-03 15:40:31,821 [INFO] Tick #36 - service running.
+2026-08-03 15:40:35,695 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-03 15:40:35,697 [INFO] Scan complete. 0 new/changed files found.
+2026-08-03 15:40:36,821 [INFO] Tick #37 - service running.
+2026-08-03 15:40:41,822 [INFO] Tick #38 - service running.
+2026-08-03 15:40:46,822 [INFO] Tick #39 - service running.
+2026-08-03 15:40:51,823 [INFO] Tick #40 - service running.
+2026-08-03 15:40:56,824 [INFO] Tick #41 - service running.
+2026-08-03 15:41:01,824 [INFO] Tick #42 - service running.
+2026-08-03 15:41:06,825 [INFO] Tick #43 - service running.
+2026-08-03 15:41:11,826 [INFO] Tick #44 - service running.
+2026-08-03 15:41:13,524 [INFO] Service stopping...
+2026-08-03 15:41:16,827 [INFO] Service shutting down after 44 ticks (uptime: 220.0s)
+2026-08-03 15:41:16,928 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-03 15:41:16,930 [INFO] Scan complete. 0 new/changed files found.
+2026-08-03 15:41:17,949 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-03 15:41:17,950 [INFO] Scan complete. 0 new/changed files found.
+2026-08-03 15:41:18,665 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-03 15:41:18,667 [INFO] Scan complete. 0 new/changed files found.
+2026-08-03 15:42:08,639 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-03 15:42:08,640 [INFO] Found: C:\CAPSTONE CODE\TEST DIRECTORY\TEST.py
+2026-08-03 15:42:08,641 [INFO] Found: C:\CAPSTONE CODE\TEST DIRECTORY\TEST\TEST.py
+2026-08-03 15:42:08,641 [INFO] Scan complete. 2 new/changed files found.
+2026-08-03 15:43:01,872 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-03 15:43:01,873 [INFO] Found: C:\CAPSTONE CODE\TEST DIRECTORY\TEST.py
+2026-08-03 15:43:01,874 [INFO] Scan complete. 1 new/changed files found.
+2026-08-03 16:21:21,899 [INFO] service starting...
+2026-08-03 16:21:21,900 [INFO] Service loop started (tick interval: 5s)
+2026-08-03 16:21:21,901 [INFO] Tick #1 - service running.
+2026-08-03 16:21:26,901 [INFO] Tick #2 - service running.
+2026-08-03 16:21:31,903 [INFO] Tick #3 - service running.
+2026-08-03 16:21:36,904 [INFO] Tick #4 - service running.
+2026-08-03 16:21:41,904 [INFO] Tick #5 - service running.
+2026-08-03 16:21:46,905 [INFO] Tick #6 - service running.
+2026-08-03 16:21:51,906 [INFO] Tick #7 - service running.
+2026-08-03 16:21:56,906 [INFO] Tick #8 - service running.
+2026-08-03 16:22:01,907 [INFO] Tick #9 - service running.
+2026-08-03 16:22:06,908 [INFO] Tick #10 - service running.
+2026-08-03 16:22:11,908 [INFO] Tick #11 - service running.
+2026-08-03 16:22:16,908 [INFO] Tick #12 - service running.
+2026-08-03 16:22:19,007 [INFO] Service stopping...
+2026-08-03 16:22:21,909 [INFO] Service shutting down after 12 ticks (uptime: 60.0s)
+2026-08-10 15:23:14,151 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-08-10 15:24:03,517 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-08-10 15:24:03,527 [INFO] Config loaded form config.yaml
+2026-08-10 15:24:35,515 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-08-10 15:24:35,524 [INFO] Config loaded form config.yaml
+2026-08-10 15:26:02,667 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-08-10 15:26:02,677 [INFO] Config loaded form config.yaml
+2026-08-10 15:36:43,525 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-08-10 15:36:43,534 [INFO] Config loaded form config.yaml
+2026-08-10 15:36:43,535 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-08-10 15:37:15,368 [INFO] service starting...
+2026-08-10 15:37:15,369 [INFO] Service loop started (tick interval: 5s)
+2026-08-10 15:37:15,369 [INFO] Tick #1 - service running.
+2026-08-10 15:37:20,370 [INFO] Tick #2 - service running.
+2026-08-10 15:37:25,370 [INFO] Tick #3 - service running.
+2026-08-10 15:37:30,374 [INFO] Tick #4 - service running.
+2026-08-10 15:37:35,374 [INFO] Tick #5 - service running.
+2026-08-10 15:37:40,375 [INFO] Tick #6 - service running.
+2026-08-10 15:37:45,376 [INFO] Tick #7 - service running.
+2026-08-10 15:37:50,377 [INFO] Tick #8 - service running.
+2026-08-10 15:37:55,378 [INFO] Tick #9 - service running.
+2026-08-10 15:38:00,378 [INFO] Tick #10 - service running.
+2026-08-10 15:38:02,963 [INFO] Service stopping...
+2026-08-10 15:38:03,879 [INFO] Service stopping...
+2026-08-10 15:38:05,379 [INFO] Service shutting down after 10 ticks (uptime: 50.0s)
+2026-08-10 15:40:54,535 [INFO] Received signal SIGINT requesting shutdown
+2026-08-10 15:40:54,536 [WARNING] Service is already stopped.
+2026-08-10 15:42:02,000 [INFO] service starting...
+2026-08-10 15:42:02,000 [INFO] Service loop started (tick interval: 5s)
+2026-08-10 15:42:02,001 [INFO] Tick #1 - service running.
+2026-08-10 15:42:07,005 [INFO] Tick #2 - service running.
+2026-08-10 15:42:12,005 [INFO] Tick #3 - service running.
+2026-08-10 15:42:17,006 [INFO] Tick #4 - service running.
+2026-08-10 15:42:22,006 [INFO] Tick #5 - service running.
+2026-08-10 15:43:07,156 [INFO] Config loaded form config.yaml
+2026-08-10 15:43:07,156 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-08-10 15:43:27,246 [INFO] service starting...
+2026-08-10 15:43:27,247 [INFO] Watching directory: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-10 15:43:27,248 [INFO] File event service started.
+2026-08-10 15:43:27,248 [INFO] Service loop started (tick interval: 5s)
+2026-08-10 15:43:27,248 [INFO] Tick #1 - service running.
+2026-08-10 15:43:32,254 [INFO] Tick #2 - service running.
+2026-08-10 15:43:36,790 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-10 15:43:36,791 [INFO] Found: C:\CAPSTONE CODE\TEST DIRECTORY\TEST.py
+2026-08-10 15:43:36,791 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST.py (modified)
+2026-08-10 15:43:36,792 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST\TEST.py (modified)
+2026-08-10 15:43:36,792 [INFO] Scan complete. 1 new/changed files found.
+2026-08-10 15:43:37,254 [INFO] Tick #3 - service running.
+2026-08-10 15:43:38,798 [INFO] Debounce window elapsed, triggering scan.
+2026-08-10 15:43:38,799 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-10 15:43:38,800 [INFO] Scan complete. 0 new/changed files found.
+2026-08-10 15:43:42,255 [INFO] Tick #4 - service running.
+2026-08-10 15:43:47,255 [INFO] Tick #5 - service running.
+2026-08-10 15:43:52,256 [INFO] Tick #6 - service running.
+2026-08-10 15:43:57,256 [INFO] Tick #7 - service running.
+2026-08-10 15:44:02,264 [INFO] Tick #8 - service running.
+2026-08-10 15:44:07,264 [INFO] Tick #9 - service running.
+2026-08-10 15:44:12,273 [INFO] Tick #10 - service running.
+2026-08-10 15:44:17,274 [INFO] Tick #11 - service running.
+2026-08-10 15:44:22,275 [INFO] Tick #12 - service running.
+2026-08-10 15:44:27,277 [INFO] Tick #13 - service running.
+2026-08-10 15:44:32,278 [INFO] Tick #14 - service running.
+2026-08-10 15:44:37,281 [INFO] Tick #15 - service running.
+2026-08-10 15:44:42,282 [INFO] Tick #16 - service running.
+2026-08-10 15:44:47,282 [INFO] Tick #17 - service running.
+2026-08-10 15:44:52,283 [INFO] Tick #18 - service running.
+2026-08-10 15:44:57,284 [INFO] Tick #19 - service running.
+2026-08-10 15:45:02,284 [INFO] Tick #20 - service running.
+2026-08-10 15:45:07,285 [INFO] Tick #21 - service running.
+2026-08-10 15:45:10,313 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy.py (created)
+2026-08-10 15:45:10,314 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy.py (modified)
+2026-08-10 15:45:10,314 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy.py (modified)
+2026-08-10 15:45:12,286 [INFO] Tick #22 - service running.
+2026-08-10 15:45:12,314 [INFO] Debounce window elapsed, triggering scan.
+2026-08-10 15:45:12,315 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-10 15:45:12,317 [INFO] Scan complete. 0 new/changed files found.
+2026-08-10 15:45:17,286 [INFO] Tick #23 - service running.
+2026-08-10 15:45:22,287 [INFO] Tick #24 - service running.
+2026-08-10 15:45:27,287 [INFO] Tick #25 - service running.
+2026-08-10 15:45:32,288 [INFO] Tick #26 - service running.
+2026-08-10 15:45:37,051 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy.py (modified)
+2026-08-10 15:45:37,051 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy.py (modified)
+2026-08-10 15:45:37,289 [INFO] Tick #27 - service running.
+2026-08-10 15:45:39,059 [INFO] Debounce window elapsed, triggering scan.
+2026-08-10 15:45:39,060 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-10 15:45:39,061 [INFO] Scan complete. 0 new/changed files found.
+2026-08-10 15:45:42,289 [INFO] Tick #28 - service running.
+2026-08-10 15:45:47,290 [INFO] Tick #29 - service running.
+2026-08-10 15:45:52,290 [INFO] Tick #30 - service running.
+2026-08-10 15:45:57,291 [INFO] Tick #31 - service running.
+2026-08-10 15:46:02,292 [INFO] Tick #32 - service running.
+2026-08-10 15:46:07,292 [INFO] Tick #33 - service running.
+2026-08-10 15:46:12,293 [INFO] Tick #34 - service running.
+2026-08-10 15:46:17,293 [INFO] Tick #35 - service running.
+2026-08-10 15:46:22,294 [INFO] Tick #36 - service running.
+2026-08-10 15:46:24,086 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy.py (moved)
+2026-08-10 15:46:26,088 [INFO] Debounce window elapsed, triggering scan.
+2026-08-10 15:46:26,089 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-10 15:46:26,090 [INFO] Found: C:\CAPSTONE CODE\TEST DIRECTORY\what.py
+2026-08-10 15:46:26,091 [INFO] Scan complete. 1 new/changed files found.
+2026-08-10 15:46:27,298 [INFO] Tick #37 - service running.
+2026-08-10 15:46:32,298 [INFO] Tick #38 - service running.
+2026-08-10 15:46:37,299 [INFO] Tick #39 - service running.
+2026-08-10 15:46:42,299 [INFO] Tick #40 - service running.
+2026-08-10 15:46:47,300 [INFO] Tick #41 - service running.
+2026-08-10 15:46:52,300 [INFO] Tick #42 - service running.
+2026-08-10 15:46:57,301 [INFO] Tick #43 - service running.
+2026-08-10 15:47:02,301 [INFO] Tick #44 - service running.
+2026-08-10 15:47:07,302 [INFO] Tick #45 - service running.
+2026-08-10 15:47:12,303 [INFO] Tick #46 - service running.
+2026-08-10 15:47:17,303 [INFO] Tick #47 - service running.
+2026-08-10 15:47:22,305 [INFO] Tick #48 - service running.
+2026-08-10 15:47:27,306 [INFO] Tick #49 - service running.
+2026-08-10 15:47:32,306 [INFO] Tick #50 - service running.
+2026-08-10 15:47:37,307 [INFO] Tick #51 - service running.
+2026-08-10 15:47:42,307 [INFO] Tick #52 - service running.
+2026-08-10 15:47:47,308 [INFO] Tick #53 - service running.
+2026-08-10 15:47:52,308 [INFO] Tick #54 - service running.
+2026-08-10 15:47:57,309 [INFO] Tick #55 - service running.
+2026-08-10 15:48:02,313 [INFO] Tick #56 - service running.
+2026-08-10 15:48:07,314 [INFO] Tick #57 - service running.
+2026-08-10 15:48:12,315 [INFO] Tick #58 - service running.
+2026-08-10 15:48:17,315 [INFO] Tick #59 - service running.
+2026-08-10 15:48:22,316 [INFO] Tick #60 - service running.
+2026-08-10 15:48:27,316 [INFO] Tick #61 - service running.
+2026-08-10 15:48:32,317 [INFO] Tick #62 - service running.
+2026-08-10 15:48:37,317 [INFO] Tick #63 - service running.
+2026-08-10 15:48:42,318 [INFO] Tick #64 - service running.
+2026-08-10 15:48:47,318 [INFO] Tick #65 - service running.
+2026-08-10 15:48:52,319 [INFO] Tick #66 - service running.
+2026-08-10 15:48:57,320 [INFO] Tick #67 - service running.
+2026-08-10 15:49:02,323 [INFO] Tick #68 - service running.
+2026-08-10 15:49:07,324 [INFO] Tick #69 - service running.
+2026-08-10 15:49:12,325 [INFO] Tick #70 - service running.
+2026-08-10 15:49:17,326 [INFO] Tick #71 - service running.
+2026-08-10 15:49:22,327 [INFO] Tick #72 - service running.
+2026-08-10 15:49:27,327 [INFO] Tick #73 - service running.
+2026-08-10 15:49:32,327 [INFO] Tick #74 - service running.
+2026-08-10 15:49:37,328 [INFO] Tick #75 - service running.
+2026-08-10 15:49:42,328 [INFO] Tick #76 - service running.
+2026-08-10 15:49:47,329 [INFO] Tick #77 - service running.
+2026-08-10 15:49:52,330 [INFO] Tick #78 - service running.
+2026-08-10 15:49:57,330 [INFO] Tick #79 - service running.
+2026-08-10 15:50:02,331 [INFO] Tick #80 - service running.
+2026-08-10 15:50:07,332 [INFO] Tick #81 - service running.
+2026-08-10 15:50:12,332 [INFO] Tick #82 - service running.
+2026-08-10 15:50:17,333 [INFO] Tick #83 - service running.
+2026-08-10 15:50:22,333 [INFO] Tick #84 - service running.
+2026-08-10 15:50:27,334 [INFO] Tick #85 - service running.
+2026-08-10 15:50:32,334 [INFO] Tick #86 - service running.
+2026-08-10 15:50:37,335 [INFO] Tick #87 - service running.
+2026-08-10 15:50:42,335 [INFO] Tick #88 - service running.
+2026-08-10 15:50:47,336 [INFO] Tick #89 - service running.
+2026-08-10 15:50:52,337 [INFO] Tick #90 - service running.
+2026-08-10 15:50:57,337 [INFO] Tick #91 - service running.
+2026-08-10 15:51:02,338 [INFO] Tick #92 - service running.
+2026-08-10 15:51:07,339 [INFO] Tick #93 - service running.
+2026-08-10 15:51:12,339 [INFO] Tick #94 - service running.
+2026-08-10 15:51:17,339 [INFO] Tick #95 - service running.
+2026-08-10 15:51:22,340 [INFO] Tick #96 - service running.
+2026-08-10 15:51:27,340 [INFO] Tick #97 - service running.
+2026-08-10 15:51:32,341 [INFO] Tick #98 - service running.
+2026-08-10 15:51:37,342 [INFO] Tick #99 - service running.
+2026-08-10 15:51:42,342 [INFO] Tick #100 - service running.
+2026-08-10 15:51:47,343 [INFO] Tick #101 - service running.
+2026-08-10 15:51:52,343 [INFO] Tick #102 - service running.
+2026-08-10 15:51:57,344 [INFO] Tick #103 - service running.
+2026-08-10 15:52:02,345 [INFO] Tick #104 - service running.
+2026-08-10 15:52:07,346 [INFO] Tick #105 - service running.
+2026-08-10 15:52:12,346 [INFO] Tick #106 - service running.
+2026-08-10 15:52:17,347 [INFO] Tick #107 - service running.
+2026-08-10 15:52:22,347 [INFO] Tick #108 - service running.
+2026-08-10 15:52:27,348 [INFO] Tick #109 - service running.
+2026-08-10 15:52:32,349 [INFO] Tick #110 - service running.
+2026-08-10 15:52:37,351 [INFO] Tick #111 - service running.
+2026-08-10 15:52:42,351 [INFO] Tick #112 - service running.
+2026-08-10 15:52:47,352 [INFO] Tick #113 - service running.
+2026-08-10 15:52:52,352 [INFO] Tick #114 - service running.
+2026-08-10 15:52:57,353 [INFO] Tick #115 - service running.
+2026-08-10 15:53:02,353 [INFO] Tick #116 - service running.
+2026-08-10 15:53:07,354 [INFO] Tick #117 - service running.
+2026-08-10 15:53:12,355 [INFO] Tick #118 - service running.
+2026-08-10 15:53:17,355 [INFO] Tick #119 - service running.
+2026-08-10 15:53:22,356 [INFO] Tick #120 - service running.
+2026-08-10 15:53:27,359 [INFO] Tick #121 - service running.
+2026-08-10 15:53:32,359 [INFO] Tick #122 - service running.
+2026-08-10 15:53:37,360 [INFO] Tick #123 - service running.
+2026-08-10 15:53:42,360 [INFO] Tick #124 - service running.
+2026-08-10 15:53:47,360 [INFO] Tick #125 - service running.
+2026-08-10 15:53:52,361 [INFO] Tick #126 - service running.
+2026-08-10 15:53:57,362 [INFO] Tick #127 - service running.
+2026-08-10 15:54:02,362 [INFO] Tick #128 - service running.
+2026-08-10 15:54:07,362 [INFO] Tick #129 - service running.
+2026-08-10 15:54:12,363 [INFO] Tick #130 - service running.
+2026-08-10 15:54:17,367 [INFO] Tick #131 - service running.
+2026-08-10 15:54:22,368 [INFO] Tick #132 - service running.
+2026-08-10 15:54:27,369 [INFO] Tick #133 - service running.
+2026-08-10 15:54:32,372 [INFO] Tick #134 - service running.
+2026-08-10 15:54:37,373 [INFO] Tick #135 - service running.
+2026-08-10 15:54:42,373 [INFO] Tick #136 - service running.
+2026-08-10 15:54:47,374 [INFO] Tick #137 - service running.
+2026-08-10 15:54:52,374 [INFO] Tick #138 - service running.
+2026-08-10 15:54:57,374 [INFO] Tick #139 - service running.
+2026-08-10 15:55:02,375 [INFO] Tick #140 - service running.
+2026-08-10 15:55:07,376 [INFO] Tick #141 - service running.
+2026-08-10 15:55:12,376 [INFO] Tick #142 - service running.
+2026-08-10 15:55:17,377 [INFO] Tick #143 - service running.
+2026-08-10 15:55:22,377 [INFO] Tick #144 - service running.
+2026-08-10 15:55:27,379 [INFO] Tick #145 - service running.
+2026-08-10 15:55:32,379 [INFO] Tick #146 - service running.
+2026-08-10 15:55:37,176 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy.py (created)
+2026-08-10 15:55:37,177 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy.py (modified)
+2026-08-10 15:55:37,380 [INFO] Tick #147 - service running.
+2026-08-10 15:55:39,189 [INFO] Debounce window elapsed, triggering scan.
+2026-08-10 15:55:39,190 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-10 15:55:39,191 [INFO] Scan complete. 0 new/changed files found.
+2026-08-10 15:55:42,386 [INFO] Tick #148 - service running.
+2026-08-10 15:55:47,386 [INFO] Tick #149 - service running.
+2026-08-10 15:55:52,387 [INFO] Tick #150 - service running.
+2026-08-10 15:55:57,387 [INFO] Tick #151 - service running.
+2026-08-10 15:56:02,388 [INFO] Tick #152 - service running.
+2026-08-10 15:56:07,388 [INFO] Tick #153 - service running.
+2026-08-10 15:56:12,390 [INFO] Tick #154 - service running.
+2026-08-10 15:56:17,391 [INFO] Tick #155 - service running.
+2026-08-10 15:56:22,391 [INFO] Tick #156 - service running.
+2026-08-10 15:56:27,392 [INFO] Tick #157 - service running.
+2026-08-10 15:56:31,370 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy.py (modified)
+2026-08-10 15:56:31,370 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy.py (modified)
+2026-08-10 15:56:32,392 [INFO] Tick #158 - service running.
+2026-08-10 15:56:33,383 [INFO] Debounce window elapsed, triggering scan.
+2026-08-10 15:56:33,383 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-10 15:56:33,385 [INFO] Scan complete. 0 new/changed files found.
+2026-08-10 15:56:37,393 [INFO] Tick #159 - service running.
+2026-08-10 15:56:42,394 [INFO] Tick #160 - service running.
+2026-08-10 15:56:47,394 [INFO] Tick #161 - service running.
+2026-08-10 15:56:52,394 [INFO] Tick #162 - service running.
+2026-08-10 15:56:57,395 [INFO] Tick #163 - service running.
+2026-08-10 15:57:02,396 [INFO] Tick #164 - service running.
+2026-08-10 15:57:07,396 [INFO] Tick #165 - service running.
+2026-08-10 15:57:12,397 [INFO] Tick #166 - service running.
+2026-08-10 15:57:17,398 [INFO] Tick #167 - service running.
+2026-08-10 15:57:22,398 [INFO] Tick #168 - service running.
+2026-08-10 15:57:27,398 [INFO] Tick #169 - service running.
+2026-08-10 15:57:32,399 [INFO] Tick #170 - service running.
+2026-08-10 15:57:37,399 [INFO] Tick #171 - service running.
+2026-08-10 15:57:42,400 [INFO] Tick #172 - service running.
+2026-08-10 15:57:47,401 [INFO] Tick #173 - service running.
+2026-08-10 15:57:52,401 [INFO] Tick #174 - service running.
+2026-08-10 15:57:57,402 [INFO] Tick #175 - service running.
+2026-08-10 15:58:02,402 [INFO] Tick #176 - service running.
+2026-08-10 15:58:07,403 [INFO] Tick #177 - service running.
+2026-08-10 15:58:12,404 [INFO] Tick #178 - service running.
+2026-08-10 15:58:17,405 [INFO] Tick #179 - service running.
+2026-08-10 15:58:22,405 [INFO] Tick #180 - service running.
+2026-08-10 15:58:27,406 [INFO] Tick #181 - service running.
+2026-08-10 15:58:32,407 [INFO] Tick #182 - service running.
+2026-08-10 15:58:37,407 [INFO] Tick #183 - service running.
+2026-08-10 16:00:01,786 [INFO] Config loaded form config.yaml
+2026-08-10 16:00:01,786 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-08-10 16:00:48,487 [INFO] service starting...
+2026-08-10 16:00:48,487 [INFO] Watching directory: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-10 16:00:48,488 [INFO] File event service started.
+2026-08-10 16:00:48,489 [INFO] Service loop started (tick interval: 5s)
+2026-08-10 16:00:48,489 [INFO] Tick #1 - service running.
+2026-08-10 16:00:53,490 [INFO] Tick #2 - service running.
+2026-08-10 16:00:58,490 [INFO] Tick #3 - service running.
+2026-08-10 16:01:03,490 [INFO] Tick #4 - service running.
+2026-08-10 16:01:08,491 [INFO] Tick #5 - service running.
+2026-08-10 16:01:13,492 [INFO] Tick #6 - service running.
+2026-08-10 16:01:18,492 [INFO] Tick #7 - service running.
+2026-08-10 16:01:23,493 [INFO] Tick #8 - service running.
+2026-08-10 16:01:28,494 [INFO] Tick #9 - service running.
+2026-08-10 16:01:33,494 [INFO] Tick #10 - service running.
+2026-08-10 16:01:38,495 [INFO] Tick #11 - service running.
+2026-08-10 16:01:43,496 [INFO] Tick #12 - service running.
+2026-08-10 16:01:48,496 [INFO] Tick #13 - service running.
+2026-08-10 16:01:53,497 [INFO] Tick #14 - service running.
+2026-08-10 16:01:58,497 [INFO] Tick #15 - service running.
+2026-08-10 16:02:03,498 [INFO] Tick #16 - service running.
+2026-08-10 16:02:08,498 [INFO] Tick #17 - service running.
+2026-08-10 16:02:09,826 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-10 16:02:09,827 [INFO] Found: C:\CAPSTONE CODE\TEST DIRECTORY\what.py
+2026-08-10 16:02:09,828 [INFO] Found: C:\CAPSTONE CODE\TEST DIRECTORY\TEST\TEST.py
+2026-08-10 16:02:09,829 [INFO] Scan complete. 2 new/changed files found.
+2026-08-10 16:02:13,499 [INFO] Tick #18 - service running.
+2026-08-10 16:02:18,500 [INFO] Tick #19 - service running.
+2026-08-10 16:02:23,500 [INFO] Tick #20 - service running.
+2026-08-10 16:02:28,501 [INFO] Tick #21 - service running.
+2026-08-10 16:02:33,501 [INFO] Tick #22 - service running.
+2026-08-10 16:02:38,502 [INFO] Tick #23 - service running.
+2026-08-10 16:02:43,502 [INFO] Tick #24 - service running.
+2026-08-10 16:02:48,503 [INFO] Tick #25 - service running.
+2026-08-10 16:02:53,503 [INFO] Tick #26 - service running.
+2026-08-10 16:02:58,504 [INFO] Tick #27 - service running.
+2026-08-10 16:03:03,504 [INFO] Tick #28 - service running.
+2026-08-10 16:03:08,505 [INFO] Tick #29 - service running.
+2026-08-10 16:03:11,094 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-10 16:03:11,095 [INFO] Scan complete. 0 new/changed files found.
+2026-08-10 16:03:13,506 [INFO] Tick #30 - service running.
+2026-08-10 16:03:18,506 [INFO] Tick #31 - service running.
+2026-08-10 16:03:23,507 [INFO] Tick #32 - service running.
+2026-08-10 16:03:28,507 [INFO] Tick #33 - service running.
+2026-08-10 16:03:33,508 [INFO] Tick #34 - service running.
+2026-08-10 16:03:38,509 [INFO] Tick #35 - service running.
+2026-08-10 16:03:43,509 [INFO] Tick #36 - service running.
+2026-08-10 16:03:48,510 [INFO] Tick #37 - service running.
+2026-08-10 16:03:53,510 [INFO] Tick #38 - service running.
+2026-08-10 16:03:58,511 [INFO] Tick #39 - service running.
+2026-08-10 16:04:03,511 [INFO] Tick #40 - service running.
+2026-08-10 16:04:08,512 [INFO] Tick #41 - service running.
+2026-08-10 16:04:10,097 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy.py (modified)
+2026-08-10 16:04:10,098 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy.py (modified)
+2026-08-10 16:04:12,109 [INFO] Debounce window elapsed, triggering scan.
+2026-08-10 16:04:12,110 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-10 16:04:12,112 [INFO] Scan complete. 0 new/changed files found.
+2026-08-10 16:04:13,513 [INFO] Tick #42 - service running.
+2026-08-10 16:04:18,514 [INFO] Tick #43 - service running.
+2026-08-10 16:04:23,514 [INFO] Tick #44 - service running.
+2026-08-10 16:04:28,514 [INFO] Tick #45 - service running.
+2026-08-10 16:04:33,515 [INFO] Tick #46 - service running.
+2026-08-10 16:04:38,515 [INFO] Tick #47 - service running.
+2026-08-10 16:04:40,456 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\what.py (deleted)
+2026-08-10 16:04:42,468 [INFO] Debounce window elapsed, triggering scan.
+2026-08-10 16:04:42,469 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-10 16:04:42,469 [INFO] Found: C:\CAPSTONE CODE\TEST DIRECTORY\TEST.py
+2026-08-10 16:04:42,471 [INFO] Scan complete. 1 new/changed files found.
+2026-08-10 16:04:43,515 [INFO] Tick #48 - service running.
+2026-08-10 16:04:48,516 [INFO] Tick #49 - service running.
+2026-08-10 16:04:53,516 [INFO] Tick #50 - service running.
+2026-08-10 16:04:58,517 [INFO] Tick #51 - service running.
+2026-08-10 16:05:03,517 [INFO] Tick #52 - service running.
+2026-08-10 16:05:08,518 [INFO] Tick #53 - service running.
+2026-08-10 16:05:13,518 [INFO] Tick #54 - service running.
+2026-08-10 16:05:18,519 [INFO] Tick #55 - service running.
+2026-08-10 16:05:18,524 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST.py (deleted)
+2026-08-10 16:05:20,530 [INFO] Debounce window elapsed, triggering scan.
+2026-08-10 16:05:20,531 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-10 16:05:20,532 [INFO] Found: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy.py
+2026-08-10 16:05:20,533 [INFO] Scan complete. 1 new/changed files found.
+2026-08-10 16:05:23,520 [INFO] Tick #56 - service running.
+2026-08-10 16:05:28,520 [INFO] Tick #57 - service running.
+2026-08-10 16:05:33,521 [INFO] Tick #58 - service running.
+2026-08-10 16:05:38,521 [INFO] Tick #59 - service running.
+2026-08-10 16:05:43,522 [INFO] Tick #60 - service running.
+2026-08-10 16:05:44,195 [INFO] Service stopping...
+2026-08-10 16:05:48,523 [INFO] Service shutting down after 60 ticks (uptime: 300.0s)
+2026-08-10 16:05:48,523 [INFO] Stopping file event service...
+2026-08-10 16:05:48,524 [INFO] File event service stopped.
+2026-08-10 16:06:48,150 [INFO] service starting...
+2026-08-10 16:06:48,150 [INFO] Watching directory: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-10 16:07:11,417 [WARNING] Service is not paused.
+2026-08-10 16:07:19,184 [INFO] Service stopping...
+2026-08-10 16:07:23,090 [WARNING] Service is already running.
+2026-08-10 16:07:33,519 [INFO] Service stopping...
+2026-08-10 16:08:06,817 [WARNING] Service is already running.
+2026-08-10 16:08:11,218 [INFO] Received signal SIGINT requesting shutdown
+2026-08-10 16:08:11,218 [INFO] Service stopping...
+2026-08-10 16:08:15,335 [INFO] Received signal SIGINT requesting shutdown
+2026-08-10 16:08:15,335 [INFO] Service stopping...
+2026-08-10 16:08:15,767 [INFO] Received signal SIGINT requesting shutdown
+2026-08-10 16:08:15,768 [INFO] Service stopping...
+2026-08-10 16:08:16,094 [INFO] Received signal SIGINT requesting shutdown
+2026-08-10 16:08:16,094 [INFO] Service stopping...
+2026-08-10 16:08:16,312 [INFO] Received signal SIGINT requesting shutdown
+2026-08-10 16:08:16,312 [INFO] Service stopping...
+2026-08-18 16:46:01,470 [INFO] Config loaded form config.yaml
+2026-08-18 16:46:01,471 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-08-18 16:46:11,756 [INFO] service starting...
+2026-08-18 16:46:11,756 [INFO] Watching directory: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-18 16:46:11,757 [INFO] File event service started.
+2026-08-18 16:46:11,757 [INFO] Service loop started (tick interval: 5s)
+2026-08-18 16:46:11,757 [INFO] Tick #1 - service running.
+2026-08-18 16:46:16,758 [INFO] Tick #2 - service running.
+2026-08-18 16:46:21,759 [INFO] Tick #3 - service running.
+2026-08-18 16:46:21,824 [INFO] Service stopping...
+2026-08-18 16:46:26,759 [INFO] Service shutting down after 3 ticks (uptime: 15.0s)
+2026-08-18 16:46:26,759 [INFO] Stopping file event service...
+2026-08-18 16:46:26,760 [INFO] File event service stopped.
+2026-08-18 16:46:31,536 [INFO] service starting...
+2026-08-18 16:46:31,537 [INFO] Watching directory: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-18 16:49:18,175 [INFO] Received signal SIGINT requesting shutdown
+2026-08-18 16:49:18,175 [INFO] Service stopping...
+2026-08-18 16:49:28,033 [INFO] Received signal SIGINT requesting shutdown
+2026-08-18 16:49:28,034 [INFO] Service stopping...
+2026-08-18 17:00:07,230 [INFO] Received signal SIGINT requesting shutdown
+2026-08-18 17:00:07,230 [INFO] Service stopping...
+2026-08-18 17:00:08,945 [INFO] Received signal SIGINT requesting shutdown
+2026-08-18 17:00:08,945 [INFO] Service stopping...
+2026-08-18 17:00:09,462 [INFO] Received signal SIGINT requesting shutdown
+2026-08-18 17:00:09,462 [INFO] Service stopping...
+2026-08-18 17:00:09,688 [INFO] Received signal SIGINT requesting shutdown
+2026-08-18 17:00:09,688 [INFO] Service stopping...
+2026-08-18 17:03:00,195 [INFO] Config loaded form config.yaml
+2026-08-18 17:03:00,195 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-08-18 17:03:09,313 [INFO] service starting...
+2026-08-18 17:03:09,314 [INFO] Watching directory: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-18 17:03:09,314 [INFO] File event service started.
+2026-08-18 17:03:09,315 [INFO] Service loop started (tick interval: 5s)
+2026-08-18 17:03:09,315 [INFO] Tick #1 - service running.
+2026-08-18 17:03:14,316 [INFO] Tick #2 - service running.
+2026-08-18 17:03:19,316 [INFO] Tick #3 - service running.
+2026-08-18 17:03:24,322 [INFO] Tick #4 - service running.
+2026-08-18 17:03:24,404 [INFO] Service stopping...
+2026-08-18 17:03:29,322 [INFO] Service shutting down after 4 ticks (uptime: 20.0s)
+2026-08-18 17:03:29,322 [INFO] Stopping file event service...
+2026-08-18 17:03:29,323 [INFO] File event service stopped.
+2026-08-18 17:03:35,728 [INFO] service starting...
+2026-08-18 17:03:35,728 [INFO] Watching directory: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-18 17:03:35,729 [INFO] File event service started.
+2026-08-18 17:03:35,730 [INFO] Service loop started (tick interval: 5s)
+2026-08-18 17:03:35,730 [INFO] Tick #1 - service running.
+2026-08-18 17:03:40,730 [INFO] Tick #2 - service running.
+2026-08-18 17:03:45,731 [INFO] Tick #3 - service running.
+2026-08-18 17:03:50,732 [INFO] Tick #4 - service running.
+2026-08-18 17:03:55,732 [INFO] Tick #5 - service running.
+2026-08-18 17:04:00,733 [INFO] Tick #6 - service running.
+2026-08-18 17:04:05,733 [INFO] Tick #7 - service running.
+2026-08-18 17:04:10,734 [INFO] Tick #8 - service running.
+2026-08-18 17:04:15,734 [INFO] Tick #9 - service running.
+2026-08-18 17:04:20,735 [INFO] Tick #10 - service running.
+2026-08-18 17:04:25,735 [INFO] Tick #11 - service running.
+2026-08-18 17:04:30,736 [INFO] Tick #12 - service running.
+2026-08-18 17:04:35,736 [INFO] Tick #13 - service running.
+2026-08-18 17:04:40,737 [INFO] Tick #14 - service running.
+2026-08-18 17:04:45,738 [INFO] Tick #15 - service running.
+2026-08-18 17:04:46,042 [INFO] Received signal SIGINT requesting shutdown
+2026-08-18 17:04:46,042 [INFO] Service stopping...
+2026-08-18 17:04:50,738 [INFO] Service shutting down after 15 ticks (uptime: 75.0s)
+2026-08-18 17:04:50,739 [INFO] Stopping file event service...
+2026-08-18 17:04:50,739 [INFO] File event service stopped.
+2026-08-18 17:05:09,926 [INFO] Received signal SIGINT requesting shutdown
+2026-08-18 17:05:09,926 [WARNING] Service is already stopped.
+2026-08-18 17:05:24,857 [INFO] service starting...
+2026-08-18 17:05:24,857 [INFO] Watching directory: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-18 17:05:24,858 [INFO] File event service started.
+2026-08-18 17:05:24,859 [INFO] Service loop started (tick interval: 5s)
+2026-08-18 17:05:24,859 [INFO] Tick #1 - service running.
+2026-08-18 17:05:29,861 [INFO] Tick #2 - service running.
+2026-08-18 17:05:33,544 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-18 17:05:33,545 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy.py (modified)
+2026-08-18 17:05:33,545 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST\TEST.py (modified)
+2026-08-18 17:05:33,546 [INFO] Scan complete. 0 new/changed files found.
+2026-08-18 17:05:34,862 [INFO] Tick #3 - service running.
+2026-08-18 17:05:35,559 [INFO] Debounce window elapsed, triggering scan.
+2026-08-18 17:05:35,560 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-18 17:05:35,562 [INFO] Scan complete. 0 new/changed files found.
+2026-08-18 17:05:39,862 [INFO] Tick #4 - service running.
+2026-08-18 17:05:44,863 [INFO] Tick #5 - service running.
+2026-08-18 17:05:49,864 [INFO] Tick #6 - service running.
+2026-08-18 17:05:54,864 [INFO] Tick #7 - service running.
+2026-08-18 17:05:59,865 [INFO] Tick #8 - service running.
+2026-08-18 17:06:04,865 [INFO] Tick #9 - service running.
+2026-08-18 17:06:09,866 [INFO] Tick #10 - service running.
+2026-08-18 17:06:14,866 [INFO] Tick #11 - service running.
+2026-08-18 17:06:19,867 [INFO] Tick #12 - service running.
+2026-08-18 17:06:24,867 [INFO] Tick #13 - service running.
+2026-08-18 17:06:29,868 [INFO] Tick #14 - service running.
+2026-08-18 17:06:34,868 [INFO] Tick #15 - service running.
+2026-08-18 17:06:39,869 [INFO] Tick #16 - service running.
+2026-08-18 17:06:44,869 [INFO] Tick #17 - service running.
+2026-08-18 17:06:49,870 [INFO] Tick #18 - service running.
+2026-08-18 17:06:54,871 [INFO] Tick #19 - service running.
+2026-08-18 17:06:59,871 [INFO] Tick #20 - service running.
+2026-08-18 17:07:04,872 [INFO] Tick #21 - service running.
+2026-08-18 17:07:09,873 [INFO] Tick #22 - service running.
+2026-08-18 17:07:14,873 [INFO] Tick #23 - service running.
+2026-08-18 17:07:19,874 [INFO] Tick #24 - service running.
+2026-08-18 17:07:24,875 [INFO] Tick #25 - service running.
+2026-08-18 17:07:29,876 [INFO] Tick #26 - service running.
+2026-08-18 17:07:30,377 [INFO] Service stopping...
+2026-08-18 17:07:34,876 [INFO] Service shutting down after 26 ticks (uptime: 130.0s)
+2026-08-18 17:07:34,877 [INFO] Stopping file event service...
+2026-08-18 17:07:34,877 [INFO] File event service stopped.
+2026-08-18 17:07:36,671 [INFO] service starting...
+2026-08-18 17:07:36,671 [INFO] Watching directory: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-18 17:07:36,672 [INFO] File event service started.
+2026-08-18 17:07:36,672 [INFO] Service loop started (tick interval: 5s)
+2026-08-18 17:07:36,672 [INFO] Tick #1 - service running.
+2026-08-18 17:07:41,673 [INFO] Tick #2 - service running.
+2026-08-18 17:07:46,674 [INFO] Tick #3 - service running.
+2026-08-18 17:08:17,444 [INFO] Config loaded form config.yaml
+2026-08-18 17:08:17,445 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-08-18 17:08:27,365 [INFO] service starting...
+2026-08-18 17:08:27,366 [INFO] Watching directory: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-18 17:08:27,366 [INFO] File event service started.
+2026-08-18 17:08:27,367 [INFO] Service loop started (tick interval: 5s)
+2026-08-18 17:08:27,367 [INFO] Tick #1 - service running.
+2026-08-18 17:08:32,368 [INFO] Tick #2 - service running.
+2026-08-18 17:08:32,855 [INFO] Service stopping...
+2026-08-18 17:08:37,368 [INFO] Service shutting down after 2 ticks (uptime: 10.0s)
+2026-08-18 17:08:37,369 [INFO] File event service stopped.
+2026-08-18 17:08:40,448 [INFO] service starting...
+2026-08-18 17:08:40,449 [INFO] Watching directory: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-18 17:08:40,450 [INFO] File event service started.
+2026-08-18 17:08:40,450 [INFO] Service loop started (tick interval: 5s)
+2026-08-18 17:08:40,450 [INFO] Tick #1 - service running.
+2026-08-18 17:08:45,451 [INFO] Tick #2 - service running.
+2026-08-18 17:08:50,451 [INFO] Tick #3 - service running.
+2026-08-18 17:08:55,452 [INFO] Tick #4 - service running.
+2026-08-18 17:09:00,452 [INFO] Tick #5 - service running.
+2026-08-18 17:09:05,453 [INFO] Tick #6 - service running.
+2026-08-18 17:09:10,453 [INFO] Tick #7 - service running.
+2026-08-18 17:09:15,454 [INFO] Tick #8 - service running.
+2026-08-18 17:09:20,454 [INFO] Tick #9 - service running.
+2026-08-18 17:09:25,455 [INFO] Tick #10 - service running.
+2026-08-18 17:09:30,456 [INFO] Tick #11 - service running.
+2026-08-18 17:09:35,456 [INFO] Tick #12 - service running.
+2026-08-18 17:09:40,456 [INFO] Tick #13 - service running.
+2026-08-18 17:09:45,457 [INFO] Tick #14 - service running.
+2026-08-18 17:09:50,458 [INFO] Tick #15 - service running.
+2026-08-18 17:09:55,458 [INFO] Tick #16 - service running.
+2026-08-18 17:10:00,459 [INFO] Tick #17 - service running.
+2026-08-18 17:10:05,460 [INFO] Tick #18 - service running.
+2026-08-18 17:10:10,460 [INFO] Tick #19 - service running.
+2026-08-18 17:10:15,461 [INFO] Tick #20 - service running.
+2026-08-18 17:10:20,462 [INFO] Tick #21 - service running.
+2026-08-18 17:10:25,462 [INFO] Tick #22 - service running.
+2026-08-18 17:10:30,463 [INFO] Tick #23 - service running.
+2026-08-18 17:10:35,463 [INFO] Tick #24 - service running.
+2026-08-18 17:10:40,463 [INFO] Tick #25 - service running.
+2026-08-18 17:10:45,464 [INFO] Tick #26 - service running.
+2026-08-18 17:10:50,464 [INFO] Tick #27 - service running.
+2026-08-18 17:10:55,464 [INFO] Tick #28 - service running.
+2026-08-18 17:11:00,465 [INFO] Tick #29 - service running.
+2026-08-18 17:11:05,466 [INFO] Tick #30 - service running.
+2026-08-18 17:11:10,466 [INFO] Tick #31 - service running.
+2026-08-18 17:11:15,467 [INFO] Tick #32 - service running.
+2026-08-18 17:11:20,333 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy - Copy.py (created)
+2026-08-18 17:11:20,333 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy - Copy.py (modified)
+2026-08-18 17:11:20,334 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy - Copy.py (modified)
+2026-08-18 17:11:20,468 [INFO] Tick #33 - service running.
+2026-08-18 17:11:22,346 [INFO] Debounce window elapsed, triggering scan.
+2026-08-18 17:11:22,347 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-18 17:11:22,349 [INFO] Scan complete. 0 new/changed files found.
+2026-08-18 17:11:25,468 [INFO] Tick #34 - service running.
+2026-08-18 17:11:30,469 [INFO] Tick #35 - service running.
+2026-08-18 17:11:34,530 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy - Copy (2).py (created)
+2026-08-18 17:11:34,530 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy - Copy (2).py (modified)
+2026-08-18 17:11:35,469 [INFO] Tick #36 - service running.
+2026-08-18 17:11:36,538 [INFO] Debounce window elapsed, triggering scan.
+2026-08-18 17:11:36,539 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-18 17:11:36,540 [INFO] Scan complete. 0 new/changed files found.
+2026-08-18 17:11:40,470 [INFO] Tick #37 - service running.
+2026-08-18 17:11:45,470 [INFO] Tick #38 - service running.
+2026-08-18 17:11:50,471 [INFO] Tick #39 - service running.
+2026-08-18 17:11:55,472 [INFO] Tick #40 - service running.
+2026-08-18 17:12:00,472 [INFO] Tick #41 - service running.
+2026-08-18 17:12:05,473 [INFO] Tick #42 - service running.
+2026-08-18 17:12:10,474 [INFO] Tick #43 - service running.
+2026-08-18 17:12:15,474 [INFO] Tick #44 - service running.
+2026-08-18 17:12:20,475 [INFO] Tick #45 - service running.
+2026-08-18 17:12:25,475 [INFO] Tick #46 - service running.
+2026-08-18 17:12:30,476 [INFO] Tick #47 - service running.
+2026-08-18 17:12:35,477 [INFO] Tick #48 - service running.
+2026-08-18 17:12:40,478 [INFO] Tick #49 - service running.
+2026-08-18 17:12:45,478 [INFO] Tick #50 - service running.
+2026-08-18 17:12:50,479 [INFO] Tick #51 - service running.
+2026-08-18 17:12:55,480 [INFO] Tick #52 - service running.
+2026-08-18 17:12:58,538 [INFO] Received signal SIGINT requesting shutdown
+2026-08-18 17:12:58,538 [INFO] Service stopping...
+2026-08-18 17:13:00,480 [INFO] Service shutting down after 52 ticks (uptime: 260.0s)
+2026-08-18 17:13:00,481 [INFO] File event service stopped.
+2026-08-18 17:14:14,525 [INFO] service starting...
+2026-08-18 17:14:14,525 [INFO] Watching directory: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-18 17:14:14,526 [INFO] File event service started.
+2026-08-18 17:14:14,526 [INFO] Service loop started (tick interval: 5s)
+2026-08-18 17:14:14,526 [INFO] Tick #1 - service running.
+2026-08-18 17:14:19,527 [INFO] Tick #2 - service running.
+2026-08-18 17:14:24,528 [INFO] Tick #3 - service running.
+2026-08-18 17:14:29,528 [INFO] Tick #4 - service running.
+2026-08-18 17:14:34,529 [INFO] Tick #5 - service running.
+2026-08-18 17:14:39,530 [INFO] Tick #6 - service running.
+2026-08-18 17:14:44,530 [INFO] Tick #7 - service running.
+2026-08-18 17:14:49,531 [INFO] Tick #8 - service running.
+2026-08-18 17:14:49,777 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-18 17:14:49,778 [INFO] Found: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy.py
+2026-08-18 17:14:49,780 [INFO] Found: C:\CAPSTONE CODE\TEST DIRECTORY\TEST\TEST.py
+2026-08-18 17:14:49,781 [INFO] Scan complete. 2 new/changed files found.
+2026-08-18 17:14:54,531 [INFO] Tick #9 - service running.
+2026-08-18 17:14:59,532 [INFO] Tick #10 - service running.
+2026-08-18 17:15:04,532 [INFO] Tick #11 - service running.
+2026-08-18 17:15:09,533 [INFO] Tick #12 - service running.
+2026-08-18 17:15:14,534 [INFO] Tick #13 - service running.
+2026-08-18 17:15:19,534 [INFO] Tick #14 - service running.
+2026-08-18 17:15:24,535 [INFO] Tick #15 - service running.
+2026-08-18 17:15:29,535 [INFO] Tick #16 - service running.
+2026-08-18 17:15:34,536 [INFO] Tick #17 - service running.
+2026-08-18 17:15:39,536 [INFO] Tick #18 - service running.
+2026-08-18 17:15:44,537 [INFO] Tick #19 - service running.
+2026-08-18 17:15:49,538 [INFO] Tick #20 - service running.
+2026-08-18 17:15:54,538 [INFO] Tick #21 - service running.
+2026-08-18 17:15:59,539 [INFO] Tick #22 - service running.
+2026-08-18 17:16:04,539 [INFO] Tick #23 - service running.
+2026-08-18 17:16:05,045 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy.py (modified)
+2026-08-18 17:16:05,045 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy.py (modified)
+2026-08-18 17:16:07,057 [INFO] Debounce window elapsed, triggering scan.
+2026-08-18 17:16:07,057 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-18 17:16:07,058 [INFO] Found: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy.py
+2026-08-18 17:16:07,059 [INFO] Scan complete. 1 new/changed files found.
+2026-08-18 17:16:09,540 [INFO] Tick #24 - service running.
+2026-08-18 17:16:14,540 [INFO] Tick #25 - service running.
+2026-08-18 17:16:19,541 [INFO] Tick #26 - service running.
+2026-08-18 17:16:24,542 [INFO] Tick #27 - service running.
+2026-08-18 17:16:29,543 [INFO] Tick #28 - service running.
+2026-08-18 17:16:34,543 [INFO] Tick #29 - service running.
+2026-08-18 17:16:39,544 [INFO] Tick #30 - service running.
+2026-08-18 17:16:44,545 [INFO] Tick #31 - service running.
+2026-08-18 17:16:46,134 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy - Copy (2).py (modified)
+2026-08-18 17:16:46,135 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy - Copy (2).py (modified)
+2026-08-18 17:16:48,142 [INFO] Debounce window elapsed, triggering scan.
+2026-08-18 17:16:48,142 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-18 17:16:48,144 [INFO] Scan complete. 0 new/changed files found.
+2026-08-18 17:16:49,545 [INFO] Tick #32 - service running.
+2026-08-18 17:16:54,546 [INFO] Tick #33 - service running.
+2026-08-18 17:16:59,547 [INFO] Tick #34 - service running.
+2026-08-18 17:17:04,547 [INFO] Tick #35 - service running.
+2026-08-18 17:17:09,548 [INFO] Tick #36 - service running.
+2026-08-18 17:17:10,576 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy - Copy (2).py (moved)
+2026-08-18 17:17:12,585 [INFO] Debounce window elapsed, triggering scan.
+2026-08-18 17:17:12,586 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-18 17:17:12,586 [INFO] Found: C:\CAPSTONE CODE\TEST DIRECTORY\waw.py
+2026-08-18 17:17:12,587 [INFO] Scan complete. 1 new/changed files found.
+2026-08-18 17:17:14,548 [INFO] Tick #37 - service running.
+2026-08-18 17:17:19,549 [INFO] Tick #38 - service running.
+2026-08-18 17:17:24,549 [INFO] Tick #39 - service running.
+2026-08-18 17:17:29,550 [INFO] Tick #40 - service running.
+2026-08-18 17:17:33,256 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-18 17:17:33,257 [INFO] Found: C:\CAPSTONE CODE\TEST DIRECTORY\waw.py
+2026-08-18 17:17:33,257 [INFO] Found: C:\CAPSTONE CODE\TEST DIRECTORY\TEST\TEST.py
+2026-08-18 17:17:33,258 [INFO] Scan complete. 2 new/changed files found.
+2026-08-18 17:17:34,551 [INFO] Tick #41 - service running.
+2026-08-18 17:17:39,551 [INFO] Tick #42 - service running.
+2026-08-18 17:17:44,552 [INFO] Tick #43 - service running.
+2026-08-18 17:17:49,552 [INFO] Tick #44 - service running.
+2026-08-18 17:17:54,553 [INFO] Tick #45 - service running.
+2026-08-18 17:17:59,553 [INFO] Tick #46 - service running.
+2026-08-18 17:18:04,554 [INFO] Tick #47 - service running.
+2026-08-18 17:18:09,555 [INFO] Tick #48 - service running.
+2026-08-18 17:18:14,555 [INFO] Tick #49 - service running.
+2026-08-18 17:18:19,556 [INFO] Tick #50 - service running.
+2026-08-18 17:18:24,556 [INFO] Tick #51 - service running.
+2026-08-18 17:18:29,557 [INFO] Tick #52 - service running.
+2026-08-18 17:18:34,558 [INFO] Tick #53 - service running.
+2026-08-18 17:18:39,558 [INFO] Tick #54 - service running.
+2026-08-18 17:18:44,559 [INFO] Tick #55 - service running.
+2026-08-18 17:18:49,559 [INFO] Tick #56 - service running.
+2026-08-18 17:18:54,560 [INFO] Tick #57 - service running.
+2026-08-18 17:18:59,560 [INFO] Tick #58 - service running.
+2026-08-18 17:19:04,561 [INFO] Tick #59 - service running.
+2026-08-18 17:19:09,561 [INFO] Tick #60 - service running.
+2026-08-18 17:19:14,562 [INFO] Tick #61 - service running.
+2026-08-18 17:19:19,562 [INFO] Tick #62 - service running.
+2026-08-18 17:19:24,563 [INFO] Tick #63 - service running.
+2026-08-18 17:19:29,564 [INFO] Tick #64 - service running.
+2026-08-18 17:19:34,564 [INFO] Tick #65 - service running.
+2026-08-18 17:19:39,564 [INFO] Tick #66 - service running.
+2026-08-18 17:19:44,565 [INFO] Tick #67 - service running.
+2026-08-18 17:19:49,565 [INFO] Tick #68 - service running.
+2026-08-18 17:19:54,566 [INFO] Tick #69 - service running.
+2026-08-18 17:19:59,567 [INFO] Tick #70 - service running.
+2026-08-18 17:20:04,567 [INFO] Tick #71 - service running.
+2026-08-18 17:20:09,568 [INFO] Tick #72 - service running.
+2026-08-18 17:20:14,568 [INFO] Tick #73 - service running.
+2026-08-18 17:20:19,569 [INFO] Tick #74 - service running.
+2026-08-18 17:20:23,371 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-18 17:20:23,372 [INFO] Scan complete. 0 new/changed files found.
+2026-08-18 17:20:24,569 [INFO] Tick #75 - service running.
+2026-08-18 17:20:29,570 [INFO] Tick #76 - service running.
+2026-08-18 17:20:34,570 [INFO] Tick #77 - service running.
+2026-08-18 17:20:39,571 [INFO] Tick #78 - service running.
+2026-08-18 17:20:42,369 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-18 17:20:42,371 [INFO] Found: C:\CAPSTONE CODE\TEST DIRECTORY\waw.py
+2026-08-18 17:20:42,371 [INFO] Found: C:\CAPSTONE CODE\TEST DIRECTORY\TEST\TEST.py
+2026-08-18 17:20:42,372 [INFO] Scan complete. 2 new/changed files found.
+2026-08-18 17:20:44,571 [INFO] Tick #79 - service running.
+2026-08-18 17:20:49,572 [INFO] Tick #80 - service running.
+2026-08-18 17:20:54,572 [INFO] Tick #81 - service running.
+2026-08-18 17:20:59,573 [INFO] Tick #82 - service running.
+2026-08-18 17:21:04,573 [INFO] Tick #83 - service running.
+2026-08-18 17:21:09,574 [INFO] Tick #84 - service running.
+2026-08-18 17:25:37,213 [INFO] Config loaded form config.yaml
+2026-08-18 17:25:37,213 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-08-18 17:25:50,657 [INFO] service starting...
+2026-08-18 17:25:50,657 [INFO] Watching directory: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-18 17:25:50,658 [INFO] File event service started.
+2026-08-18 17:25:50,658 [INFO] Service loop started (tick interval: 5s)
+2026-08-18 17:25:50,658 [INFO] Tick #1 - service running.
+2026-08-18 17:25:55,658 [INFO] Tick #2 - service running.
+2026-08-18 17:26:00,548 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-18 17:26:00,548 [INFO] Found: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy - Copy.py
+2026-08-18 17:26:00,549 [INFO] Found: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy.py
+2026-08-18 17:26:00,549 [INFO] Found: C:\CAPSTONE CODE\TEST DIRECTORY\waw.py
+2026-08-18 17:26:00,549 [INFO] Found: C:\CAPSTONE CODE\TEST DIRECTORY\TEST\TEST.py
+2026-08-18 17:26:00,550 [INFO] Scan complete. 4 new/changed files found.
+2026-08-18 17:26:00,659 [INFO] Tick #3 - service running.
+2026-08-18 17:26:05,659 [INFO] Tick #4 - service running.
+2026-08-18 17:26:10,660 [INFO] Tick #5 - service running.
+2026-08-18 17:26:15,661 [INFO] Tick #6 - service running.
+2026-08-18 17:26:20,661 [INFO] Tick #7 - service running.
+2026-08-18 17:26:25,662 [INFO] Tick #8 - service running.
+2026-08-18 17:26:30,662 [INFO] Tick #9 - service running.
+2026-08-18 17:26:35,663 [INFO] Tick #10 - service running.
+2026-08-18 17:26:40,663 [INFO] Tick #11 - service running.
+2026-08-18 17:26:45,664 [INFO] Tick #12 - service running.
+2026-08-18 17:26:50,665 [INFO] Tick #13 - service running.
+2026-08-18 17:26:55,665 [INFO] Tick #14 - service running.
+2026-08-18 17:27:00,666 [INFO] Tick #15 - service running.
+2026-08-18 17:27:05,666 [INFO] Tick #16 - service running.
+2026-08-18 17:27:10,667 [INFO] Tick #17 - service running.
+2026-08-18 17:27:15,667 [INFO] Tick #18 - service running.
+2026-08-18 17:27:20,668 [INFO] Tick #19 - service running.
+2026-08-18 17:27:25,669 [INFO] Tick #20 - service running.
+2026-08-18 17:27:30,669 [INFO] Tick #21 - service running.
+2026-08-18 17:27:35,670 [INFO] Tick #22 - service running.
+2026-08-18 17:27:40,670 [INFO] Tick #23 - service running.
+2026-08-18 17:27:45,671 [INFO] Tick #24 - service running.
+2026-08-18 17:27:50,671 [INFO] Tick #25 - service running.
+2026-08-18 17:27:55,672 [INFO] Tick #26 - service running.
+2026-08-18 17:28:00,673 [INFO] Tick #27 - service running.
+2026-08-18 17:28:05,673 [INFO] Tick #28 - service running.
+2026-08-18 17:28:10,674 [INFO] Tick #29 - service running.
+2026-08-18 17:28:15,675 [INFO] Tick #30 - service running.
+2026-08-18 17:28:20,675 [INFO] Tick #31 - service running.
+2026-08-18 17:28:25,676 [INFO] Tick #32 - service running.
+2026-08-18 17:28:30,677 [INFO] Tick #33 - service running.
+2026-08-18 17:28:35,677 [INFO] Tick #34 - service running.
+2026-08-18 17:28:40,677 [INFO] Tick #35 - service running.
+2026-08-18 17:28:45,678 [INFO] Tick #36 - service running.
+2026-08-18 17:28:50,679 [INFO] Tick #37 - service running.
+2026-08-18 17:28:55,679 [INFO] Tick #38 - service running.
+2026-08-18 17:29:00,680 [INFO] Tick #39 - service running.
+2026-08-18 17:29:05,680 [INFO] Tick #40 - service running.
+2026-08-18 17:29:10,681 [INFO] Tick #41 - service running.
+2026-08-18 17:29:15,682 [INFO] Tick #42 - service running.
+2026-08-18 17:29:20,682 [INFO] Tick #43 - service running.
+2026-08-18 17:29:25,683 [INFO] Tick #44 - service running.
+2026-08-18 17:29:30,683 [INFO] Tick #45 - service running.
+2026-08-18 17:29:35,684 [INFO] Tick #46 - service running.
+2026-08-18 17:29:40,684 [INFO] Tick #47 - service running.
+2026-08-18 17:29:45,685 [INFO] Tick #48 - service running.
+2026-08-18 17:29:50,685 [INFO] Tick #49 - service running.
+2026-08-18 17:29:55,686 [INFO] Tick #50 - service running.
+2026-08-18 17:30:00,687 [INFO] Tick #51 - service running.
+2026-08-18 17:30:05,687 [INFO] Tick #52 - service running.
+2026-08-18 17:30:10,688 [INFO] Tick #53 - service running.
+2026-08-18 17:30:15,688 [INFO] Tick #54 - service running.
+2026-08-18 17:30:20,689 [INFO] Tick #55 - service running.
+2026-08-18 17:30:25,689 [INFO] Tick #56 - service running.
+2026-08-18 17:30:30,690 [INFO] Tick #57 - service running.
+2026-08-18 17:30:35,690 [INFO] Tick #58 - service running.
+2026-08-18 17:30:40,691 [INFO] Tick #59 - service running.
+2026-08-18 17:30:45,692 [INFO] Tick #60 - service running.
+2026-08-18 17:30:50,692 [INFO] Tick #61 - service running.
+2026-08-18 17:30:55,693 [INFO] Tick #62 - service running.
+2026-08-18 17:31:00,694 [INFO] Tick #63 - service running.
+2026-08-18 17:31:05,694 [INFO] Tick #64 - service running.
+2026-08-18 17:31:10,695 [INFO] Tick #65 - service running.
+2026-08-18 17:31:15,696 [INFO] Tick #66 - service running.
+2026-08-18 17:31:20,696 [INFO] Tick #67 - service running.
+2026-08-18 17:31:25,697 [INFO] Tick #68 - service running.
+2026-08-18 17:31:30,697 [INFO] Tick #69 - service running.
+2026-08-18 17:31:35,698 [INFO] Tick #70 - service running.
+2026-08-18 17:31:40,698 [INFO] Tick #71 - service running.
+2026-08-18 17:31:45,703 [INFO] Tick #72 - service running.
+2026-08-18 17:31:50,704 [INFO] Tick #73 - service running.
+2026-08-18 17:31:55,704 [INFO] Tick #74 - service running.
+2026-08-18 17:32:00,705 [INFO] Tick #75 - service running.
+2026-08-18 17:32:05,706 [INFO] Tick #76 - service running.
+2026-08-18 17:32:10,706 [INFO] Tick #77 - service running.
+2026-08-18 17:32:15,707 [INFO] Tick #78 - service running.
+2026-08-18 17:32:20,707 [INFO] Tick #79 - service running.
+2026-08-18 17:32:25,708 [INFO] Tick #80 - service running.
+2026-08-18 17:32:30,708 [INFO] Tick #81 - service running.
+2026-08-18 17:32:35,709 [INFO] Tick #82 - service running.
+2026-08-18 17:32:40,710 [INFO] Tick #83 - service running.
+2026-08-18 17:32:45,710 [INFO] Tick #84 - service running.
+2026-08-18 17:32:50,711 [INFO] Tick #85 - service running.
+2026-08-18 17:32:55,711 [INFO] Tick #86 - service running.
+2026-08-18 17:33:00,712 [INFO] Tick #87 - service running.
+2026-08-18 17:33:05,712 [INFO] Tick #88 - service running.
+2026-08-18 17:33:10,713 [INFO] Tick #89 - service running.
+2026-08-18 17:33:15,713 [INFO] Tick #90 - service running.
+2026-08-18 17:33:20,714 [INFO] Tick #91 - service running.
+2026-08-18 17:33:25,714 [INFO] Tick #92 - service running.
+2026-08-18 17:33:30,715 [INFO] Tick #93 - service running.
+2026-08-18 17:33:35,715 [INFO] Tick #94 - service running.
+2026-08-18 17:33:40,716 [INFO] Tick #95 - service running.
+2026-08-18 17:33:45,716 [INFO] Tick #96 - service running.
+2026-08-18 17:33:50,717 [INFO] Tick #97 - service running.
+2026-08-18 17:33:55,717 [INFO] Tick #98 - service running.
+2026-08-18 17:34:00,718 [INFO] Tick #99 - service running.
+2026-08-18 17:34:05,718 [INFO] Tick #100 - service running.
+2026-08-18 17:34:10,719 [INFO] Tick #101 - service running.
+2026-08-18 17:34:15,719 [INFO] Tick #102 - service running.
+2026-08-18 17:34:15,897 [INFO] Received signal SIGINT requesting shutdown
+2026-08-18 17:34:15,897 [INFO] Service stopping...
+2026-08-18 17:34:20,719 [INFO] Service shutting down after 102 ticks (uptime: 510.1s)
+2026-08-18 17:34:20,720 [INFO] File event service stopped.
+2026-08-18 17:34:46,316 [INFO] service starting...
+2026-08-18 17:34:46,316 [INFO] Watching directory: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-18 17:34:46,317 [INFO] File event service started.
+2026-08-18 17:34:46,317 [INFO] Service loop started (tick interval: 5s)
+2026-08-18 17:34:46,317 [INFO] Tick #1 - service running.
+2026-08-18 17:34:51,318 [INFO] Tick #2 - service running.
+2026-08-18 17:34:56,319 [INFO] Tick #3 - service running.
+2026-08-18 17:35:01,319 [INFO] Tick #4 - service running.
+2026-08-18 17:35:25,713 [INFO] Config loaded form config.yaml
+2026-08-18 17:35:25,713 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-08-18 17:35:34,203 [INFO] service starting...
+2026-08-18 17:35:51,533 [INFO] Received signal SIGINT requesting shutdown
+2026-08-18 17:35:51,533 [INFO] Service stopping...
+2026-08-18 17:35:55,920 [WARNING] Service is already running.
+2026-08-18 17:36:10,478 [INFO] Received signal SIGINT requesting shutdown
+2026-08-18 17:36:10,478 [INFO] Service stopping...
+2026-08-18 17:36:22,464 [INFO] Service stopping...
+2026-08-18 17:36:33,516 [WARNING] Service is already running.
+2026-08-18 17:37:06,897 [INFO] Config loaded form config.yaml
+2026-08-18 17:37:06,897 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-08-18 17:37:12,665 [INFO] service starting...
+2026-08-18 17:37:12,665 [INFO] Watching directory: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-18 17:37:12,666 [INFO] File event service started.
+2026-08-18 17:37:12,666 [INFO] Service loop started (tick interval: 5s)
+2026-08-18 17:37:12,666 [INFO] Tick #1 - service running.
+2026-08-18 17:37:17,667 [INFO] Tick #2 - service running.
+2026-08-18 17:37:22,668 [INFO] Tick #3 - service running.
+2026-08-18 17:37:27,668 [INFO] Tick #4 - service running.
+2026-08-18 17:37:29,647 [INFO] Received signal SIGINT requesting shutdown
+2026-08-18 17:37:29,647 [INFO] Service stopping...
+2026-08-18 17:37:32,669 [INFO] Service shutting down after 4 ticks (uptime: 20.0s)
+2026-08-18 17:37:32,670 [INFO] File event service stopped.
+2026-08-18 17:37:36,476 [INFO] service starting...
+2026-08-18 17:37:36,476 [INFO] Watching directory: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-18 17:37:36,477 [INFO] File event service started.
+2026-08-18 17:37:36,477 [INFO] Service loop started (tick interval: 5s)
+2026-08-18 17:37:36,478 [INFO] Tick #1 - service running.
+2026-08-18 17:37:41,479 [INFO] Tick #2 - service running.
+2026-08-18 17:37:41,708 [INFO] Service paused
+2026-08-18 17:37:45,688 [INFO] Service resumed
+2026-08-18 17:37:46,480 [INFO] Tick #3 - service running.
+2026-08-18 17:37:51,480 [INFO] Tick #4 - service running.
+2026-08-18 17:37:56,481 [INFO] Tick #5 - service running.
+2026-08-18 17:37:56,995 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-08-18 17:37:56,996 [INFO] Found: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy - Copy.py
+2026-08-18 17:37:56,997 [INFO] Found: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy.py
+2026-08-18 17:37:56,997 [INFO] Found: C:\CAPSTONE CODE\TEST DIRECTORY\waw.py
+2026-08-18 17:37:56,998 [INFO] Found: C:\CAPSTONE CODE\TEST DIRECTORY\TEST\TEST.py
+2026-08-18 17:37:56,999 [INFO] Scan complete. 4 new/changed files found.
+2026-08-18 17:38:01,481 [INFO] Tick #6 - service running.
+2026-08-18 17:38:06,482 [INFO] Tick #7 - service running.
+2026-08-18 17:38:11,483 [INFO] Tick #8 - service running.
+2026-08-18 17:38:16,483 [INFO] Tick #9 - service running.
+2026-08-18 17:38:21,484 [INFO] Tick #10 - service running.
+2026-08-18 17:38:26,484 [INFO] Tick #11 - service running.
+2026-08-18 17:38:31,485 [INFO] Tick #12 - service running.
+2026-08-18 17:38:36,485 [INFO] Tick #13 - service running.
+2026-08-18 17:38:41,486 [INFO] Tick #14 - service running.
+2026-08-18 17:38:46,486 [INFO] Tick #15 - service running.
+2026-08-18 17:38:51,487 [INFO] Tick #16 - service running.
+2026-08-18 17:38:56,488 [INFO] Tick #17 - service running.
+2026-08-18 17:39:01,488 [INFO] Tick #18 - service running.
+2026-08-18 17:39:02,696 [INFO] Service paused
+2026-09-02 19:47:01,912 [INFO] Config loaded form config.yaml
+2026-09-02 19:47:01,913 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-09-02 19:47:41,156 [INFO] service starting...
+2026-09-02 19:47:41,156 [INFO] Watching directory: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-09-02 19:47:41,157 [INFO] File event service started.
+2026-09-02 19:47:41,157 [INFO] Service loop started (tick interval: 5s)
+2026-09-02 19:47:41,158 [INFO] Tick #1 - service running.
+2026-09-02 19:47:46,158 [INFO] Tick #2 - service running.
+2026-09-02 19:47:49,366 [INFO] Service paused
+2026-09-02 19:47:55,282 [INFO] Service resumed
+2026-09-02 19:47:56,162 [INFO] Tick #3 - service running.
+2026-09-02 19:48:01,164 [INFO] Tick #4 - service running.
+2026-09-02 19:48:01,639 [INFO] Service stopping...
+2026-09-02 19:48:05,079 [WARNING] Service is already running.
+2026-09-02 19:48:06,165 [INFO] Service shutting down after 4 ticks (uptime: 25.0s)
+2026-09-02 19:48:06,166 [INFO] File event service stopped.
+2026-09-02 19:48:12,681 [INFO] service starting...
+2026-09-02 19:48:12,681 [INFO] Watching directory: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-09-02 19:48:12,682 [INFO] File event service started.
+2026-09-02 19:48:12,682 [INFO] Service loop started (tick interval: 5s)
+2026-09-02 19:48:12,683 [INFO] Tick #1 - service running.
+2026-09-02 19:48:17,683 [INFO] Tick #2 - service running.
+2026-09-02 19:48:19,758 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-09-02 19:48:19,760 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy - Copy.py (modified)
+2026-09-02 19:48:19,760 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy.py (modified)
+2026-09-02 19:48:19,761 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\waw.py (modified)
+2026-09-02 19:48:19,762 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST\TEST.py (modified)
+2026-09-02 19:48:19,763 [INFO] Scan complete. 0 new/changed files found.
+2026-09-02 19:48:21,762 [INFO] Debounce window elapsed, triggering scan.
+2026-09-02 19:48:21,763 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-09-02 19:48:21,765 [INFO] Scan complete. 0 new/changed files found.
+2026-09-02 19:48:22,684 [INFO] Tick #3 - service running.
+2026-09-02 19:48:27,684 [INFO] Tick #4 - service running.
+2026-09-02 19:48:32,685 [INFO] Tick #5 - service running.
+2026-09-02 19:48:37,686 [INFO] Tick #6 - service running.
+2026-09-02 19:48:42,687 [INFO] Tick #7 - service running.
+2026-09-02 19:48:47,687 [INFO] Tick #8 - service running.
+2026-09-02 19:48:52,688 [INFO] Tick #9 - service running.
+2026-09-02 19:48:57,688 [INFO] Tick #10 - service running.
+2026-09-02 19:49:02,689 [INFO] Tick #11 - service running.
+2026-09-02 19:49:07,690 [INFO] Tick #12 - service running.
+2026-09-02 19:49:12,691 [INFO] Tick #13 - service running.
+2026-09-02 19:49:17,691 [INFO] Tick #14 - service running.
+2026-09-02 19:49:22,692 [INFO] Tick #15 - service running.
+2026-09-02 19:49:25,869 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy.py (modified)
+2026-09-02 19:49:25,870 [INFO] File event detected: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy.py (modified)
+2026-09-02 19:49:27,692 [INFO] Tick #16 - service running.
+2026-09-02 19:49:27,866 [INFO] Debounce window elapsed, triggering scan.
+2026-09-02 19:49:27,867 [INFO] Scanning: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-09-02 19:49:27,867 [INFO] Found: C:\CAPSTONE CODE\TEST DIRECTORY\TEST - Copy.py
+2026-09-02 19:49:27,869 [INFO] Scan complete. 1 new/changed files found.
+2026-09-02 19:49:32,693 [INFO] Tick #17 - service running.
+2026-09-02 19:49:37,694 [INFO] Tick #18 - service running.
+2026-09-02 19:49:42,695 [INFO] Tick #19 - service running.
+2026-09-02 19:49:47,695 [INFO] Tick #20 - service running.
+2026-09-02 19:49:52,696 [INFO] Tick #21 - service running.
+2026-09-02 19:49:57,696 [INFO] Tick #22 - service running.
+2026-09-02 19:50:00,032 [INFO] Service stopping...
+2026-09-02 19:50:02,697 [INFO] Service shutting down after 22 ticks (uptime: 110.0s)
+2026-09-02 19:50:02,697 [INFO] File event service stopped.
+2026-09-05 12:15:46,456 [INFO] Config loaded form config.yaml
+2026-09-05 12:15:46,458 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-09-05 12:20:58,871 [INFO] service starting...
+2026-09-05 12:20:58,872 [INFO] Watching directory: C:\CAPSTONE CODE\TEST DIRECTORY
+2026-09-05 12:36:43,447 [WARNING] Service is already running.
+2026-09-05 12:42:24,445 [INFO] Received signal SIGINT requesting shutdown
+2026-09-05 12:42:24,446 [INFO] Service stopping...
+2026-09-05 12:43:28,980 [INFO] Received signal SIGINT requesting shutdown
+2026-09-05 12:43:28,982 [INFO] Service stopping...
+2026-09-05 12:44:46,808 [INFO] Config loaded form config.yaml
+2026-09-05 12:44:46,808 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-09-05 12:45:43,188 [INFO] service starting...
+2026-09-05 12:45:43,188 [INFO] Watching directory: C:\Users\ASUS\Desktop\capstoneTest
+2026-09-05 12:45:43,190 [INFO] File event service started.
+2026-09-05 12:45:43,190 [INFO] Service loop started (tick interval: 5s)
+2026-09-05 12:45:43,191 [INFO] Tick #1 - service running.
+2026-09-05 12:45:48,191 [INFO] Tick #2 - service running.
+2026-09-05 12:45:53,193 [INFO] Tick #3 - service running.
+2026-09-05 12:45:54,710 [INFO] File event detected: C:\Users\ASUS\Desktop\capstoneTest\New Text Document (2).txt (created)
+2026-09-05 12:45:56,721 [INFO] Debounce window elapsed, triggering scan.
+2026-09-05 12:45:56,739 [INFO] Scanning: C:\Users\ASUS\Desktop\capstoneTest
+2026-09-05 12:45:56,742 [INFO] Scan complete. 0 new/changed files found.
+2026-09-05 12:45:58,198 [INFO] Tick #4 - service running.
+2026-09-05 12:46:03,200 [INFO] Tick #5 - service running.
+2026-09-05 12:46:08,201 [INFO] Tick #6 - service running.
+2026-09-05 12:46:13,202 [INFO] Tick #7 - service running.
+2026-09-05 12:46:18,211 [INFO] Tick #8 - service running.
+2026-09-05 12:46:23,221 [INFO] Tick #9 - service running.
+2026-09-05 12:46:28,222 [INFO] Tick #10 - service running.
+2026-09-05 12:46:33,224 [INFO] Tick #11 - service running.
+2026-09-05 12:46:38,225 [INFO] Tick #12 - service running.
+2026-09-05 12:46:43,236 [INFO] Tick #13 - service running.
+2026-09-05 12:46:48,244 [INFO] Tick #14 - service running.
+2026-09-05 12:46:53,253 [INFO] Tick #15 - service running.
+2026-09-05 12:46:58,255 [INFO] Tick #16 - service running.
+2026-09-05 12:47:03,256 [INFO] Tick #17 - service running.
+2026-09-05 12:47:08,260 [INFO] Tick #18 - service running.
+2026-09-05 12:47:13,261 [INFO] Tick #19 - service running.
+2026-09-05 12:47:18,262 [INFO] Tick #20 - service running.
+2026-09-05 12:47:23,266 [INFO] Tick #21 - service running.
+2026-09-05 12:47:28,284 [INFO] Tick #22 - service running.
+2026-09-05 12:47:33,293 [INFO] Tick #23 - service running.
+2026-09-05 12:47:38,302 [INFO] Tick #24 - service running.
+2026-09-05 12:47:43,311 [INFO] Tick #25 - service running.
+2026-09-05 12:47:48,316 [INFO] Tick #26 - service running.
+2026-09-05 12:47:53,318 [INFO] Tick #27 - service running.
+2026-09-05 12:47:58,320 [INFO] Tick #28 - service running.
+2026-09-05 12:48:03,322 [INFO] Tick #29 - service running.
+2026-09-05 12:48:08,323 [INFO] Tick #30 - service running.
+2026-09-05 12:48:13,336 [INFO] Tick #31 - service running.
+2026-09-05 12:48:18,352 [INFO] Tick #32 - service running.
+2026-09-05 12:48:23,354 [INFO] Tick #33 - service running.
+2026-09-05 12:48:28,355 [INFO] Tick #34 - service running.
+2026-09-05 12:48:33,358 [INFO] Tick #35 - service running.
+2026-09-05 12:48:38,360 [INFO] Tick #36 - service running.
+2026-09-05 12:48:43,362 [INFO] Tick #37 - service running.
+2026-09-05 12:48:48,363 [INFO] Tick #38 - service running.
+2026-09-05 12:48:53,365 [INFO] Tick #39 - service running.
+2026-09-05 12:48:58,367 [INFO] Tick #40 - service running.
+2026-09-05 12:49:03,368 [INFO] Tick #41 - service running.
+2026-09-05 12:49:08,369 [INFO] Tick #42 - service running.
+2026-09-05 12:49:13,374 [INFO] Tick #43 - service running.
+2026-09-05 12:49:18,389 [INFO] Tick #44 - service running.
+2026-09-05 12:49:23,390 [INFO] Tick #45 - service running.
+2026-09-05 12:49:28,391 [INFO] Tick #46 - service running.
+2026-09-05 12:49:33,405 [INFO] Tick #47 - service running.
+2026-09-05 12:49:38,414 [INFO] Tick #48 - service running.
+2026-09-05 12:49:43,415 [INFO] Tick #49 - service running.
+2026-09-05 12:49:48,419 [INFO] Tick #50 - service running.
+2026-09-05 12:49:53,439 [INFO] Tick #51 - service running.
+2026-09-05 12:49:58,447 [INFO] Tick #52 - service running.
+2026-09-05 12:50:03,457 [INFO] Tick #53 - service running.
+2026-09-05 12:50:08,458 [INFO] Tick #54 - service running.
+2026-09-05 12:50:13,458 [INFO] Tick #55 - service running.
+2026-09-05 12:50:18,460 [INFO] Tick #56 - service running.
+2026-09-05 12:50:23,461 [INFO] Tick #57 - service running.
+2026-09-05 12:50:28,468 [INFO] Tick #58 - service running.
+2026-09-05 12:50:33,483 [INFO] Tick #59 - service running.
+2026-09-05 12:50:38,497 [INFO] Tick #60 - service running.
+2026-09-05 12:50:43,511 [INFO] Tick #61 - service running.
+2026-09-05 12:50:48,512 [INFO] Tick #62 - service running.
+2026-09-05 12:50:53,521 [INFO] Tick #63 - service running.
+2026-09-05 12:50:58,522 [INFO] Tick #64 - service running.
+2026-09-05 12:51:03,523 [INFO] Tick #65 - service running.
+2026-09-05 12:51:08,526 [INFO] Tick #66 - service running.
+2026-09-05 12:51:13,535 [INFO] Tick #67 - service running.
+2026-09-05 12:51:18,550 [INFO] Tick #68 - service running.
+2026-09-05 12:51:23,562 [INFO] Tick #69 - service running.
+2026-09-05 12:51:28,573 [INFO] Tick #70 - service running.
+2026-09-05 12:51:33,578 [INFO] Tick #71 - service running.
+2026-09-05 12:51:38,601 [INFO] Tick #72 - service running.
+2026-09-05 12:51:43,602 [INFO] Tick #73 - service running.
+2026-09-05 12:51:48,616 [INFO] Tick #74 - service running.
+2026-09-05 12:51:53,626 [INFO] Tick #75 - service running.
+2026-09-05 12:51:58,630 [INFO] Tick #76 - service running.
+2026-09-05 12:52:03,632 [INFO] Tick #77 - service running.
+2026-09-05 12:52:08,634 [INFO] Tick #78 - service running.
+2026-09-05 12:52:13,649 [INFO] Tick #79 - service running.
+2026-09-05 12:52:18,650 [INFO] Tick #80 - service running.
+2026-09-05 12:52:23,652 [INFO] Tick #81 - service running.
+2026-09-05 12:52:28,654 [INFO] Tick #82 - service running.
+2026-09-05 12:52:33,656 [INFO] Tick #83 - service running.
+2026-09-05 12:52:38,658 [INFO] Tick #84 - service running.
+2026-09-05 12:52:43,660 [INFO] Tick #85 - service running.
+2026-09-05 12:52:48,662 [INFO] Tick #86 - service running.
+2026-09-05 12:52:53,664 [INFO] Tick #87 - service running.
+2026-09-05 12:52:58,665 [INFO] Tick #88 - service running.
+2026-09-05 12:53:03,666 [INFO] Tick #89 - service running.
+2026-09-05 12:53:08,667 [INFO] Tick #90 - service running.
+2026-09-05 12:53:13,668 [INFO] Tick #91 - service running.
+2026-09-05 12:53:18,669 [INFO] Tick #92 - service running.
+2026-09-05 12:53:23,671 [INFO] Tick #93 - service running.
+2026-09-05 12:53:28,671 [INFO] Tick #94 - service running.
+2026-09-05 12:53:33,677 [INFO] Tick #95 - service running.
+2026-09-05 12:53:38,682 [INFO] Tick #96 - service running.
+2026-09-05 12:53:43,688 [INFO] Tick #97 - service running.
+2026-09-05 12:53:48,688 [INFO] Tick #98 - service running.
+2026-09-05 12:53:53,691 [INFO] Tick #99 - service running.
+2026-09-05 12:53:58,694 [INFO] Tick #100 - service running.
+2026-09-05 12:54:03,696 [INFO] Tick #101 - service running.
+2026-09-05 12:54:08,699 [INFO] Tick #102 - service running.
+2026-09-05 12:54:13,701 [INFO] Tick #103 - service running.
+2026-09-05 12:54:18,703 [INFO] Tick #104 - service running.
+2026-09-05 12:54:23,705 [INFO] Tick #105 - service running.
+2026-09-05 12:54:28,706 [INFO] Tick #106 - service running.
+2026-09-05 12:54:33,709 [INFO] Tick #107 - service running.
+2026-09-05 12:54:38,710 [INFO] Tick #108 - service running.
+2026-09-05 12:54:43,712 [INFO] Tick #109 - service running.
+2026-09-05 12:54:48,715 [INFO] Tick #110 - service running.
+2026-09-05 12:54:53,717 [INFO] Tick #111 - service running.
+2026-09-05 12:54:58,718 [INFO] Tick #112 - service running.
+2026-09-05 12:55:03,722 [INFO] Tick #113 - service running.
+2026-09-05 12:55:08,723 [INFO] Tick #114 - service running.
+2026-09-05 12:55:13,726 [INFO] Tick #115 - service running.
+2026-09-05 12:55:18,739 [INFO] Tick #116 - service running.
+2026-09-05 12:55:23,744 [INFO] Tick #117 - service running.
+2026-09-05 12:55:28,745 [INFO] Tick #118 - service running.
+2026-09-05 12:55:33,747 [INFO] Tick #119 - service running.
+2026-09-05 12:55:38,748 [INFO] Tick #120 - service running.
+2026-09-05 12:55:43,751 [INFO] Tick #121 - service running.
+2026-09-05 12:55:48,752 [INFO] Tick #122 - service running.
+2026-09-05 12:55:53,753 [INFO] Tick #123 - service running.
+2026-09-05 12:55:58,755 [INFO] Tick #124 - service running.
+2026-09-05 12:56:03,757 [INFO] Tick #125 - service running.
+2026-09-05 12:56:08,759 [INFO] Tick #126 - service running.
+2026-09-05 12:56:13,767 [INFO] Tick #127 - service running.
+2026-09-05 12:56:18,769 [INFO] Tick #128 - service running.
+2026-09-05 12:56:23,772 [INFO] Tick #129 - service running.
+2026-09-05 12:56:28,774 [INFO] Tick #130 - service running.
+2026-09-05 12:56:33,775 [INFO] Tick #131 - service running.
+2026-09-05 12:56:38,776 [INFO] Tick #132 - service running.
+2026-09-05 12:56:43,779 [INFO] Tick #133 - service running.
+2026-09-05 12:56:48,781 [INFO] Tick #134 - service running.
+2026-09-05 12:56:53,784 [INFO] Tick #135 - service running.
+2026-09-05 12:56:58,785 [INFO] Tick #136 - service running.
+2026-09-05 12:57:03,788 [INFO] Tick #137 - service running.
+2026-09-05 12:57:08,791 [INFO] Tick #138 - service running.
+2026-09-05 12:57:13,793 [INFO] Tick #139 - service running.
+2026-09-05 12:57:18,796 [INFO] Tick #140 - service running.
+2026-09-05 12:57:23,798 [INFO] Tick #141 - service running.
+2026-09-05 12:57:28,799 [INFO] Tick #142 - service running.
+2026-09-05 12:57:33,802 [INFO] Tick #143 - service running.
+2026-09-05 12:57:38,803 [INFO] Tick #144 - service running.
+2026-09-05 12:57:43,806 [INFO] Tick #145 - service running.
+2026-09-05 12:57:48,807 [INFO] Tick #146 - service running.
+2026-09-05 12:57:53,808 [INFO] Tick #147 - service running.
+2026-09-05 12:57:58,811 [INFO] Tick #148 - service running.
+2026-09-05 12:58:03,812 [INFO] Tick #149 - service running.
+2026-09-05 12:58:08,816 [INFO] Tick #150 - service running.
+2026-09-05 12:58:13,820 [INFO] Tick #151 - service running.
+2026-09-05 12:58:18,821 [INFO] Tick #152 - service running.
+2026-09-05 12:58:23,822 [INFO] Tick #153 - service running.
+2026-09-05 12:58:28,823 [INFO] Tick #154 - service running.
+2026-09-05 12:58:33,841 [INFO] Tick #155 - service running.
+2026-09-05 12:58:38,859 [INFO] Tick #156 - service running.
+2026-09-05 12:58:43,879 [INFO] Tick #157 - service running.
+2026-09-05 12:58:48,880 [INFO] Tick #158 - service running.
+2026-09-05 12:58:53,883 [INFO] Tick #159 - service running.
+2026-09-05 12:58:58,884 [INFO] Tick #160 - service running.
+2026-09-05 12:59:03,889 [INFO] Tick #161 - service running.
+2026-09-05 12:59:08,893 [INFO] Tick #162 - service running.
+2026-09-05 12:59:13,894 [INFO] Tick #163 - service running.
+2026-09-05 12:59:18,907 [INFO] Tick #164 - service running.
+2026-09-05 12:59:23,920 [INFO] Tick #165 - service running.
+2026-09-05 12:59:28,921 [INFO] Tick #166 - service running.
+2026-09-05 12:59:33,922 [INFO] Tick #167 - service running.
+2026-09-05 12:59:38,923 [INFO] Tick #168 - service running.
+2026-09-05 12:59:43,925 [INFO] Tick #169 - service running.
+2026-09-05 12:59:48,926 [INFO] Tick #170 - service running.
+2026-09-05 12:59:53,928 [INFO] Tick #171 - service running.
+2026-09-05 12:59:58,931 [INFO] Tick #172 - service running.
+2026-09-05 13:00:03,940 [INFO] Tick #173 - service running.
+2026-09-05 13:00:08,943 [INFO] Tick #174 - service running.
+2026-09-05 13:00:13,944 [INFO] Tick #175 - service running.
+2026-09-05 13:00:18,946 [INFO] Tick #176 - service running.
+2026-09-05 13:00:23,947 [INFO] Tick #177 - service running.
+2026-09-05 13:00:28,949 [INFO] Tick #178 - service running.
+2026-09-05 13:00:33,951 [INFO] Tick #179 - service running.
+2026-09-05 13:00:38,953 [INFO] Tick #180 - service running.
+2026-09-05 13:00:43,955 [INFO] Tick #181 - service running.
+2026-09-05 13:00:48,956 [INFO] Tick #182 - service running.
+2026-09-05 13:00:53,958 [INFO] Tick #183 - service running.
+2026-09-05 13:00:58,961 [INFO] Tick #184 - service running.
+2026-09-05 13:01:03,962 [INFO] Tick #185 - service running.
+2026-09-05 13:01:08,972 [INFO] Tick #186 - service running.
+2026-09-05 13:01:13,977 [INFO] Tick #187 - service running.
+2026-09-05 13:01:18,984 [INFO] Tick #188 - service running.
+2026-09-05 13:01:23,985 [INFO] Tick #189 - service running.
+2026-09-05 13:01:28,988 [INFO] Tick #190 - service running.
+2026-09-05 13:01:33,991 [INFO] Tick #191 - service running.
+2026-09-05 13:01:38,992 [INFO] Tick #192 - service running.
+2026-09-05 13:01:43,994 [INFO] Tick #193 - service running.
+2026-09-05 13:01:48,996 [INFO] Tick #194 - service running.
+2026-09-05 13:01:53,998 [INFO] Tick #195 - service running.
+2026-09-05 13:01:59,000 [INFO] Tick #196 - service running.
+2026-09-05 13:02:04,004 [INFO] Tick #197 - service running.
+2026-09-05 13:02:09,006 [INFO] Tick #198 - service running.
+2026-09-05 13:02:14,007 [INFO] Tick #199 - service running.
+2026-09-05 13:02:19,008 [INFO] Tick #200 - service running.
+2026-09-05 13:02:24,010 [INFO] Tick #201 - service running.
+2026-09-05 13:02:29,011 [INFO] Tick #202 - service running.
+2026-09-05 13:02:34,022 [INFO] Tick #203 - service running.
+2026-09-05 13:02:39,024 [INFO] Tick #204 - service running.
+2026-09-05 13:02:44,025 [INFO] Tick #205 - service running.
+2026-09-05 13:02:49,026 [INFO] Tick #206 - service running.
+2026-09-05 13:02:54,028 [INFO] Tick #207 - service running.
+2026-09-05 13:02:59,034 [INFO] Tick #208 - service running.
+2026-09-05 13:03:04,046 [INFO] Tick #209 - service running.
+2026-09-05 13:03:09,048 [INFO] Tick #210 - service running.
+2026-09-05 13:03:14,049 [INFO] Tick #211 - service running.
+2026-09-05 13:03:19,051 [INFO] Tick #212 - service running.
+2026-09-05 13:03:24,053 [INFO] Tick #213 - service running.
+2026-09-05 13:03:29,055 [INFO] Tick #214 - service running.
+2026-09-05 13:03:34,057 [INFO] Tick #215 - service running.
+2026-09-05 13:03:39,058 [INFO] Tick #216 - service running.
+2026-09-05 13:03:44,060 [INFO] Tick #217 - service running.
+2026-09-05 13:03:49,061 [INFO] Tick #218 - service running.
+2026-09-05 13:03:54,062 [INFO] Tick #219 - service running.
+2026-09-05 13:03:59,063 [INFO] Tick #220 - service running.
+2026-09-05 13:04:04,066 [INFO] Tick #221 - service running.
+2026-09-05 13:04:09,070 [INFO] Tick #222 - service running.
+2026-09-05 13:04:14,071 [INFO] Tick #223 - service running.
+2026-09-05 13:04:19,073 [INFO] Tick #224 - service running.
+2026-09-05 13:04:24,087 [INFO] Tick #225 - service running.
+2026-09-05 13:04:29,088 [INFO] Tick #226 - service running.
+2026-09-05 13:04:34,090 [INFO] Tick #227 - service running.
+2026-09-05 13:04:39,091 [INFO] Tick #228 - service running.
+2026-09-05 13:04:44,093 [INFO] Tick #229 - service running.
+2026-09-05 13:04:49,094 [INFO] Tick #230 - service running.
+2026-09-05 13:04:54,096 [INFO] Tick #231 - service running.
+2026-09-05 13:04:59,097 [INFO] Tick #232 - service running.
+2026-09-05 13:05:04,100 [INFO] Tick #233 - service running.
+2026-09-05 13:05:09,109 [INFO] Tick #234 - service running.
+2026-09-05 13:05:14,110 [INFO] Tick #235 - service running.
+2026-09-05 13:05:19,121 [INFO] Tick #236 - service running.
+2026-09-05 13:05:24,128 [INFO] Tick #237 - service running.
+2026-09-05 13:05:29,134 [INFO] Tick #238 - service running.
+2026-09-05 13:05:34,136 [INFO] Tick #239 - service running.
+2026-09-05 13:05:39,137 [INFO] Tick #240 - service running.
+2026-09-05 13:05:44,139 [INFO] Tick #241 - service running.
+2026-09-05 13:05:49,140 [INFO] Tick #242 - service running.
+2026-09-05 13:05:54,143 [INFO] Tick #243 - service running.
+2026-09-05 13:05:59,146 [INFO] Tick #244 - service running.
+2026-09-05 13:06:04,147 [INFO] Tick #245 - service running.
+2026-09-05 13:06:09,148 [INFO] Tick #246 - service running.
+2026-09-05 13:06:14,149 [INFO] Tick #247 - service running.
+2026-09-05 13:06:19,151 [INFO] Tick #248 - service running.
+2026-09-05 13:06:24,152 [INFO] Tick #249 - service running.
+2026-09-05 13:06:29,154 [INFO] Tick #250 - service running.
+2026-09-05 13:06:34,155 [INFO] Tick #251 - service running.
+2026-09-05 13:06:39,156 [INFO] Tick #252 - service running.
+2026-09-05 13:06:44,158 [INFO] Tick #253 - service running.
+2026-09-05 13:06:49,159 [INFO] Tick #254 - service running.
+2026-09-05 13:06:54,160 [INFO] Tick #255 - service running.
+2026-09-05 13:06:59,162 [INFO] Tick #256 - service running.
+2026-09-05 13:07:04,163 [INFO] Tick #257 - service running.
+2026-09-05 13:07:09,165 [INFO] Tick #258 - service running.
+2026-09-05 13:07:14,167 [INFO] Tick #259 - service running.
+2026-09-05 13:07:19,168 [INFO] Tick #260 - service running.
+2026-09-05 13:07:24,170 [INFO] Tick #261 - service running.
+2026-09-05 13:07:29,170 [INFO] Tick #262 - service running.
+2026-09-05 13:07:34,172 [INFO] Tick #263 - service running.
+2026-09-05 13:07:39,174 [INFO] Tick #264 - service running.
+2026-09-05 13:07:44,178 [INFO] Tick #265 - service running.
+2026-09-05 13:07:49,185 [INFO] Tick #266 - service running.
+2026-09-05 13:07:54,186 [INFO] Tick #267 - service running.
+2026-09-05 13:07:59,188 [INFO] Tick #268 - service running.
+2026-09-05 13:08:04,212 [INFO] Tick #269 - service running.
+2026-09-05 13:08:04,981 [INFO] Received signal SIGINT requesting shutdown
+2026-09-05 13:08:04,982 [INFO] Service stopping...
+2026-09-05 13:08:09,214 [INFO] Service shutting down after 269 ticks (uptime: 1346.0s)
+2026-09-05 13:08:09,216 [INFO] File event service stopped.
+2026-09-06 16:38:56,392 [INFO] Received signal SIGINT requesting shutdown
+2026-09-06 16:38:56,405 [WARNING] Service is already stopped.
+2026-09-06 16:40:19,833 [INFO] Config loaded form config.yaml
+2026-09-06 16:40:19,834 [INFO] Signal handlers registered (SIGINT, SIGTERM)
+2026-09-06 16:40:22,054 [INFO] service starting...
+2026-09-06 16:40:22,054 [INFO] Watching directory: C:\Users\ASUS\Desktop\capstoneTest
+2026-09-06 16:40:22,057 [INFO] File event service started.
+2026-09-06 16:40:22,057 [INFO] Service loop started (tick interval: 5s)
+2026-09-06 16:40:22,058 [INFO] Tick #1 - service running.
+2026-09-06 16:40:27,060 [INFO] Tick #2 - service running.
+2026-09-06 16:40:32,062 [INFO] Tick #3 - service running.
+2026-09-06 16:40:37,063 [INFO] Tick #4 - service running.
+2026-09-06 16:40:42,065 [INFO] Tick #5 - service running.
+2026-09-06 16:40:47,067 [INFO] Tick #6 - service running.
+2026-09-06 16:40:52,068 [INFO] Tick #7 - service running.
+2026-09-06 16:40:57,069 [INFO] Tick #8 - service running.
+2026-09-06 16:41:02,070 [INFO] Tick #9 - service running.
+2026-09-06 16:41:07,072 [INFO] Tick #10 - service running.
+2026-09-06 16:41:12,074 [INFO] Tick #11 - service running.
+2026-09-06 16:41:17,075 [INFO] Tick #12 - service running.
+2026-09-06 16:41:22,077 [INFO] Tick #13 - service running.
+2026-09-06 16:41:27,078 [INFO] Tick #14 - service running.
+2026-09-06 16:41:32,079 [INFO] Tick #15 - service running.
+2026-09-06 16:41:37,085 [INFO] Tick #16 - service running.
+2026-09-06 16:41:41,858 [INFO] File event detected: C:\Users\ASUS\Desktop\capstoneTest\do what you like, live your dream.txt (created)
+2026-09-06 16:41:41,859 [INFO] File event detected: C:\Users\ASUS\Desktop\capstoneTest\do what you like, live your dream.txt (deleted)
+2026-09-06 16:41:42,086 [INFO] Tick #17 - service running.
+2026-09-06 16:41:42,291 [INFO] File event detected: C:\Users\ASUS\Desktop\capstoneTest\do what you like, live your dream.txt (created)
+2026-09-06 16:41:42,293 [INFO] File event detected: C:\Users\ASUS\Desktop\capstoneTest\do what you like, live your dream.txt (modified)
+2026-09-06 16:41:44,305 [INFO] Debounce window elapsed, triggering scan.
+2026-09-06 16:41:44,309 [INFO] Scanning: C:\Users\ASUS\Desktop\capstoneTest
+2026-09-06 16:41:44,312 [INFO] Scan complete. 0 new/changed files found.
+2026-09-06 16:41:47,087 [INFO] Tick #18 - service running.
+2026-09-06 16:41:52,093 [INFO] Tick #19 - service running.
+2026-09-06 16:41:57,095 [INFO] Tick #20 - service running.
+2026-09-06 16:42:02,097 [INFO] Tick #21 - service running.
+2026-09-06 16:43:23,291 [INFO] Tick #22 - service running.
+2026-09-06 16:43:28,348 [INFO] Tick #23 - service running.
+2026-09-06 16:43:33,350 [INFO] Tick #24 - service running.
+2026-09-06 16:43:38,351 [INFO] Tick #25 - service running.
+2026-09-06 16:43:43,353 [INFO] Tick #26 - service running.
+2026-09-06 16:43:48,354 [INFO] Tick #27 - service running.
+2026-09-06 16:43:53,356 [INFO] Tick #28 - service running.
+2026-09-06 16:43:58,360 [INFO] Tick #29 - service running.
+2026-09-06 16:44:03,361 [INFO] Tick #30 - service running.
+2026-09-06 16:44:08,362 [INFO] Tick #31 - service running.
+2026-09-06 16:44:13,367 [INFO] Tick #32 - service running.
+2026-09-06 16:44:18,369 [INFO] Tick #33 - service running.
+2026-09-06 16:44:23,370 [INFO] Tick #34 - service running.
+2026-09-06 16:44:28,372 [INFO] Tick #35 - service running.
+2026-09-06 16:44:33,373 [INFO] Tick #36 - service running.
+2026-09-06 16:44:38,375 [INFO] Tick #37 - service running.
+2026-09-06 16:44:43,376 [INFO] Tick #38 - service running.
+2026-09-06 16:44:48,378 [INFO] Tick #39 - service running.
+2026-09-06 16:44:53,379 [INFO] Tick #40 - service running.
+2026-09-06 16:44:58,381 [INFO] Tick #41 - service running.
+2026-09-06 16:45:03,383 [INFO] Tick #42 - service running.
+2026-09-06 16:45:08,385 [INFO] Tick #43 - service running.
+2026-09-06 16:45:13,387 [INFO] Tick #44 - service running.
+2026-09-06 16:45:18,389 [INFO] Tick #45 - service running.
+2026-09-06 16:45:23,390 [INFO] Tick #46 - service running.
+2026-09-06 16:45:28,392 [INFO] Tick #47 - service running.
+2026-09-06 16:45:33,392 [INFO] Tick #48 - service running.
+2026-09-06 16:45:38,394 [INFO] Tick #49 - service running.
+2026-09-06 16:45:43,395 [INFO] Tick #50 - service running.
+2026-09-06 16:45:48,396 [INFO] Tick #51 - service running.
+2026-09-06 16:45:53,398 [INFO] Tick #52 - service running.
+2026-09-06 16:45:58,401 [INFO] Tick #53 - service running.
+2026-09-06 16:46:03,403 [INFO] Tick #54 - service running.
+2026-09-06 16:46:08,405 [INFO] Tick #55 - service running.
+2026-09-06 16:46:13,406 [INFO] Tick #56 - service running.
+2026-09-06 16:46:18,452 [INFO] Tick #57 - service running.
+2026-09-06 16:46:23,453 [INFO] Tick #58 - service running.
+2026-09-06 16:46:28,455 [INFO] Tick #59 - service running.
+2026-09-06 16:46:33,456 [INFO] Tick #60 - service running.
+2026-09-06 16:46:38,458 [INFO] Tick #61 - service running.
+2026-09-06 16:46:43,459 [INFO] Tick #62 - service running.
+2026-09-06 16:46:48,460 [INFO] Tick #63 - service running.
+2026-09-06 16:46:53,462 [INFO] Tick #64 - service running.
+2026-09-06 16:46:58,463 [INFO] Tick #65 - service running.
+2026-09-06 16:47:03,464 [INFO] Tick #66 - service running.
+2026-09-06 16:47:08,466 [INFO] Tick #67 - service running.
+2026-09-06 16:47:13,467 [INFO] Tick #68 - service running.
+2026-09-06 16:47:18,468 [INFO] Tick #69 - service running.
+2026-09-06 16:47:23,471 [INFO] Tick #70 - service running.
+2026-09-06 16:47:28,473 [INFO] Tick #71 - service running.
+2026-09-06 16:47:33,474 [INFO] Tick #72 - service running.
+2026-09-06 16:47:38,475 [INFO] Tick #73 - service running.
+2026-09-06 16:47:43,477 [INFO] Tick #74 - service running.
+2026-09-06 16:47:48,477 [INFO] Tick #75 - service running.
+2026-09-06 16:47:53,479 [INFO] Tick #76 - service running.
+2026-09-06 16:47:58,480 [INFO] Tick #77 - service running.
+2026-09-06 16:48:03,482 [INFO] Tick #78 - service running.
+2026-09-06 16:48:08,485 [INFO] Tick #79 - service running.
+2026-09-06 16:48:13,486 [INFO] Tick #80 - service running.
+2026-09-06 16:48:18,488 [INFO] Tick #81 - service running.
+2026-09-06 16:48:23,489 [INFO] Tick #82 - service running.
+2026-09-06 16:48:28,491 [INFO] Tick #83 - service running.
+2026-09-06 16:48:33,493 [INFO] Tick #84 - service running.
+2026-09-06 16:48:38,494 [INFO] Tick #85 - service running.
+2026-09-06 16:48:43,496 [INFO] Tick #86 - service running.
+2026-09-06 16:48:48,500 [INFO] Tick #87 - service running.
+2026-09-06 16:48:53,501 [INFO] Tick #88 - service running.
+2026-09-06 16:48:58,503 [INFO] Tick #89 - service running.
+2026-09-06 16:49:03,506 [INFO] Tick #90 - service running.
+2026-09-06 16:49:08,507 [INFO] Tick #91 - service running.
+2026-09-06 16:49:13,508 [INFO] Tick #92 - service running.
+2026-09-06 16:49:18,509 [INFO] Tick #93 - service running.
+2026-09-06 16:49:23,510 [INFO] Tick #94 - service running.
+2026-09-06 16:49:28,512 [INFO] Tick #95 - service running.
+2026-09-06 16:49:33,513 [INFO] Tick #96 - service running.
+2026-09-06 16:49:38,514 [INFO] Tick #97 - service running.
+2026-09-06 16:49:43,035 [INFO] File event detected: C:\Users\ASUS\Desktop\capstoneTest\example.py (created)
+2026-09-06 16:49:43,039 [INFO] File event detected: C:\Users\ASUS\Desktop\capstoneTest\example.py (deleted)
+2026-09-06 16:49:43,353 [INFO] File event detected: C:\Users\ASUS\Desktop\capstoneTest\example.py (created)
+2026-09-06 16:49:43,356 [INFO] File event detected: C:\Users\ASUS\Desktop\capstoneTest\example.py (modified)
+2026-09-06 16:49:43,516 [INFO] Tick #98 - service running.
+2026-09-06 16:49:45,366 [INFO] Debounce window elapsed, triggering scan.
+2026-09-06 16:49:45,372 [INFO] Scanning: C:\Users\ASUS\Desktop\capstoneTest
+2026-09-06 16:49:45,631 [INFO] Found: C:\Users\ASUS\Desktop\capstoneTest\example.py
+2026-09-06 16:49:45,633 [INFO] Scan complete. 1 new/changed files found.
+2026-09-06 16:49:48,517 [INFO] Tick #99 - service running.
+2026-09-06 16:49:53,518 [INFO] Tick #100 - service running.
+2026-09-06 16:49:58,520 [INFO] Tick #101 - service running.
+2026-09-06 16:50:03,525 [INFO] Tick #102 - service running.
+2026-09-06 16:50:08,528 [INFO] Tick #103 - service running.
+2026-09-06 16:50:13,530 [INFO] Tick #104 - service running.
+2026-09-06 16:50:18,532 [INFO] Tick #105 - service running.
+2026-09-06 16:50:23,534 [INFO] Tick #106 - service running.
+2026-09-06 16:50:28,536 [INFO] Tick #107 - service running.
+2026-09-06 16:50:33,537 [INFO] Tick #108 - service running.
+2026-09-06 16:50:38,538 [INFO] Tick #109 - service running.
+2026-09-06 16:50:43,540 [INFO] Tick #110 - service running.
+2026-09-06 16:50:48,541 [INFO] Tick #111 - service running.
+2026-09-06 16:50:53,543 [INFO] Tick #112 - service running.
+2026-09-06 16:50:58,545 [INFO] Tick #113 - service running.
+2026-09-06 16:51:03,546 [INFO] Tick #114 - service running.
+2026-09-06 16:51:08,548 [INFO] Tick #115 - service running.
+2026-09-06 16:51:13,549 [INFO] Tick #116 - service running.
+2026-09-06 16:51:18,550 [INFO] Tick #117 - service running.
+2026-09-06 16:51:23,552 [INFO] Tick #118 - service running.
+2026-09-06 16:51:28,553 [INFO] Tick #119 - service running.
+2026-09-06 16:51:33,554 [INFO] Tick #120 - service running.
+2026-09-06 16:51:38,558 [INFO] Tick #121 - service running.
+2026-09-06 16:51:43,560 [INFO] Tick #122 - service running.
+2026-09-06 16:51:48,561 [INFO] Tick #123 - service running.
+2026-09-06 16:51:53,563 [INFO] Tick #124 - service running.
+2026-09-06 16:51:58,565 [INFO] Tick #125 - service running.
+2026-09-06 16:52:03,567 [INFO] Tick #126 - service running.
+2026-09-06 16:52:08,569 [INFO] Tick #127 - service running.
+2026-09-06 16:52:13,570 [INFO] Tick #128 - service running.
+2026-09-06 16:52:18,572 [INFO] Tick #129 - service running.
+2026-09-06 16:52:23,573 [INFO] Tick #130 - service running.
+2026-09-06 16:52:28,574 [INFO] Tick #131 - service running.
+2026-09-06 16:52:33,576 [INFO] Tick #132 - service running.
+2026-09-06 16:52:38,579 [INFO] Tick #133 - service running.
+2026-09-06 16:52:43,580 [INFO] Tick #134 - service running.
+2026-09-06 16:52:48,602 [INFO] Tick #135 - service running.
+2026-09-06 16:52:53,605 [INFO] Tick #136 - service running.
+2026-09-06 16:52:58,606 [INFO] Tick #137 - service running.
+2026-09-06 16:53:03,608 [INFO] Tick #138 - service running.
+2026-09-06 16:53:08,609 [INFO] Tick #139 - service running.
+2026-09-06 16:53:13,613 [INFO] Tick #140 - service running.
+2026-09-06 16:53:18,614 [INFO] Tick #141 - service running.
+2026-09-06 16:53:23,616 [INFO] Tick #142 - service running.
+2026-09-06 16:53:28,617 [INFO] Tick #143 - service running.
+2026-09-06 16:53:33,618 [INFO] Tick #144 - service running.
+2026-09-06 16:53:38,620 [INFO] Tick #145 - service running.
+2026-09-06 16:53:43,621 [INFO] Tick #146 - service running.
+2026-09-06 16:53:48,622 [INFO] Tick #147 - service running.
+2026-09-06 16:53:53,623 [INFO] Tick #148 - service running.
+2026-09-06 16:53:58,626 [INFO] Tick #149 - service running.
+2026-09-06 16:54:03,628 [INFO] Tick #150 - service running.
+2026-09-06 16:54:08,631 [INFO] Tick #151 - service running.
+2026-09-06 16:54:13,633 [INFO] Tick #152 - service running.
+2026-09-06 16:54:18,634 [INFO] Tick #153 - service running.
+2026-09-06 16:54:23,636 [INFO] Tick #154 - service running.
+2026-09-06 16:54:28,637 [INFO] Tick #155 - service running.
+2026-09-06 16:54:33,638 [INFO] Tick #156 - service running.
+2026-09-06 16:54:38,639 [INFO] Tick #157 - service running.
+2026-09-06 16:54:43,641 [INFO] Tick #158 - service running.
+2026-09-06 16:54:48,645 [INFO] Tick #159 - service running.
+2026-09-06 16:54:53,646 [INFO] Tick #160 - service running.
+2026-09-06 16:54:58,648 [INFO] Tick #161 - service running.
+2026-09-06 17:00:16,807 [INFO] Tick #162 - service running.
+2026-09-06 17:00:21,903 [INFO] Tick #163 - service running.
+2026-09-06 17:00:26,906 [INFO] Tick #164 - service running.
+2026-09-06 17:00:31,908 [INFO] Tick #165 - service running.
+2026-09-06 17:00:36,909 [INFO] Tick #166 - service running.
+2026-09-06 17:00:41,910 [INFO] Tick #167 - service running.
+2026-09-06 17:00:46,911 [INFO] Tick #168 - service running.
+2026-09-06 17:00:51,913 [INFO] Tick #169 - service running.
+2026-09-06 17:00:56,914 [INFO] Tick #170 - service running.
+2026-09-06 17:01:01,917 [INFO] Tick #171 - service running.
+2026-09-06 17:01:06,919 [INFO] Tick #172 - service running.
+2026-09-06 17:01:11,922 [INFO] Tick #173 - service running.
+2026-09-06 17:01:16,923 [INFO] Tick #174 - service running.
+2026-09-06 17:01:21,924 [INFO] Tick #175 - service running.
+2026-09-06 17:01:26,925 [INFO] Tick #176 - service running.
+2026-09-06 17:01:31,927 [INFO] Tick #177 - service running.
+2026-09-06 17:01:36,942 [INFO] Tick #178 - service running.
+2026-09-06 17:01:41,945 [INFO] Tick #179 - service running.
+2026-09-06 17:01:46,948 [INFO] Tick #180 - service running.
+2026-09-06 17:01:51,979 [INFO] Tick #181 - service running.
+2026-09-06 17:01:56,992 [INFO] Tick #182 - service running.
+2026-09-06 17:02:01,994 [INFO] Tick #183 - service running.
+2026-09-06 17:02:06,996 [INFO] Tick #184 - service running.
+2026-09-06 17:02:12,000 [INFO] Tick #185 - service running.
+2026-09-06 17:02:17,002 [INFO] Tick #186 - service running.
+2026-09-06 17:02:22,003 [INFO] Tick #187 - service running.
+2026-09-06 17:02:27,006 [INFO] Tick #188 - service running.
+2026-09-06 17:02:32,007 [INFO] Tick #189 - service running.
+2026-09-06 17:02:37,009 [INFO] Tick #190 - service running.
+2026-09-06 17:02:42,011 [INFO] Tick #191 - service running.
+2026-09-06 17:02:47,013 [INFO] Tick #192 - service running.
+2026-09-06 17:02:52,014 [INFO] Tick #193 - service running.
+2026-09-06 17:02:57,018 [INFO] Tick #194 - service running.
+2026-09-06 17:03:02,021 [INFO] Tick #195 - service running.
+2026-09-06 17:03:07,025 [INFO] Tick #196 - service running.
+2026-09-06 17:03:12,028 [INFO] Tick #197 - service running.
+2026-09-06 17:03:17,030 [INFO] Tick #198 - service running.
+2026-09-06 17:03:22,031 [INFO] Tick #199 - service running.
+2026-09-06 17:03:27,032 [INFO] Tick #200 - service running.
+2026-09-06 17:03:32,034 [INFO] Tick #201 - service running.
+2026-09-06 17:03:37,035 [INFO] Tick #202 - service running.
+2026-09-06 17:03:42,079 [INFO] Tick #203 - service running.
+2026-09-06 17:03:47,083 [INFO] Tick #204 - service running.
+2026-09-06 17:03:52,085 [INFO] Tick #205 - service running.
+2026-09-06 17:03:57,086 [INFO] Tick #206 - service running.
+2026-09-06 17:04:02,088 [INFO] Tick #207 - service running.
+2026-09-06 17:04:07,088 [INFO] Tick #208 - service running.
+2026-09-06 17:04:12,091 [INFO] Tick #209 - service running.
+2026-09-06 17:04:17,094 [INFO] Tick #210 - service running.
+2026-09-06 17:04:22,100 [INFO] Tick #211 - service running.
+2026-09-06 17:04:27,118 [INFO] Tick #212 - service running.
+2026-09-06 17:04:32,120 [INFO] Tick #213 - service running.
+2026-09-06 17:04:37,129 [INFO] Tick #214 - service running.
+2026-09-06 17:04:42,130 [INFO] Tick #215 - service running.
+2026-09-06 17:04:47,130 [INFO] Tick #216 - service running.
+2026-09-06 17:04:52,131 [INFO] Tick #217 - service running.
+2026-09-06 17:04:57,133 [INFO] Tick #218 - service running.
+2026-09-06 17:05:02,135 [INFO] Tick #219 - service running.
+2026-09-06 17:05:07,137 [INFO] Tick #220 - service running.
+2026-09-06 17:05:12,139 [INFO] Tick #221 - service running.
+2026-09-06 17:05:17,140 [INFO] Tick #222 - service running.
+2026-09-06 17:05:22,142 [INFO] Tick #223 - service running.
+2026-09-06 17:05:27,143 [INFO] Tick #224 - service running.
+2026-09-06 17:05:32,145 [INFO] Tick #225 - service running.
+2026-09-06 17:05:37,148 [INFO] Tick #226 - service running.
+2026-09-06 17:05:42,150 [INFO] Tick #227 - service running.
+2026-09-06 17:05:47,152 [INFO] Tick #228 - service running.
+2026-09-06 17:05:52,152 [INFO] Tick #229 - service running.
+2026-09-06 17:05:57,155 [INFO] Tick #230 - service running.
+2026-09-06 17:06:02,156 [INFO] Tick #231 - service running.
+2026-09-06 17:06:07,158 [INFO] Tick #232 - service running.
+2026-09-06 17:06:12,159 [INFO] Tick #233 - service running.
+2026-09-06 17:06:17,160 [INFO] Tick #234 - service running.
+2026-09-06 17:06:22,161 [INFO] Tick #235 - service running.
+2026-09-06 17:06:27,164 [INFO] Tick #236 - service running.
+2026-09-06 17:06:32,165 [INFO] Tick #237 - service running.
+2026-09-06 17:06:37,170 [INFO] Tick #238 - service running.
+2026-09-06 17:06:42,184 [INFO] Tick #239 - service running.
+2026-09-06 17:06:47,185 [INFO] Tick #240 - service running.
+2026-09-06 17:06:52,187 [INFO] Tick #241 - service running.
+2026-09-06 17:06:57,188 [INFO] Tick #242 - service running.
+2026-09-06 17:07:02,189 [INFO] Tick #243 - service running.
+2026-09-06 17:07:07,192 [INFO] Tick #244 - service running.
+2026-09-06 17:07:12,193 [INFO] Tick #245 - service running.
+2026-09-06 17:07:17,195 [INFO] Tick #246 - service running.
+2026-09-06 17:07:22,197 [INFO] Tick #247 - service running.
+2026-09-06 17:07:27,198 [INFO] Tick #248 - service running.
+2026-09-06 17:07:32,199 [INFO] Tick #249 - service running.
+2026-09-06 17:07:37,201 [INFO] Tick #250 - service running.
+2026-09-06 17:07:42,204 [INFO] Tick #251 - service running.
+2026-09-06 17:07:47,206 [INFO] Tick #252 - service running.
+2026-09-06 17:07:52,208 [INFO] Tick #253 - service running.
+2026-09-06 17:07:57,209 [INFO] Tick #254 - service running.
+2026-09-06 17:08:02,210 [INFO] Tick #255 - service running.
+2026-09-06 17:08:07,212 [INFO] Tick #256 - service running.
+2026-09-06 17:08:12,214 [INFO] Tick #257 - service running.
+2026-09-06 17:08:17,216 [INFO] Tick #258 - service running.
+2026-09-06 17:08:22,218 [INFO] Tick #259 - service running.
+2026-09-06 17:08:27,219 [INFO] Tick #260 - service running.
+2026-09-06 17:08:32,221 [INFO] Tick #261 - service running.
+2026-09-06 17:08:37,225 [INFO] Tick #262 - service running.
+2026-09-06 17:08:42,230 [INFO] Tick #263 - service running.
+2026-09-06 17:08:47,232 [INFO] Tick #264 - service running.
+2026-09-06 17:08:52,235 [INFO] Tick #265 - service running.
+2026-09-06 17:08:57,236 [INFO] Tick #266 - service running.
+2026-09-06 17:09:02,238 [INFO] Tick #267 - service running.
+2026-09-06 17:09:07,239 [INFO] Tick #268 - service running.
+2026-09-06 17:09:12,241 [INFO] Tick #269 - service running.
+2026-09-06 17:09:17,242 [INFO] Tick #270 - service running.
+2026-09-06 17:09:22,244 [INFO] Tick #271 - service running.
+2026-09-06 17:09:27,246 [INFO] Tick #272 - service running.
+2026-09-06 17:09:32,247 [INFO] Tick #273 - service running.
+2026-09-06 17:09:37,249 [INFO] Tick #274 - service running.
+2026-09-06 17:09:42,250 [INFO] Tick #275 - service running.
+2026-09-06 17:09:47,251 [INFO] Tick #276 - service running.
+2026-09-06 17:09:52,253 [INFO] Tick #277 - service running.
+2026-09-06 17:09:57,254 [INFO] Tick #278 - service running.
+2026-09-06 17:10:02,257 [INFO] Tick #279 - service running.
+2026-09-06 17:10:07,258 [INFO] Tick #280 - service running.
+2026-09-06 17:10:12,261 [INFO] Tick #281 - service running.
+2026-09-06 17:10:17,262 [INFO] Tick #282 - service running.
+2026-09-06 17:10:22,263 [INFO] Tick #283 - service running.
+2026-09-06 17:10:27,264 [INFO] Tick #284 - service running.
+2026-09-06 17:10:32,265 [INFO] Tick #285 - service running.
+2026-09-06 17:10:37,266 [INFO] Tick #286 - service running.
+2026-09-06 17:10:42,267 [INFO] Tick #287 - service running.
+2026-09-06 17:10:47,268 [INFO] Tick #288 - service running.
+2026-09-06 17:10:52,269 [INFO] Tick #289 - service running.
+2026-09-06 17:10:57,271 [INFO] Tick #290 - service running.
+2026-09-06 17:11:02,272 [INFO] Tick #291 - service running.
+2026-09-06 17:11:07,273 [INFO] Tick #292 - service running.
+2026-09-06 17:11:12,303 [INFO] Tick #293 - service running.
+2026-09-06 17:11:17,305 [INFO] Tick #294 - service running.
+2026-09-06 17:11:22,306 [INFO] Tick #295 - service running.
+2026-09-06 17:11:27,308 [INFO] Tick #296 - service running.
+2026-09-06 17:11:32,310 [INFO] Tick #297 - service running.
+2026-09-06 17:11:37,311 [INFO] Tick #298 - service running.
+2026-09-06 17:11:42,314 [INFO] Tick #299 - service running.
+2026-09-06 17:11:47,318 [INFO] Tick #300 - service running.
+2026-09-06 17:11:52,319 [INFO] Tick #301 - service running.
+2026-09-06 17:11:57,321 [INFO] Tick #302 - service running.
+2026-09-06 17:12:02,322 [INFO] Tick #303 - service running.
+2026-09-06 17:12:07,325 [INFO] Tick #304 - service running.
+2026-09-06 17:12:12,327 [INFO] Tick #305 - service running.
+2026-09-06 17:12:17,328 [INFO] Tick #306 - service running.
+2026-09-06 17:12:22,330 [INFO] Tick #307 - service running.
+2026-09-06 17:12:27,331 [INFO] Tick #308 - service running.
+2026-09-06 17:12:32,332 [INFO] Tick #309 - service running.
+2026-09-06 17:12:37,334 [INFO] Tick #310 - service running.
+2026-09-06 17:12:42,335 [INFO] Tick #311 - service running.
+2026-09-06 17:12:47,336 [INFO] Tick #312 - service running.
+2026-09-06 17:12:52,337 [INFO] Tick #313 - service running.
+2026-09-06 17:12:57,338 [INFO] Tick #314 - service running.
+2026-09-06 17:31:02,349 [INFO] Tick #315 - service running.
+2026-09-06 17:31:07,423 [INFO] Tick #316 - service running.
+2026-09-06 17:31:12,560 [INFO] Tick #317 - service running.
+2026-09-06 17:31:17,561 [INFO] Tick #318 - service running.
+2026-09-06 17:31:22,562 [INFO] Tick #319 - service running.
+2026-09-06 17:31:27,563 [INFO] Tick #320 - service running.
+2026-09-06 17:31:32,565 [INFO] Tick #321 - service running.
+2026-09-06 17:31:37,566 [INFO] Tick #322 - service running.
+2026-09-06 17:31:42,567 [INFO] Tick #323 - service running.
+2026-09-06 17:31:47,568 [INFO] Tick #324 - service running.
+2026-09-06 17:31:52,569 [INFO] Tick #325 - service running.
+2026-09-06 17:31:57,570 [INFO] Tick #326 - service running.
+2026-09-06 17:32:02,573 [INFO] Tick #327 - service running.
+2026-09-06 17:32:07,573 [INFO] Tick #328 - service running.
+2026-09-06 17:32:12,574 [INFO] Tick #329 - service running.
+2026-09-06 17:32:17,575 [INFO] Tick #330 - service running.
+2026-09-06 17:32:22,576 [INFO] Tick #331 - service running.
+2026-09-06 17:32:27,577 [INFO] Tick #332 - service running.
+2026-09-06 17:32:32,578 [INFO] Tick #333 - service running.
+2026-09-06 17:32:37,579 [INFO] Tick #334 - service running.
+2026-09-06 17:32:42,580 [INFO] Tick #335 - service running.
+2026-09-06 17:32:47,581 [INFO] Tick #336 - service running.
+2026-09-06 17:32:52,581 [INFO] Tick #337 - service running.
+2026-09-06 17:32:57,582 [INFO] Tick #338 - service running.
+2026-09-06 17:33:02,583 [INFO] Tick #339 - service running.
+2026-09-06 17:33:07,584 [INFO] Tick #340 - service running.
+2026-09-06 17:33:12,584 [INFO] Tick #341 - service running.
+2026-09-06 17:33:17,585 [INFO] Tick #342 - service running.
