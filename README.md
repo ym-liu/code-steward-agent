@@ -114,6 +114,49 @@ Run the regression tests from the project directory:
 python -m unittest discover -s tests -v
 ```
 
+## Runtime logs
+
+`GET /logs` reads real application events from `service.log` in the project
+directory. Entries survive server restarts and are returned newest first.
+The existing plain-text history is also readable. New entries include a UTC
+timestamp, severity, source module and message; old entries retain their original
+local timestamps and have `source: null` when no source was recorded.
+Multiline exception details stay with the event that produced them.
+
+Query parameters:
+
+- `limit`: maximum matching entries, from 1 to 1000; default 100.
+- `level`: optional exact level: DEBUG, INFO, WARNING, ERROR or CRITICAL.
+- `search`: optional case-insensitive message text, up to 200 characters.
+
+Filters apply before the limit. `count` is the number returned, not the total
+number of historical entries. No matches return an empty list with HTTP 200.
+Invalid parameters return HTTP 422. An unreadable log file returns HTTP 503
+with a short explanation; a missing log file is treated as an empty history.
+
+```sh
+curl "http://127.0.0.1:8000/logs?limit=20"
+curl "http://127.0.0.1:8000/logs?limit=20&level=WARNING&search=blocked"
+```
+
+The logger captures scanning requests and results, file changes, service
+controls, skipped paths, blocked scans and errors. File-type exclusions are
+summarized per scan. Idle ticks are DEBUG messages and are not recorded at the
+default INFO level, so routine heartbeats do not bury useful events. This
+version uses the existing local log file; it does not add log rotation or an
+AI reasoning module. Filters with no matches may need to scan the full history.
+
+To verify in `/docs`, open `GET /logs`, choose **Try it out**, set `limit` to 20,
+then choose **Execute**. Look under **Server response / Response body**.
+Pause the service, request a scan, and query with `level=WARNING` and
+`search=blocked`: the rejected scan and its reason should appear. Resume the
+service after this check. Reading logs does not itself generate application
+log records. Execute the query again to refresh; the page does not auto-update.
+
+The automated suite includes temporary-file log tests and real HTTP tests of
+the logs controller. Run `python -m unittest discover -s tests -v` after installing
+the existing requirements; no additional test dependency is needed.
+
 ## MVP: A Local-First Architecture
 
 ```mermaid
@@ -125,6 +168,7 @@ flowchart LR
         PeriodicScan["Periodic Full Scanner"]
         ArtifactSvc["Artifacts Service"]
         LogSvc["Logs Service"]
+        LogFile["Human-readable service.log"]
         ConfigSvc["Config Service"]
         Store["SQLite Database\n(artifacts, scans, logs, state)"]
         ConfigFile["Config File (JSON/YAML)"]
@@ -141,7 +185,7 @@ flowchart LR
     EventSensors --> ArtifactSvc
     PeriodicScan --> ArtifactSvc
     ArtifactSvc --> Store
-    LogSvc --> Store
+    LogSvc --> LogFile
     AgentLoop --> LogSvc
 ```
 

@@ -16,9 +16,18 @@ class ConfigService:
             logger.warning("config.yaml not found, using empty config.")
             self._config = {}
             return
-        with open(CONFIG_PATH, "r") as f:
-            self._config = yaml.safe_load(f) or {}
-        logger.info("Config loaded form %s", CONFIG_PATH)
+        try:
+            with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+                loaded = yaml.safe_load(f)
+            if loaded is None:
+                loaded = {}
+            if not isinstance(loaded, dict):
+                raise ValueError("Configuration must be a YAML mapping.")
+        except (OSError, yaml.YAMLError, ValueError):
+            logger.exception("Configuration load failed: %s; previous settings retained.", CONFIG_PATH)
+            raise
+        self._config = loaded
+        logger.info("Config loaded from %s", CONFIG_PATH)
 
     def get_config(self):
          return self._config

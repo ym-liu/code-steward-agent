@@ -4,6 +4,7 @@ import logging
 import threading
 from datetime import datetime
 from enum import Enum
+from Services.LogsService import configure_logging
 
 
 #SERVICE STATE
@@ -16,14 +17,7 @@ class ServiceState(Enum):
 
 #LOGGER SETUP
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[
-        logging.FileHandler("service.log"),
-        logging.StreamHandler()
-    ]
-)
+configure_logging()
 logger = logging.getLogger("code-steward.service")
 
 #CONTROL METHODS
@@ -109,7 +103,7 @@ class CodeStewardService:
         like call the scanner or classifier...
 
         """
-        logger.info("Tick #%d - service running.", self.tick_count)
+        logger.debug("Tick #%d - service running.", self.tick_count)
 
     def on_shutdown(self):
         logger.info(

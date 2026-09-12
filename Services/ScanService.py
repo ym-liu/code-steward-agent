@@ -31,9 +31,13 @@ class ScanService:
 
     def enqueue_manual_scan(self, events=None):
         if not self._is_service_running():
+            logger.warning("Scan blocked: service is %s; start or resume it before scanning.",
+                           self.code_steward_service.state.value)
             return {"message": "Service is not running. Start the service before scanning."}
         if self._is_scanning:
+            logger.warning("Scan blocked: another scan is already in progress.")
             return {"message": "Scan already in progress."}
+        logger.info("Scan requested (%s, %d file events).", "file watcher" if events else "manual", len(events or []))
         results = self._run_scan(events=events)
         return {
             "message": "Scan complete.",
@@ -45,6 +49,7 @@ class ScanService:
         self._is_scanning  = True
         self._last_scan_at = datetime.now(timezone.utc)
         results = []
+        extension_skips = 0
     
         try:
             
@@ -53,6 +58,8 @@ class ScanService:
             include_extensions = self.config_service.get("scanning", "include_extensions", default=[])
             exclude_folders = self.config_service.get("scanning", "exclude_folders", default=[])
             max_file_size = self.config_service.get("scanning", "max_file_size_bytes", default=10485760)
+            if not root_paths:
+                logger.warning("Scan has no configured root paths; no files will be scanned.")
             
             # Load checkpoint to skip already seen files
             checkpoint = self._load_checkpoint()
@@ -60,7 +67,7 @@ class ScanService:
             
             for root_path in root_paths:
                 if not os.path.exists(root_path):
-                    logger.warning("Rooth path does not exist, skipping: %s", root_path)
+                    logger.warning("Root path does not exist, skipping: %s", root_path)
                     continue
                 
                 logger.info("Scanning: %s", root_path)
@@ -68,6 +75,9 @@ class ScanService:
                 for dirpath, dirnames, filenames in os.walk(root_path):
                     
                     # Remove excluded folders 
+                    for excluded in dirnames:
+                        if excluded in exclude_folders:
+                            logger.info("Directory skipped by exclude_folders: %s", os.path.join(dirpath, excluded))
                     dirnames[:] = [
                         d for d in dirnames
                         if d not in exclude_folders
@@ -78,6 +88,8 @@ class ScanService:
                         if include_extensions and not any(
                             filename.endswith(ext) for ext in include_extensions
                         ):
+                            extension_skips += 1
+                            logger.debug("File skipped by extension filter: %s", os.path.join(dirpath, filename))
                             continue
      
                         filepath = os.path.abspath(os.path.join(dirpath, filename))
@@ -138,13 +150,16 @@ class ScanService:
 
                             results.append(classified)
                             checkpoint[filepath] = file_hash
-                            logger.info("Found: %s", filepath)
+                            logger.info("Artifact %s: %s%s", change_type, filepath,
+                                        " (previous path: " + previous_path + ")" if previous_path else "")
                         
                         
             self._save_checkpoint(checkpoint)
             
             self._last_results = results
             self._is_scanning = False
+            if extension_skips:
+                logger.info("Skipped %d files because their extensions are not in include_extensions.", extension_skips)
             logger.info("Scan complete. %d new/changed files found.", len(results))
             return results
     
@@ -215,6 +230,7 @@ class ScanService:
                 checkpoint.pop(source_path, None)
                 if self.artifacts_service is not None:
                     self.artifacts_service.remove(source_path)
+                logger.info("File deletion processed: %s", source_path)
                 continue
 
             target_path = source_path
