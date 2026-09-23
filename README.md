@@ -1,5 +1,26 @@
 # code-steward-agent
 
+## AI model testing
+
+1. Install **[Python 3.10+](https://www.python.org/downloads/)** and **[Ollama](https://ollama.com/download)**. Open Ollama.
+2. In this repository's folder, run:
+
+   ```sh
+   python ai_test.py
+   ```
+
+3. Choose a model from the menu. Missing models download automatically; results go to `ai-results/`.
+
+**Defaults:** CPU only, six sample files, no extra Python packages or FastAPI setup.
+
+| Want to… | Command |
+|---|---|
+| Compare all three models | `python ai_test.py compare --pull` |
+| Switch model | `python ai_test.py run --model gemma-small --pull` |
+| Try without Ollama (scripted demo) | `python ai_test.py demo` |
+
+**[Short setup and teammate handoff guide](docs/AI_TESTING.md)**
+
 ## Dependencies
 
 - **Python**

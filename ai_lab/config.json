@@ -1,0 +1,18 @@
+{
+  "base_url": "http://127.0.0.1:11434",
+  "models": {
+    "qwen-small": "qwen2.5-coder:0.5b-instruct-q4_K_M",
+    "qwen-medium": "qwen2.5-coder:1.5b-instruct-q4_K_M",
+    "gemma-small": "gemma3:1b-it-q4_K_M"
+  },
+  "default_model": "qwen-small",
+  "device": "cpu",
+  "timeout_seconds": 180,
+  "num_ctx": 2048,
+  "num_predict": 512,
+  "num_thread": 2,
+  "temperature": 0,
+  "seed": 42,
+  "max_source_chars": 2500,
+  "max_files": 100
+}
