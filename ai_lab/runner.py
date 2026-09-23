@@ -107,6 +107,7 @@ def run_experiment(client, config, models, cases, output_root, repeat=1, allow_p
     metadata = {
         "run_id": run_id, "started_at": utc_now(), "mode": "demo" if demo else "ollama",
         "status": "running", "config": config, "models": models, "repeat": repeat,
+        "suites": sorted({case.get("suite", "custom") for case in cases}),
         "expected_records": len(models) * len(cases) * repeat,
         "schema_version": SCHEMA_VERSION, "schema_hash": digest(json.dumps(SCHEMA, sort_keys=True)),
         "prompt_hash": digest(PROMPT), "git_revision": git_revision(),
@@ -137,6 +138,7 @@ def run_experiment(client, config, models, cases, output_root, repeat=1, allow_p
                         row.update(record_id=f"m{model_index+1}-r{iteration}-s{sample_index+1}",
                                    model=tag, sample=case["name"], repeat=iteration,
                                    source_hash=case.get("source_hash"), model_digest=details.get("digest"), demo=demo)
+                        row.update({key: case.get(key) for key in ("case_id", "suite", "category", "difficulty", "family", "dataset_version", "manifest_hash")})
                         records.append(row)
                         with (folder / "results.jsonl").open("a", encoding="utf-8") as stream:
                             stream.write(json.dumps(row, ensure_ascii=False) + "\n")

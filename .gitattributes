@@ -1,0 +1,2 @@
+# Preserve intentional invalid encodings, NUL bytes and whitespace in input fixtures.
+ai_lab/datasets/v1/robustness/cases/* -text -diff

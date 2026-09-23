@@ -1,0 +1,251 @@
+{
+  "version": "1.0",
+  "suite": "holdout",
+  "provenance": "Original synthetic fixtures authored for Code Steward Agent; not executed during creation.",
+  "cases": [
+    {
+      "id": "H01",
+      "file": "cases/H01.py",
+      "category": "data_processing",
+      "family": "ip_literal_validation",
+      "difficulty": "medium",
+      "evidence_lines": [
+        6,
+        7,
+        9,
+        10
+      ],
+      "rubric": {
+        "purpose": "Validate input as IP address literals and print only valid IPv4 addresses.",
+        "inputs_outputs": "Reads stdin lines, skips parse failures and IPv6, and prints the accepted addresses.",
+        "dependencies": "Standard library ipaddress and sys.",
+        "evidence": "Lines 6, 7, 9, 10: ip_address parses the text and the version comparison filters IPv4.",
+        "unknowns": "Actual addresses/counts are unknown; accepting syntax does not establish reachability or safety.",
+        "must_not_claim": "Do not claim DNS lookup, ping, geolocation, network scanning or live connectivity checks."
+      }
+    },
+    {
+      "id": "H02",
+      "file": "cases/H02.py",
+      "category": "uncertainty",
+      "family": "ini_connection_description",
+      "difficulty": "medium",
+      "evidence_lines": [
+        4,
+        5,
+        6,
+        7
+      ],
+      "rubric": {
+        "purpose": "Read service settings from an INI file and print a host:port description.",
+        "inputs_outputs": "Reads service.ini; requires a service section and host; uses port 8080 if that key is absent, then prints.",
+        "dependencies": "Standard library configparser; external service.ini is referenced but not supplied.",
+        "evidence": "Lines 4, 5, 6, 7: Section/key reads supply host and port; getint sets the fallback; print emits the description.",
+        "unknowns": "Actual host and config contents are unknown; missing section/host can fail despite the port fallback.",
+        "must_not_claim": "Do not claim the program connects to the host, starts a service or defaults every missing setting."
+      }
+    },
+    {
+      "id": "H03",
+      "file": "cases/H03.py",
+      "category": "data_processing",
+      "family": "html_href_extraction",
+      "difficulty": "medium",
+      "evidence_lines": [
+        5,
+        6,
+        8,
+        11
+      ],
+      "rubric": {
+        "purpose": "Parse supplied HTML and print href values on anchor start tags.",
+        "inputs_outputs": "Reads HTML from stdin; prints each encountered anchor href value.",
+        "dependencies": "Standard library html.parser and sys.",
+        "evidence": "Lines 5, 6, 8, 11: handle_starttag selects a tags and href attributes; feed receives stdin text.",
+        "unknowns": "Actual HTML/links are unknown; href values are not validated or resolved against a base URL.",
+        "must_not_claim": "Do not claim this downloads web pages, follows links, deduplicates URLs or checks link health."
+      }
+    },
+    {
+      "id": "H04",
+      "file": "cases/H04.py",
+      "category": "data_processing",
+      "family": "seeded_synthetic_rows",
+      "difficulty": "medium",
+      "evidence_lines": [
+        5,
+        7,
+        8,
+        9
+      ],
+      "rubric": {
+        "purpose": "Generate three synthetic rows with IDs and seeded pseudorandom integer values, printed as CSV.",
+        "inputs_outputs": "No external data input is shown; writes a header and three rows to stdout, with IDs 0..2 and values 1..10 inclusive.",
+        "dependencies": "Standard library csv, random and sys; Random(7) is a local seeded generator.",
+        "evidence": "Lines 5, 7, 8, 9: The fixed seed, range(3) and randint bounds define generation and CSV output.",
+        "unknowns": "Exact generated values need verification for the intended runtime; no real-world data source or business meaning is supplied.",
+        "must_not_claim": "Do not call the numbers cryptographically secure, invent measured data, or assert a named output file."
+      }
+    },
+    {
+      "id": "H05",
+      "file": "cases/H05.py",
+      "category": "data_processing",
+      "family": "median_numeric_arguments",
+      "difficulty": "easy",
+      "evidence_lines": [
+        4,
+        5
+      ],
+      "rubric": {
+        "purpose": "Print the median of numeric command-line arguments.",
+        "inputs_outputs": "Converts arguments after the script name to floats; outputs their median to stdout.",
+        "dependencies": "Standard library statistics and sys.",
+        "evidence": "Lines 4, 5: The argument conversion and median call distinguish this from computing a mean.",
+        "unknowns": "Actual values/result are unknown; an empty list or nonnumeric argument can fail.",
+        "must_not_claim": "Do not describe arithmetic mean, CSV input or automatic handling of invalid/empty input."
+      }
+    },
+    {
+      "id": "H06",
+      "file": "cases/H06.py",
+      "category": "uncertainty",
+      "family": "iso_timestamp_conversion",
+      "difficulty": "hard",
+      "evidence_lines": [
+        4,
+        5
+      ],
+      "rubric": {
+        "purpose": "Parse a command-line ISO-format timestamp and print an ISO-format UTC conversion.",
+        "inputs_outputs": "Reads the first CLI argument; emits a converted timestamp string to stdout.",
+        "dependencies": "Standard library datetime and sys.",
+        "evidence": "Lines 4, 5: fromisoformat parses and astimezone(timezone.utc) performs the conversion.",
+        "unknowns": "Actual input is unknown. An offset-free/naive input is interpreted using local timezone behavior, so environment matters.",
+        "must_not_claim": "Do not assume every input includes a timezone or that an offset-free time is already UTC; do not invent the resulting timestamp."
+      }
+    },
+    {
+      "id": "H07",
+      "file": "cases/H07.js",
+      "category": "language_variation",
+      "family": "http_status_probe_definition",
+      "difficulty": "medium",
+      "evidence_lines": [
+        2,
+        3,
+        5
+      ],
+      "rubric": {
+        "purpose": "Export an asynchronous function that fetches a caller-provided URL and returns response status information.",
+        "inputs_outputs": "check receives a URL; when called it performs a request and resolves to status/ok fields. No call is shown.",
+        "dependencies": "A runtime with fetch and CommonJS module.exports support; no imported third-party package is shown.",
+        "evidence": "Lines 2, 3, 5: The fetch call and returned status/ok object specify behavior; module.exports exposes the function.",
+        "unknowns": "Actual URL, response, runtime support and error outcomes are unknown; no response body is consumed here.",
+        "must_not_claim": "Do not claim it parses JSON, retries, checks a particular website or made a request during static analysis."
+      }
+    },
+    {
+      "id": "H08",
+      "file": "cases/H08.ts",
+      "category": "language_variation",
+      "family": "typed_active_id_projection",
+      "difficulty": "medium",
+      "evidence_lines": [
+        1,
+        3,
+        4
+      ],
+      "rubric": {
+        "purpose": "Define a TypeScript function selecting IDs of users whose enabled field is true.",
+        "inputs_outputs": "Receives a typed User array and returns a string array of selected IDs; does not mutate the input array in this expression.",
+        "dependencies": "TypeScript and array filter/map; no imported packages.",
+        "evidence": "Lines 1, 3, 4: The type describes fields; the implemented filter/map expression defines runtime selection and projection.",
+        "unknowns": "Actual user records and caller are unknown; static types do not implement validation of arbitrary runtime input.",
+        "must_not_claim": "Do not claim database access, user authentication, sorting, deduplication or comprehensive runtime schema validation."
+      }
+    },
+    {
+      "id": "H09",
+      "file": "cases/H09.sh",
+      "category": "file_io",
+      "family": "shell_log_path_listing",
+      "difficulty": "medium",
+      "evidence_lines": [
+        2,
+        3,
+        4
+      ],
+      "rubric": {
+        "purpose": "List paths matching immediate regular .log files under the first argument directory.",
+        "inputs_outputs": "Takes a directory argument; prints each matched regular-file path, one per line.",
+        "dependencies": "sh-compatible shell with glob expansion, file test and printf.",
+        "evidence": "Lines 2, 3, 4: The glob selects immediate matches, -f skips non-files/unmatched literal patterns, and printf prints paths.",
+        "unknowns": "Actual directory/files and behavior with missing arguments depend on supplied input; no recursive traversal is present.",
+        "must_not_claim": "Do not claim reading log contents, deleting files, recursive search or counting errors."
+      }
+    },
+    {
+      "id": "H10",
+      "file": "cases/H10.ps1",
+      "category": "language_variation",
+      "family": "powershell_csv_status_groups",
+      "difficulty": "medium",
+      "evidence_lines": [
+        2,
+        3,
+        5
+      ],
+      "rubric": {
+        "purpose": "Group imported CSV rows by Status and emit group names/counts as JSON output.",
+        "inputs_outputs": "Reads a CSV at the Path parameter; emits JSON for selected Name/Count group properties to the pipeline.",
+        "dependencies": "PowerShell Import-Csv, Group-Object, Select-Object and ConvertTo-Json.",
+        "evidence": "Lines 2, 3, 5: The pipeline performs import, grouping, projection and JSON conversion in order.",
+        "unknowns": "Actual statuses/counts are unknown; single versus multiple results can affect the JSON shape.",
+        "must_not_claim": "Do not claim it writes a .json file, returns every original row, or always emits an array regardless of group count."
+      }
+    },
+    {
+      "id": "H11",
+      "file": "cases/H11.rb",
+      "category": "language_variation",
+      "family": "ruby_port_string_validation",
+      "difficulty": "hard",
+      "evidence_lines": [
+        2,
+        3,
+        5,
+        6
+      ],
+      "rubric": {
+        "purpose": "Define a parser for a base-10 port string, returning an integer within 1..65535 or nil on handled failures.",
+        "inputs_outputs": "Receives value, converts and range-checks it; returns the number or nil. No caller or network operation is present.",
+        "dependencies": "Ruby core Integer conversion, Range and exception handling; no gem.",
+        "evidence": "Lines 2, 3, 5, 6: Integer(value, 10), the inclusive range, and rescue define success and failure paths.",
+        "unknowns": "Actual input is unknown; accepted number does not establish that a port is open or a service exists.",
+        "must_not_claim": "Do not claim network probing, acceptance of zero/65536 or that all invalid input raises out of the function."
+      }
+    },
+    {
+      "id": "H12",
+      "file": "cases/H12.py",
+      "category": "file_io",
+      "family": "temporary_workspace_lifecycle",
+      "difficulty": "hard",
+      "evidence_lines": [
+        4,
+        6,
+        7,
+        8
+      ],
+      "rubric": {
+        "purpose": "Create a temporary directory, write/read a marker within it, then leave the context so normal cleanup occurs.",
+        "inputs_outputs": "No external input is shown; temporarily writes ready.txt, prints ready, then prints a closure message.",
+        "dependencies": "Standard library tempfile and pathlib.",
+        "evidence": "Lines 4, 6, 7, 8: The with context controls lifetime; write_text/read_text operate inside it; the final print is outside.",
+        "unknowns": "Actual temporary path and exceptional filesystem outcomes are unknown; results are predictions from code inspection.",
+        "must_not_claim": "Do not claim ready.txt is intentionally retained after normal completion or that the evaluator executed these file operations."
+      }
+    }
+  ]
+}

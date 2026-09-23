@@ -16,10 +16,13 @@
 | Want to… | Command |
 |---|---|
 | Compare all three models | `python ai_test.py compare --pull` |
+| Compare on the 24-case test set | `python ai_test.py compare --suite dev --pull` |
 | Switch model | `python ai_test.py run --model gemma-small --pull` |
 | Try without Ollama (scripted demo) | `python ai_test.py demo` |
 
 **[Short setup and teammate handoff guide](docs/AI_TESTING.md)**
+
+**[Test dataset: 24 development cases, 12 final cases and 6 input checks](ai_lab/datasets/v1/README.md)**
 
 ## Dependencies
 

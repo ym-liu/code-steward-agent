@@ -110,23 +110,25 @@ def snapshot(path, label, max_chars, rubric=None):
     case = {"name": label, "rubric": rubric or {}, "source_path": str(path.resolve())}
     try:
         if path.is_symlink() or getattr(path, "is_junction", lambda: False)():
-            raise LabError("Linked files are skipped.", "input_skipped")
+            raise LabError("Linked files are skipped.", "input_link")
         if path.suffix.lower() not in EXTENSIONS:
-            raise LabError(f"Unsupported extension {path.suffix!r}.", "input_skipped")
+            raise LabError(f"Unsupported extension {path.suffix!r}.", "input_extension")
         with path.open("rb") as stream:
             raw = stream.read(max_chars * 4 + 1)
         if len(raw) > max_chars * 4:
-            raise LabError("File exceeds the input budget; use a smaller file.", "input_skipped")
+            raise LabError("File exceeds the input budget; use a smaller file.", "input_too_large")
         source = raw.decode("utf-8-sig")
         if "\x00" in source:
-            raise LabError("Binary input is not supported.", "input_skipped")
+            raise LabError("Binary input is not supported.", "input_binary")
         if not source.strip():
-            raise LabError("Empty input.", "input_skipped")
+            raise LabError("Empty input.", "input_empty")
         if len(source) > max_chars:
-            raise LabError(f"File has {len(source)} characters; limit is {max_chars}. No truncation was applied.", "input_skipped")
+            raise LabError(f"File has {len(source)} characters; limit is {max_chars}. No truncation was applied.", "input_too_large")
         case.update(source=source, source_hash=digest(raw), facts=static_facts(source, path.suffix.lower()))
     except (OSError, UnicodeError, LabError) as error:
         case["input_error"] = str(error)
+        case["input_error_code"] = (error.code if isinstance(error, LabError) else
+                                    "input_encoding" if isinstance(error, UnicodeError) else "input_unreadable")
     return case
 
 

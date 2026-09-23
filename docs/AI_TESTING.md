@@ -15,6 +15,7 @@ python ai_test.py
 ```
 
 Choose **1** for the smallest model, **A** to compare all presets, or **C** for a custom model.
+Then choose **1** for six quick samples, **2** for 24 development cases, or **3** for 12 final cases.
 Missing models download automatically. The first download needs internet; installed models run locally.
 
 Already have the repository? Update your `main` checkout with `git pull --ff-only` first.
@@ -32,8 +33,8 @@ On Windows, use `py -3` if `python` is unavailable; on macOS/Linux, use `python3
 # Test one model; change the alias to switch
 python ai_test.py run --model qwen-medium --pull
 
-# Compare all three on the same samples
-python ai_test.py compare --pull
+# Compare all three on the development test set
+python ai_test.py compare --suite dev --pull
 
 # Use your own short UTF-8 file (a folder also works)
 python ai_test.py run --model qwen-small --input "C:/samples/tool.py" --pull
@@ -45,6 +46,9 @@ python ai_test.py run --model "qwen2.5-coder:3b-instruct-q4_K_M" --pull
 `--pull` downloads missing models; it does not update installed ones. Custom models must support
 text chat and JSON-schema output. Add `--repeat 3` for three passes. Presets and resource limits
 are editable in [`ai_lab/config.json`](../ai_lab/config.json).
+
+Use `--suite holdout` only after fixing prompts/settings. Run `python ai_test.py check-inputs`
+for six offline invalid-input checks. [Dataset coverage and reference answers](../ai_lab/datasets/v1/README.md).
 
 ## 3. Review and send back results
 
@@ -78,7 +82,7 @@ The folder also contains raw responses, settings and exact input files; check cu
 | Input too long | Default limit is 2,500 characters; select a smaller file or edit the config |
 
 **How to interpret results:** valid JSON is not proof of a correct explanation; review quality manually.
-The six examples are starter cases. Memory figures are Ollama allocation snapshots, not peak RAM.
+Case categories appear in the reports. Memory figures are Ollama allocation snapshots, not peak RAM.
 Demo runs do not test AI performance. Minimum hardware support still needs testing on target PCs.
 The lab reads code as text and never executes it; it is not yet connected to the scanner's background workflow.
 

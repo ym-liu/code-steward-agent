@@ -1,0 +1,109 @@
+{
+  "version": "1.0",
+  "suite": "robustness",
+  "provenance": "Original synthetic fixtures authored for Code Steward Agent; not executed during creation.",
+  "cases": [
+    {
+      "id": "R01",
+      "file": "cases/R01.py",
+      "category": "input_validation",
+      "family": "r01_input_boundary",
+      "difficulty": "boundary",
+      "expected_input_error": "input_empty",
+      "evidence_lines": [],
+      "rubric": {
+        "purpose": "Zero-byte text file.",
+        "inputs_outputs": "The framework should reject this input before any model call.",
+        "dependencies": "No model or external service is needed.",
+        "evidence": "Inspect raw bytes, file size or extension; not a model line-evidence test.",
+        "unknowns": "No semantic interpretation is required for this rejected input.",
+        "must_not_claim": "Do not score the expected rejection as AI answer quality or label it a successful model analysis."
+      }
+    },
+    {
+      "id": "R02",
+      "file": "cases/R02.txt",
+      "category": "input_validation",
+      "family": "r02_input_boundary",
+      "difficulty": "boundary",
+      "expected_input_error": "input_empty",
+      "evidence_lines": [],
+      "rubric": {
+        "purpose": "Whitespace-only text file.",
+        "inputs_outputs": "The framework should reject this input before any model call.",
+        "dependencies": "No model or external service is needed.",
+        "evidence": "Inspect raw bytes, file size or extension; not a model line-evidence test.",
+        "unknowns": "No semantic interpretation is required for this rejected input.",
+        "must_not_claim": "Do not score the expected rejection as AI answer quality or label it a successful model analysis."
+      }
+    },
+    {
+      "id": "R03",
+      "file": "cases/R03.py",
+      "category": "input_validation",
+      "family": "r03_input_boundary",
+      "difficulty": "boundary",
+      "expected_input_error": "input_too_large",
+      "evidence_lines": [],
+      "rubric": {
+        "purpose": "Over the default 2500-character source budget.",
+        "inputs_outputs": "The framework should reject this input before any model call.",
+        "dependencies": "No model or external service is needed.",
+        "evidence": "Inspect raw bytes, file size or extension; not a model line-evidence test.",
+        "unknowns": "No semantic interpretation is required for this rejected input.",
+        "must_not_claim": "Do not score the expected rejection as AI answer quality or label it a successful model analysis."
+      }
+    },
+    {
+      "id": "R04",
+      "file": "cases/R04.py",
+      "category": "input_validation",
+      "family": "r04_input_boundary",
+      "difficulty": "boundary",
+      "expected_input_error": "input_binary",
+      "evidence_lines": [],
+      "rubric": {
+        "purpose": "NUL-containing bytes with a misleading .py extension.",
+        "inputs_outputs": "The framework should reject this input before any model call.",
+        "dependencies": "No model or external service is needed.",
+        "evidence": "Inspect raw bytes, file size or extension; not a model line-evidence test.",
+        "unknowns": "No semantic interpretation is required for this rejected input.",
+        "must_not_claim": "Do not score the expected rejection as AI answer quality or label it a successful model analysis."
+      }
+    },
+    {
+      "id": "R05",
+      "file": "cases/R05.py",
+      "category": "input_validation",
+      "family": "r05_input_boundary",
+      "difficulty": "boundary",
+      "expected_input_error": "input_encoding",
+      "evidence_lines": [],
+      "rubric": {
+        "purpose": "Latin-1 byte sequence that is invalid UTF-8.",
+        "inputs_outputs": "The framework should reject this input before any model call.",
+        "dependencies": "No model or external service is needed.",
+        "evidence": "Inspect raw bytes, file size or extension; not a model line-evidence test.",
+        "unknowns": "No semantic interpretation is required for this rejected input.",
+        "must_not_claim": "Do not score the expected rejection as AI answer quality or label it a successful model analysis."
+      }
+    },
+    {
+      "id": "R06",
+      "file": "cases/R06.dat",
+      "category": "input_validation",
+      "family": "r06_input_boundary",
+      "difficulty": "boundary",
+      "expected_input_error": "input_extension",
+      "evidence_lines": [],
+      "rubric": {
+        "purpose": "A file type unsupported by the single-file text analyzer.",
+        "inputs_outputs": "The framework should reject this input before any model call.",
+        "dependencies": "No model or external service is needed.",
+        "evidence": "Inspect raw bytes, file size or extension; not a model line-evidence test.",
+        "unknowns": "No semantic interpretation is required for this rejected input.",
+        "must_not_claim": "Do not score the expected rejection as AI answer quality or label it a successful model analysis."
+      }
+    }
+  ]
+}

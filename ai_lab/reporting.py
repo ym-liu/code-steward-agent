@@ -8,8 +8,8 @@ from statistics import mean
 from .core import LabError, read_json
 
 SCORES = ["purpose_score", "io_score", "dependencies_score", "evidence_score", "uncertainty_score"]
-REVIEW_FIELDS = ["record_id", "model", "sample", "repeat", *SCORES, "unsupported_claims", "notes"]
-RESULT_FIELDS = ["record_id", "model", "sample", "repeat", "status", "json_valid", "schema_valid",
+REVIEW_FIELDS = ["record_id", "model", "sample", "repeat", "case_id", "suite", "category", "difficulty", *SCORES, "unsupported_claims", "notes"]
+RESULT_FIELDS = ["record_id", "model", "sample", "repeat", "case_id", "suite", "category", "difficulty", "status", "json_valid", "schema_valid",
                  "evidence_checks_passed", "wall_ms", "load_ms", "prompt_tokens", "output_tokens",
                  "tokens_per_second", "ollama_allocated_mib", "size_vram_bytes", "cpu_verified", "error"]
 
@@ -46,7 +46,7 @@ def human_reviews(path, records):
     scores, seen, warnings = {}, set(), []
     with path.open(encoding="utf-8-sig", newline="") as stream:
         reader = csv.DictReader(stream)
-        if not set(REVIEW_FIELDS).issubset(reader.fieldnames or []):
+        if not {"record_id", *SCORES, "unsupported_claims", "notes"}.issubset(reader.fieldnames or []):
             raise LabError("review.csv is missing columns. Restore its original header.", "review_error")
         for row in reader:
             key = row["record_id"]
@@ -110,6 +110,19 @@ def regenerate(folder):
               "Do not compare averages from different sample sets/settings or mostly unreviewed rows.", ""]
     if metadata.get("errors") or warnings:
         lines += ["## Run notes", ""] + [f"- {md(e)}" for e in metadata.get("errors", []) + warnings] + [""]
+    categories = sorted({r["category"] for r in records if r.get("category")})
+    if categories:
+        lines += ["## By category", "", "| Model | Category | Rows | Valid* | Mean human /10 (reviewed rows) |",
+                  "|---|---|---:|---:|---:|"]
+        for model in metadata["models"]:
+            for category in categories:
+                rows = [r for r in records if r["model"] == model and r.get("category") == category]
+                if not rows:
+                    continue
+                graded = [scores[r["record_id"]] for r in rows if r["record_id"] in scores]
+                human = f"{mean(graded):.2f} ({len(graded)})" if graded else "unreviewed"
+                lines.append(f"| {md(model)} | {md(category)} | {len(rows)} | {sum(r['status'] == 'valid' for r in rows)} | {human} |")
+        lines += ["", "Small category counts are descriptive only. Compare the same fully reviewed cases, not mixed suites.", ""]
     cases = {case["name"]: case for case in inputs}
     for row in records:
         lines += [f"## {md(row['record_id'])}: {md(row['model'])} / {md(row['sample'])}", "",
