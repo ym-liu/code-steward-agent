@@ -19,7 +19,7 @@ def parser():
         if name in {"run", "compare", "demo"}:
             source = p.add_mutually_exclusive_group()
             source.add_argument("--input", type=Path, help="Your text file/folder")
-            source.add_argument("--suite", choices=MODEL_SUITES, default="smoke", help="smoke: 6 quick cases; dev: 24; holdout: 12 final cases")
+            source.add_argument("--suite", choices=MODEL_SUITES, default="smoke", help="smoke: all supported files in ai_lab/samples; dev: 24; holdout: 12 final cases")
             p.add_argument("--output", type=Path, default=ROOT / "ai-results", help="Results root directory")
             p.add_argument("--repeat", type=int, default=1, help="1-20 passes through the same samples")
             p.add_argument("--device", choices=("cpu", "auto"), help="cpu by default; auto allows GPU")
@@ -38,7 +38,8 @@ def parser():
 
 
 def choose_suite(arguments):
-    print("\nTest set: 1. Quick check (6)  2. Development (24)  3. Final holdout (12)")
+    print("\nTest set: 1. Samples folder  2. Development (24)  3. Final holdout (12)")
+    print("Option 1 tests all supported files in ai_lab/samples, including added files and subfolders.")
     print("Keep holdout unused until your prompt and settings are fixed.")
     selected = input("Choose a test set [1]: ").strip() or "1"
     suites = {"1": "smoke", "2": "dev", "3": "holdout"}
@@ -54,7 +55,7 @@ def guided_args():
     for n, alias in enumerate(aliases, 1):
         print(f"  {n}. Test {alias}: {config['models'][alias]}")
     print("  A. Compare all presets\n  C. Test a custom local model\n  D. Offline demo (no Ollama needed)\n  I. Check invalid inputs (no AI)\n  H. Check setup\n  Q. Quit")
-    print(f"\nReal tests use bundled samples with device={config['device']} and download missing models.\n")
+    print(f"\nReal tests use the selected test set with device={config['device']} and download missing models.\n")
     choice = input("Choose an option [1]: ").strip().lower() or "1"
     if choice == "q":
         return None
@@ -101,7 +102,7 @@ def main(argv=None):
             for alias, tag in config["models"].items():
                 state = "installed" if client.match(installed, tag) else "missing (use --pull)"
                 print(f"  {alias}: {tag} - {state}")
-            print(f"Bundled samples: {len(collect_cases(None, config))}")
+            print(f"Samples folder files: {len(collect_cases(None, config))}")
             print("Setup checked. No inference was performed.")
             return 0
         if not 1 <= args.repeat <= 20:

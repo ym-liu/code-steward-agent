@@ -134,9 +134,13 @@ def snapshot(path, label, max_chars, rubric=None):
 
 def collect_cases(input_path, config):
     if input_path is None:
-        manifest = read_json(LAB / "samples" / "manifest.json")
-        cases = [snapshot(LAB / "samples" / item["file"], item["file"],
-                          config["max_source_chars"], item["rubric"]) for item in manifest]
+        cases = collect_cases(LAB / "samples", config)
+        # The manifest supplies reference answers, not the list of files to test.
+        manifest_path = LAB / "samples" / "manifest.json"
+        manifest = read_json(manifest_path) if manifest_path.exists() else []
+        rubrics = {Path(item["file"]).as_posix(): item["rubric"] for item in manifest}
+        for case in cases:
+            case["rubric"] = rubrics.get(case["name"], {})
     else:
         base = Path(input_path).expanduser().absolute()
         if not base.exists():

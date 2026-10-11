@@ -124,6 +124,35 @@ class CoreTests(unittest.TestCase):
         with self.assertRaisesRegex(LabError, "Too many"):
             collect_cases(self.root, self.config)
 
+    def test_default_samples_discovers_added_files_and_preserves_available_references(self):
+        self.write("samples/original.py", "print(1)\n")
+        self.write("samples/new.py", "print(2)\n")
+        self.write("samples/nested/another.sh", "echo hello\n")
+        self.write("samples/node_modules/ignored.js", "secret")
+        self.write("samples/ignored.bin", "ignored")
+        rubric = {"purpose": "REFERENCE_ONLY"}
+        manifest = self.root / "samples" / "manifest.json"
+        save_json(manifest, [{"file": "original.py", "rubric": rubric},
+                             {"file": "removed.py", "rubric": rubric}])
+        with patch("ai_lab.core.LAB", self.root):
+            cases = collect_cases(None, self.config)
+            self.assertEqual([c["name"] for c in cases], ["nested/another.sh", "new.py", "original.py"])
+            self.assertEqual(cases[-1]["rubric"], rubric)
+            self.assertEqual(cases[1]["rubric"], {})
+            self.assertTrue(all("input_error" not in c for c in cases))
+            self.assertNotIn("REFERENCE_ONLY", json.dumps(messages_for(cases[-1])))
+            manifest.unlink()
+            self.assertEqual([c["name"] for c in collect_cases(None, self.config)],
+                             [c["name"] for c in cases])
+
+    def test_default_samples_enforces_folder_limit(self):
+        self.write("samples/a.py", "print(1)\n")
+        self.write("samples/b.py", "print(2)\n")
+        save_json(self.root / "samples" / "manifest.json", [{"file": "a.py", "rubric": {}}])
+        self.config["max_files"] = 1
+        with patch("ai_lab.core.LAB", self.root), self.assertRaisesRegex(LabError, "Too many"):
+            collect_cases(None, self.config)
+
     def test_reference_answers_never_enter_model_messages(self):
         cases = collect_cases(None, self.config)
         self.assertEqual(len(cases), 6)
@@ -339,6 +368,26 @@ class HttpWorkflowTests(unittest.TestCase):
         self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
         folder = next((self.root / "cli-output").iterdir())
         self.assertTrue((folder / "review.csv").exists())
+
+    def test_default_cli_sends_new_samples_to_model_and_saves_them_in_report(self):
+        samples = self.root / "samples"
+        samples.mkdir()
+        (samples / "a.py").write_text("print(1)\n", encoding="utf-8")
+        (samples / "new.py").write_text("print(2)\n", encoding="utf-8")
+        save_json(samples / "manifest.json", [{"file": "a.py", "rubric": {"purpose": "REFERENCE_ONLY"}}])
+        config_path = self.root / "config.json"
+        save_json(config_path, self.config)
+        output = self.root / "cli-output"
+        with patch("ai_lab.core.LAB", self.root), redirect_stdout(io.StringIO()):
+            code = main(["run", "--config", str(config_path), "--output", str(output)])
+        self.assertEqual(code, 0)
+        requests = [body for path, body in self.server.state["requests"] if path == "/api/chat"]
+        self.assertEqual([json.loads(r["messages"][1]["content"])["file"] for r in requests], ["a.py", "new.py"])
+        self.assertNotIn("REFERENCE_ONLY", json.dumps(requests))
+        folder = next(output.iterdir())
+        with (folder / "results.csv").open(encoding="utf-8-sig", newline="") as stream:
+            self.assertEqual([row["sample"] for row in csv.DictReader(stream)], ["a.py", "new.py"])
+        self.assertIn("new.py", (folder / "summary.md").read_text(encoding="utf-8"))
 
     def test_bad_config_returns_friendly_cli_error(self):
         path = self.root / "broken.json"

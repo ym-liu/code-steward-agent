@@ -1,7 +1,7 @@
 # AI model testing — quick start
 
 Test how well local models explain a script's purpose, inputs, outputs and dependencies.
-**Defaults: CPU only, six bundled samples, no pip install or FastAPI setup.**
+**Defaults: CPU only, all supported files in `ai_lab/samples/`, no pip install or FastAPI setup.**
 
 ## 1. Install and run
 
@@ -15,13 +15,23 @@ python ai_test.py
 ```
 
 Choose **1** for the smallest model, **A** to compare all presets, or **C** for a custom model.
-Then choose **1** for six quick samples, **2** for 24 development cases, or **3** for 12 final cases.
+Then choose **1** for all files in the samples folder, **2** for 24 development cases, or **3** for 12 final cases.
 Missing models download automatically. The first download needs internet; installed models run locally.
 
 Already have the repository? Update your `main` checkout with `git pull --ff-only` first.
 On Windows, use `py -3` if `python` is unavailable; on macOS/Linux, use `python3`.
 
 ## 2. Switch models or samples
+
+To test new files, add them to `ai_lab/samples/`, run `python ai_test.py`, and choose test set **1**.
+The lab finds supported files automatically, including files in subfolders; no manifest edits are needed.
+Six examples are included. Their reference checklists stay available; new files can be reviewed manually.
+
+Supported extensions: `.py`, `.sh`, `.bat`, `.ps1`, `.js`, `.ts`, `.rb`, `.pl`, and `.txt`.
+Use non-empty UTF-8 text. By default, each file must fit within 2,500 characters and a folder can
+contain at most 100 supported files. Invalid inputs appear as skipped records in the report;
+unsupported extensions are ignored. Generated/dependency folders such as `ai-results/`,
+`node_modules/`, and `.git/` are excluded.
 
 | Alias | Model (4-bit instruction version) |
 |---|---|
@@ -39,6 +49,9 @@ python ai_test.py compare --suite dev --pull
 # Use your own short UTF-8 file (a folder also works)
 python ai_test.py run --model qwen-small --input "C:/samples/tool.py" --pull
 
+# Test all supported files in another folder, including subfolders
+python ai_test.py run --model qwen-small --input "C:/samples" --pull
+
 # Use another compatible local Ollama model
 python ai_test.py run --model "qwen2.5-coder:3b-instruct-q4_K_M" --pull
 ```
@@ -52,7 +65,8 @@ for six offline invalid-input checks. [Dataset coverage and reference answers](.
 
 ## 3. Review and send back results
 
-Each run prints its folder under `ai-results/`:
+Each run creates and prints a new folder under `ai-results/`. Open that run's `summary.md`
+to see newly added files; older reports retain the inputs from their original run.
 
 | File | What to do |
 |---|---|

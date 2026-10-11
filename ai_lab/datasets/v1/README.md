@@ -1,11 +1,12 @@
 # AI test dataset v1.0
 
 **36 new code-understanding cases + 6 input checks**, with reference answers and
-evidence lines. The original six quick samples remain available as `smoke`.
+evidence lines. The `smoke` set discovers all supported files in `ai_lab/samples/`,
+including added files and subfolders; six original examples are included.
 
 | Set | Cases | Use |
 |---|---:|---|
-| `smoke` | 6 | Quick installation check; the original examples |
+| `smoke` | All supported samples (6 included) | Quick check; add your own files to `ai_lab/samples/` |
 | `dev` | 24 | Compare models and improve prompts |
 | `holdout` | 12 | Final check after freezing prompts/settings |
 | `robustness` | 6 | Test input rejection offline; not AI answer quality |

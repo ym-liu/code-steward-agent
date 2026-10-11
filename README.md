@@ -11,13 +11,16 @@
 
 3. Choose a model from the menu. Missing models download automatically; results go to `ai-results/`.
 
-**Defaults:** CPU only, six sample files, no extra Python packages or FastAPI setup.
+**Defaults:** CPU only, all supported files in `ai_lab/samples/`, no extra Python packages or FastAPI setup.
+Add your own short UTF-8 scripts to that folder (subfolders work too), then run again and choose test set **1**.
+New files are discovered automatically; no manifest edits are needed. Six examples are included to get started.
 
 | Want to… | Command |
 |---|---|
 | Compare all three models | `python ai_test.py compare --pull` |
 | Compare on the 24-case test set | `python ai_test.py compare --suite dev --pull` |
 | Switch model | `python ai_test.py run --model gemma-small --pull` |
+| Test another folder | `python ai_test.py run --input "C:/samples" --pull` |
 | Try without Ollama (scripted demo) | `python ai_test.py demo` |
 
 **[Short setup and teammate handoff guide](docs/AI_TESTING.md)**
