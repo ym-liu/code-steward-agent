@@ -2,11 +2,11 @@
 
 **36 new code-understanding cases + 6 input checks**, with reference answers and
 evidence lines. The `smoke` set discovers all supported files in `ai_lab/samples/`,
-including added files and subfolders; six original examples are included.
+including added files and subfolders. It now includes 27 files; see [the corpus guide](../../../CORPUS.md).
 
 | Set | Cases | Use |
 |---|---:|---|
-| `smoke` | All supported samples (6 included) | Quick check; add your own files to `ai_lab/samples/` |
+| `smoke` | All supported samples (27 included) | Default folder run; add your own files to `ai_lab/samples/` |
 | `dev` | 24 | Compare models and improve prompts |
 | `holdout` | 12 | Final check after freezing prompts/settings |
 | `robustness` | 6 | Test input rejection offline; not AI answer quality |
@@ -29,7 +29,8 @@ python ai_test.py compare --suite holdout --pull
 python ai_test.py check-inputs
 ```
 
-The interactive menu (`python ai_test.py`) also lets you choose a test set.
+The interactive menu (`python ai_test.py`) selects a model and tests the default sample folder.
+Use the commands above to choose `dev` or `holdout`.
 Use `python ai_test.py demo --suite dev` to preview the report with scripted answers.
 Use `--suite` to retain reference answers and case metadata; do not pass the whole
 dataset tree to `--input`, which would mix the splits and lose the answer keys.
@@ -65,7 +66,8 @@ make the oversize check fail.
 
 ## Scope
 
-- All new fixtures are original synthetic examples, not copied from a production codebase.
+- The `dev`, `holdout` and `robustness` fixtures are original synthetic examples.
+  The default sample folder also includes user code and attributed third-party solutions.
 - Reference answers come from static code inspection. Samples are not executed by the lab.
 - Each AI request sees **one file**. Referenced helpers, binaries and configs are intentionally
   missing in some cases; assess whether the model recognizes that limit. This is not a

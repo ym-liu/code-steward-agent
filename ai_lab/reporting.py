@@ -6,12 +6,14 @@ from pathlib import Path
 from statistics import mean
 
 from .core import LabError, read_json
+from .readable_report import write_readable_reports
 
 SCORES = ["purpose_score", "io_score", "dependencies_score", "evidence_score", "uncertainty_score"]
 REVIEW_FIELDS = ["record_id", "model", "sample", "repeat", "case_id", "suite", "category", "difficulty", *SCORES, "unsupported_claims", "notes"]
 RESULT_FIELDS = ["record_id", "model", "sample", "repeat", "case_id", "suite", "category", "difficulty", "status", "json_valid", "schema_valid",
                  "evidence_checks_passed", "wall_ms", "load_ms", "prompt_tokens", "output_tokens",
-                 "tokens_per_second", "ollama_allocated_mib", "size_vram_bytes", "cpu_verified", "error"]
+                 "tokens_per_second", "system_cpu_peak_percent", "system_ram_peak_gib", "system_ram_total_gib",
+                 "resource_samples", "ollama_allocated_mib", "size_vram_bytes", "cpu_verified", "error"]
 
 
 def save_json(path, value):
@@ -98,7 +100,9 @@ def regenerate(folder):
     lines += ["", "*Valid means complete response + JSON/schema checks + evidence line bounds + requested CPU verification.",
               "It does not establish whether the explanation or evidence is correct. Errors/skips remain in the denominator.",
               "Request timing includes model load when it occurs; see load_ms per row. Each model is unloaded before its batch.",
-              "Memory is Ollama's post-response allocation snapshot, NOT peak process RAM, total application RAM or energy usage.",
+              "Ollama allocation is a post-response snapshot, NOT peak process RAM, total application RAM or energy usage.",
+              "System CPU/RAM peaks are whole-machine samples, including other applications; RAM excludes reclaimable inactive pages on macOS.",
+              "The launcher's live speed is an estimate from streamed chunks; final tok/s uses Ollama's actual eval_count and eval_duration.",
               "A zero size_vram snapshot verifies no reported GPU allocation for that response; unavailable data is not treated as zero.",
               "", "## Human review", "",
               "Read the source snapshots below and each response. Fill the five 0/1/2 score columns in review.csv:",
@@ -141,4 +145,5 @@ def regenerate(folder):
         lines += [f"    {n}: {line}" for n, line in enumerate(case.get("source", "(input skipped)").splitlines(), 1)]
         lines.append("")
     (folder / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    write_readable_reports(folder, metadata, inputs, records)
     return records

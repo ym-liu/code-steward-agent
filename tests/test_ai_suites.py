@@ -108,10 +108,14 @@ class DatasetTests(unittest.TestCase):
             main(["run", "--input", "somewhere.py", "--suite", "dev"])
         self.assertEqual(error.exception.code, 2)
 
-    def test_guided_menu_can_select_development_set(self):
-        with patch("builtins.input", side_effect=["a", "2"]), redirect_stdout(io.StringIO()):
+    def test_guided_menu_only_asks_for_a_model_then_uses_fixed_folder(self):
+        with patch("builtins.input", side_effect=["2"]), redirect_stdout(io.StringIO()):
             args = guided_args()
-        self.assertEqual(args, ["compare", "--pull", "--suite", "dev"])
+        self.assertEqual(args[0], "run")
+        self.assertEqual(args[args.index("--model") + 1], "qwen-9b")
+        self.assertIn("--simple-output", args)
+        self.assertIn("--open-report", args)
+        self.assertNotIn("--suite", args)
 
     def test_named_suite_demo_keeps_reference_checklists_and_category_report(self):
         with redirect_stdout(io.StringIO()):

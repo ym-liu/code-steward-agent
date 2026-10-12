@@ -22,7 +22,8 @@ from ai_lab.runner import DemoClient, result_for, run_experiment
 
 def answer():
     return {"purpose": "Print a value", "inputs": [], "outputs": ["standard output"],
-            "dependencies": [], "unknowns": [], "evidence": [{"line": 1, "claim": "Print call"}]}
+            "usage": [], "dependencies": [], "relationships": [], "unknowns": [],
+            "evidence": [{"line": 1, "claim": "Print call"}]}
 
 
 class FixtureHandler(BaseHTTPRequestHandler):
@@ -69,10 +70,23 @@ class FixtureHandler(BaseHTTPRequestHandler):
             content = state["outputs"].pop(0) if state["outputs"] else json.dumps(answer())
             if state.get("chat_error"):
                 return self.respond({"error": "fixture model unavailable"}, 500)
-            return self.respond({"done": True, "done_reason": state.get("done_reason", "stop"),
-                                 "message": {"content": content}, "load_duration": 100000000,
-                                 "total_duration": 1100000000, "prompt_eval_count": 100,
-                                 "eval_count": 50, "eval_duration": 1000000000})
+            result = {"done": True, "done_reason": state.get("done_reason", "stop"),
+                      "message": {"content": content}, "load_duration": 100000000,
+                      "total_duration": 1100000000, "prompt_eval_count": 100,
+                      "eval_count": 50, "eval_duration": 1000000000}
+            if body.get("stream"):
+                chunks = [{"message": {"content": part}, "done": False} for part in
+                          (content[:12], content[12:70], content[70:])]
+                if not state.get("stream_truncated"):
+                    chunks.append({**result, "message": {"content": ""}})
+                payload = b"\n".join(json.dumps(chunk).encode() for chunk in chunks) + b"\n"
+                self.send_response(200)
+                self.send_header("Content-Type", "application/x-ndjson")
+                self.send_header("Content-Length", str(len(payload)))
+                self.end_headers()
+                self.wfile.write(payload)
+                return
+            return self.respond(result)
         self.respond({"error": "not found"}, 404)
 
 
@@ -155,7 +169,7 @@ class CoreTests(unittest.TestCase):
 
     def test_reference_answers_never_enter_model_messages(self):
         cases = collect_cases(None, self.config)
-        self.assertEqual(len(cases), 6)
+        self.assertGreaterEqual(len(cases), 25)
         cases[0]["rubric"] = {"secret_answer": "MUST_NOT_BE_IN_PROMPT"}
         rendered = json.dumps(messages_for(cases[0]))
         self.assertNotIn("MUST_NOT_BE_IN_PROMPT", rendered)
@@ -245,11 +259,15 @@ class HttpWorkflowTests(unittest.TestCase):
         self.assertEqual(body["options"]["num_thread"], 2)
         self.assertFalse(body["stream"] or body["truncate"] or body["shift"])
         self.assertIn("required", body["format"])
+        evidence = body["format"]["properties"]["evidence"]
+        self.assertEqual(evidence["minItems"], 1)
+        self.assertEqual(evidence["items"]["properties"]["line"]["enum"], [1])
         self.assertNotIn("REFERENCE_ONLY", json.dumps(body))
         result = json.loads((folder / "results.jsonl").read_text())
         self.assertTrue(result["cpu_verified"])
         self.assertEqual(result["ollama_allocated_mib"], 512)
         self.assertEqual(result["tokens_per_second"], 50)
+        self.assertEqual(result["requested_schema"], body["format"])
         self.assertEqual(self.server.state["running"], [])
         self.assertEqual(json.loads((folder / "run.json").read_text())["ollama_version"], "fixture-1")
 

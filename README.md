@@ -2,30 +2,57 @@
 
 ## AI model testing
 
-1. Install **[Python 3.10+](https://www.python.org/downloads/)** and **[Ollama](https://ollama.com/download)**. Open Ollama.
-2. In this repository's folder, run:
+This standalone lab tests how well local AI models explain code. Each request contains one file's
+source with line numbers and basic facts extracted from the code. The [prompt](ai_lab/prompt.txt)
+asks for brief English JSON: purpose, inputs, outputs, usage, dependencies, related files,
+important unknowns and code evidence. It tells the model to avoid guessing missing details.
+The lab is separate from the project's scanner and API.
 
-   ```sh
-   python ai_test.py
-   ```
+1. Install **[Python 3.10+](https://www.python.org/downloads/)** and **[Ollama](https://ollama.com/download)** once. Open Ollama.
+2. Put your code files in **`ai_lab/samples/`**. Subfolders work too.
+3. Double-click **`Run AI Test.command`** on Mac or **`Run AI Test.bat`** on Windows, then choose **Qwen3.5 4B** or **Qwen3.5 9B**.
 
-3. Choose a model from the menu. Missing models download automatically; results go to `ai-results/`.
+The script tests every supported code file in that folder and opens **`report.html`** automatically.
+The report presents each explanation with expandable source-line evidence.
+Missing models download automatically. The lab reads code; it does not run your scripts.
+One status line shows live token speed and system CPU/RAM; each file shows its time and final speed,
+and the finished run shows total time. Live speed is marked `~` because it is an estimate.
 
-**Defaults:** CPU only, all supported files in `ai_lab/samples/`, no extra Python packages or FastAPI setup.
-Add your own short UTF-8 scripts to that folder (subfolders work too), then run again and choose test set **1**.
-New files are discovered automatically; no manifest edits are needed. Six examples are included to get started.
+The folder includes **27 files**: the complete 791-line `a4.py`, 18 LeetCode solutions in Python,
+Java and C++, two real project modules and six starter examples.
 
-| Want to… | Command |
-|---|---|
-| Compare all three models | `python ai_test.py compare --pull` |
-| Compare on the 24-case test set | `python ai_test.py compare --suite dev --pull` |
-| Switch model | `python ai_test.py run --model gemma-small --pull` |
-| Test another folder | `python ai_test.py run --input "C:/samples" --pull` |
-| Try without Ollama (scripted demo) | `python ai_test.py demo` |
+**[Short guide](docs/AI_TESTING.md)** · **[One-page guide](QUICK_START.md)** · **[Test files](CORPUS.md)**
 
-**[Short setup and teammate handoff guide](docs/AI_TESTING.md)**
+<details>
+<summary>Command-line options for developers</summary>
 
-**[Test dataset: 24 development cases, 12 final cases and 6 input checks](ai_lab/datasets/v1/README.md)**
+```sh
+# Same model settings as the double-click launcher
+python3 ai_test.py run --config ai_lab/config.simple.json --model qwen-4b --pull
+
+# Compare Qwen3.5 4B and 9B on the same development cases
+python3 ai_test.py compare --config ai_lab/config.simple.json --suite dev --pull
+
+# Test another folder or a different local model
+python3 ai_test.py run --config ai_lab/config.simple.json --input /path/to/code --model MODEL_TAG --pull
+
+# Preview the result layout without a model
+python3 ai_test.py demo
+```
+
+The launcher uses `ai_lab/config.simple.json`: CPU only, thinking off, complete source text,
+up to 60,000 characters per file, 32K context and a 2,048-token generation ceiling.
+Actual explanations are kept short by the prompt and field limits. Long files can take several minutes.
+These settings have not been certified for an 8GB PC.
+The older `ai_lab/config.json` remains available for the existing short-file benchmark and input checks.
+The input folder is fixed at `ai_lab/samples/`; change files there, not the manifest.
+Add model aliases to `config.simple.json` to change the menu.
+
+`report.html` and `report.md` are readable results. `summary.md`, JSON files and CSV files retain technical
+records and optional manual scoring. A generated explanation is not an automatic correctness score.
+[Dataset information](ai_lab/datasets/v1/README.md).
+
+</details>
 
 ## Dependencies
 

@@ -1,118 +1,83 @@
-# AI model testing — quick start
+# Test your code with a local AI
 
-Test how well local models explain a script's purpose, inputs, outputs and dependencies.
-**Defaults: CPU only, all supported files in `ai_lab/samples/`, no pip install or FastAPI setup.**
+1. Install [Python 3.10+](https://www.python.org/downloads/) and [Ollama](https://ollama.com/download). Open Ollama.
+2. Add code to **`ai_lab/samples/`**. You can add files and subfolders; no manifest edits are needed.
+3. Double-click **`Run AI Test.command`** (Mac) or **`Run AI Test.bat`** (Windows).
+4. Choose **1 for Qwen3.5 4B** or **2 for Qwen3.5 9B**. Everything else runs automatically.
 
-## 1. Install and run
+Models download on first use. Installed models work locally. Python and Ollama are the only prerequisites
+for this testing tool; you do not need to start FastAPI or install the product service dependencies.
+If double-clicking is unavailable, run `python3 ai_test.py --interactive` (Windows: `py -3 ai_test.py --interactive`).
 
-Install **[Python 3.10+](https://www.python.org/downloads/)** (enable “Add Python to PATH”),
-**[Git](https://git-scm.com/downloads)** and **[Ollama](https://ollama.com/download)**. Open Ollama, then run:
+Qwen3.5 has no 7B version; the larger menu option is 9B. Start with 4B on memory-limited computers.
+Available sizes are listed in the [official model library](https://ollama.com/library/qwen3.5).
 
-```powershell
-git clone --branch main https://github.com/ym-liu/code-steward-agent.git
-cd code-steward-agent
-python ai_test.py
+The default folder includes **27 files**: the complete 791-line `a4.py`, 18 LeetCode solutions,
+two real project modules and six starter examples. The full `a4.py` fits the reading limit.
+See [Test files and sources](../CORPUS.md). The expanded batch takes longer than the starter examples.
+
+## Read the results
+
+During analysis, one terminal line refreshes each second:
+
+```text
+00:42 | ~7.3 tok/s | CPU 34% | RAM 6.2/16.0 GiB
 ```
 
-Choose **1** for the smallest model, **A** to compare all presets, or **C** for a custom model.
-Then choose **1** for all files in the samples folder, **2** for 24 development cases, or **3** for 12 final cases.
-Missing models download automatically. The first download needs internet; installed models run locally.
+CPU/RAM cover the whole computer, including Ollama and other apps. Missing readings show `--`.
+Live token speed is an estimate from streamed text pieces over the last five seconds; pieces are not
+guaranteed to correspond one-to-one with tokens. Final speed uses Ollama's actual token count and
+generation duration. RAM excludes free and inactive pages on macOS; OS memory displays may differ.
+Redirected output keeps only the per-file results rather than repeated progress lines.
+No extra packages are required for monitoring.
 
-Already have the repository? Update your `main` checkout with `git pull --ff-only` first.
-On Windows, use `py -3` if `python` is unavailable; on macOS/Linux, use `python3`.
+The browser opens **`report.html`** when the run finishes. Each code file gets a short English explanation:
 
-## 2. Switch models or samples
+- What it does, needs and produces.
+- How to use it, its dependencies and related files.
+- Important missing information and expandable code evidence.
 
-To test new files, add them to `ai_lab/samples/`, run `python ai_test.py`, and choose test set **1**.
-The lab finds supported files automatically, including files in subfolders; no manifest edits are needed.
-Six examples are included. Their reference checklists stay available; new files can be reviewed manually.
+The page says which files received an explanation and which did not finish. Read important claims against
+the code; the tool checks response format and code positions, not whether every claim is true.
+All results are saved in a new folder under **`ai-results/`**. Reopen `report.html` at any time.
+`report.md` is the same short explanation as text. Technical JSON/CSV files and `summary.md` are saved separately.
+Per-file time and final token speed appear beside the model name. Total time includes model setup and
+downloads when needed. Sampled system CPU/RAM peaks are saved in the technical records.
 
-Supported extensions: `.py`, `.sh`, `.bat`, `.ps1`, `.js`, `.ts`, `.rb`, `.pl`, and `.txt`.
-Use non-empty UTF-8 text. By default, each file must fit within 2,500 characters and a folder can
-contain at most 100 supported files. Invalid inputs appear as skipped records in the report;
-unsupported extensions are ignored. Generated/dependency folders such as `ai-results/`,
-`node_modules/`, and `.git/` are excluded.
+## Add files or change models
 
-| Alias | Model (4-bit instruction version) |
-|---|---|
-| `qwen-small` | Qwen2.5-Coder 0.5B |
-| `qwen-medium` | Qwen2.5-Coder 1.5B |
-| `gemma-small` | Gemma 3 1B |
+Common code formats include Python, Shell, Batch, PowerShell, JavaScript/TypeScript, C/C++, Java, Go, Rust,
+C#, PHP, Ruby and others. Use non-empty UTF-8 text. Notebook files are ignored.
+Generated folders such as `.git`, `node_modules`, `.venv` and `ai-results` are ignored.
+Files that are too large or unreadable are reported as unfinished; source is never silently truncated.
+Your code is read, never executed. Each file is analyzed separately; file relationships describe visible
+references, and referenced files are not automatically opened as additional context in this version.
 
-```powershell
-# Test one model; change the alias to switch
-python ai_test.py run --model qwen-medium --pull
+The folder is fixed at **`ai_lab/samples/`**. Put new files there, then run again.
+Model options and resource settings are in **`ai_lab/config.simple.json`**.
+Custom model tags must support local text chat and JSON-schema responses.
 
-# Compare all three on the development test set
-python ai_test.py compare --suite dev --pull
+## If it stops
 
-# Use your own short UTF-8 file (a folder also works)
-python ai_test.py run --model qwen-small --input "C:/samples/tool.py" --pull
+- Cannot connect: open Ollama, then try again.
+- First download: keep the internet connection active and wait.
+- Another model is running: stop the other test first.
+- Timeout: check Ollama before retrying; the server may still be processing.
+- No automatic browser window: double-click `report.html` in the saved result folder.
 
-# Test all supported files in another folder, including subfolders
-python ai_test.py run --model qwen-small --input "C:/samples" --pull
-
-# Use another compatible local Ollama model
-python ai_test.py run --model "qwen2.5-coder:3b-instruct-q4_K_M" --pull
-```
-
-`--pull` downloads missing models; it does not update installed ones. Custom models must support
-text chat and JSON-schema output. Add `--repeat 3` for three passes. Presets and resource limits
-are editable in [`ai_lab/config.json`](../ai_lab/config.json).
-
-Use `--suite holdout` only after fixing prompts/settings. Run `python ai_test.py check-inputs`
-for six offline invalid-input checks. [Dataset coverage and reference answers](../ai_lab/datasets/v1/README.md).
-
-## 3. Review and send back results
-
-Each run creates and prints a new folder under `ai-results/`. Open that run's `summary.md`
-to see newly added files; older reports retain the inputs from their original run.
-
-| File | What to do |
-|---|---|
-| `summary.md` | Read answers, source snapshots and reference checklists |
-| `results.csv` | Compare timing and automatic output checks |
-| `review.csv` | Fill the five score columns: **0 = wrong/missing, 1 = partial, 2 = correct** |
-
-Score purpose, inputs/outputs, dependencies, evidence and uncertainty. Fill all five for a /10 total;
-record unsupported claims and notes separately. Keep the CSV headers and record IDs.
-After saving and closing the CSV, refresh the report:
-
-```powershell
-python ai_test.py report "ai-results/YOUR-RUN-FOLDER"
-```
-
-**Send the whole run folder as a ZIP**, plus your CPU, RAM and any slowdown you noticed.
-The folder also contains raw responses, settings and exact input files; check custom-code contents before sharing.
-
-## 4. If something goes wrong
-
-| Problem | Fix |
-|---|---|
-| Cannot connect | Open Ollama, then run `python ai_test.py doctor` |
-| No Ollama installed yet | Run `python ai_test.py demo` to try the report workflow with scripted answers |
-| Other models loaded | Close other AI clients; check `ollama ps` and stop the models you intend to unload |
-| Timeout or invalid/cut-off output | Inspect the saved report; check Ollama before retrying. Try a shorter file or adjust limits consistently for all models |
-| Input too long | Default limit is 2,500 characters; select a smaller file or edit the config |
-
-**How to interpret results:** valid JSON is not proof of a correct explanation; review quality manually.
-Case categories appear in the reports. Memory figures are Ollama allocation snapshots, not peak RAM.
-Demo runs do not test AI performance. Minimum hardware support still needs testing on target PCs.
-The lab reads code as text and never executes it; it is not yet connected to the scanner's background workflow.
-
-<details>
-<summary>Developer checks</summary>
-
-Lab tests need no Ollama or downloaded models:
+## Optional developer commands
 
 ```sh
-python -m unittest tests.test_ai_lab -v
+python3 ai_test.py compare --config ai_lab/config.simple.json --suite dev --pull
+python3 ai_test.py run --config ai_lab/config.simple.json --input /path/to/code --model MODEL_TAG --pull
+python3 ai_test.py demo
+python3 ai_test.py report ai-results/YOUR-RUN-FOLDER
+python3 -m unittest tests.test_ai_lab tests.test_ai_suites tests.test_simple_flow tests.test_realistic_corpus tests.test_live_status
 ```
 
-Run all project tests in the existing environment after installing `requirements.txt`:
-
-```sh
-python -m unittest discover -s tests -v
-```
-
-</details>
+Use dev for tuning; keep holdout for after prompts and settings are fixed. References are never sent to the model.
+`review.csv` retains the existing five-dimension /10 manual rubric for comparison with older runs; it does not
+separately score the new usage and relationship fields. Review those fields directly against the source.
+The older `ai_lab/config.json` preserves the short-file benchmark and six offline input checks.
+Memory snapshots are not peak process RAM. Minimum hardware support still needs testing on target PCs.
+This tool is separate from the scanner and product analysis API.

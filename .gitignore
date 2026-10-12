@@ -4,3 +4,8 @@ artifacts.sqlite3
 artifacts.sqlite3-*
 ai-results/
 ai_lab/*.local.json
+
+# Local runtime files and macOS folder metadata.
+.DS_Store
+/service.log
+/scan_checkpoint.json
