@@ -15,9 +15,7 @@ def load_suite(name, config):
     if name == "smoke":
         cases = collect_cases(None, config)
         for case in cases:
-            case.update(suite="smoke")
-            case.setdefault("category", "starter")
-            case.setdefault("difficulty", "starter")
+            case.update(suite="smoke", category="starter", difficulty="starter")
         return cases
     if name not in {"dev", "holdout", "robustness"}:
         raise LabError(f"Unknown test suite: {name}", "dataset_error")

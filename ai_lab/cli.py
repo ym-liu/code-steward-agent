@@ -1,12 +1,10 @@
 import argparse
 from pathlib import Path
 import sys
-import webbrowser
 
-from .core import ROOT, LAB, LabError, collect_cases, load_config, resolve_model
+from .core import ROOT, LabError, collect_cases, load_config, resolve_model
 from .ollama_client import OllamaClient
 from .reporting import regenerate
-from .readable_report import friendly_error
 from .runner import DemoClient, run_experiment
 from .suites import MODEL_SUITES, check_inputs, load_suite
 
@@ -25,8 +23,6 @@ def parser():
             p.add_argument("--output", type=Path, default=ROOT / "ai-results", help="Results root directory")
             p.add_argument("--repeat", type=int, default=1, help="1-20 passes through the same samples")
             p.add_argument("--device", choices=("cpu", "auto"), help="cpu by default; auto allows GPU")
-            p.add_argument("--open-report", action="store_true", help="Open the readable HTML report when finished")
-            p.add_argument("--simple-output", action="store_true", help="Show short, plain-language progress")
         if name == "run":
             p.add_argument("--model", help="Preset alias or any installed local Ollama tag")
         if name == "compare":
@@ -41,33 +37,48 @@ def parser():
     return root
 
 
+def choose_suite(arguments):
+    print("\nTest set: 1. Samples folder  2. Development (24)  3. Final holdout (12)")
+    print("Option 1 tests all supported files in ai_lab/samples, including added files and subfolders.")
+    print("Keep holdout unused until your prompt and settings are fixed.")
+    selected = input("Choose a test set [1]: ").strip() or "1"
+    suites = {"1": "smoke", "2": "dev", "3": "holdout"}
+    if selected not in suites:
+        raise LabError("Choose test set 1, 2 or 3.", "input_error")
+    return arguments + ["--suite", suites[selected]]
+
+
 def guided_args():
-    config_path = LAB / "config.simple.json"
-    config = load_config(config_path)
+    config = load_config()
     aliases = list(config["models"])
-    print("\nCode Explanation Test\n")
-    print(f"Test folder: {LAB / 'samples'}")
-    print("Choose a model. All supported code files in this folder and its subfolders will be tested.\n")
+    print("\nCode Steward AI Test Lab\n")
     for n, alias in enumerate(aliases, 1):
-        tag = config["models"][alias]
-        label = {"qwen-4b": "Qwen3.5 4B (try this first)", "qwen-9b": "Qwen3.5 9B (larger model)"}.get(alias, tag)
-        print(f"  {n}. {label}")
-    print("  0. Quit\n\nOpen Ollama first. Missing models download automatically on first use.")
-    while True:
-        choice = input("Choose a model [1]: ").strip().lower() or "1"
-        if choice in {"0", "q"}:
-            return None
-        if choice.isdigit() and 1 <= int(choice) <= len(aliases):
-            return ["run", "--config", str(config_path), "--model", aliases[int(choice) - 1],
-                    "--pull", "--simple-output", "--open-report"]
-        print(f"Enter 1 to {len(aliases)}, or 0 to quit.")
+        print(f"  {n}. Test {alias}: {config['models'][alias]}")
+    print("  A. Compare all presets\n  C. Test a custom local model\n  D. Offline demo (no Ollama needed)\n  I. Check invalid inputs (no AI)\n  H. Check setup\n  Q. Quit")
+    print(f"\nReal tests use the selected test set with device={config['device']} and download missing models.\n")
+    choice = input("Choose an option [1]: ").strip().lower() or "1"
+    if choice == "q":
+        return None
+    if choice == "d":
+        return choose_suite(["demo"])
+    if choice == "i":
+        return ["check-inputs"]
+    if choice == "h":
+        return ["doctor"]
+    if choice == "a":
+        return choose_suite(["compare", "--pull"])
+    if choice == "c":
+        return choose_suite(["run", "--model", input("Ollama model tag: ").strip(), "--pull"])
+    if choice.isdigit() and 1 <= int(choice) <= len(aliases):
+        return choose_suite(["run", "--model", aliases[int(choice)-1], "--pull"])
+    raise LabError("Choose a number, A, C, D, I, H or Q.", "input_error")
 
 
 def main(argv=None):
     try:
         argv = list(sys.argv[1:] if argv is None else argv)
-        if not argv or argv == ["--interactive"]:
-            if not argv and not sys.stdin.isatty():
+        if not argv:
+            if not sys.stdin.isatty():
                 parser().print_help()
                 return 0
             argv = guided_args()
@@ -78,11 +89,7 @@ def main(argv=None):
             regenerate(args.folder)
             print(f"Updated {args.folder / 'summary.md'} (human scores preserved).")
             return 0
-        config_path = args.config
-        if (config_path is None and args.command in {"run", "compare", "demo", "doctor"}
-                and getattr(args, "suite", "smoke") == "smoke"):
-            config_path = LAB / "config.simple.json"
-        config = load_config(config_path)
+        config = load_config(args.config)
         if args.command == "check-inputs":
             return check_inputs(config, args.output.expanduser().absolute())
         if getattr(args, "device", None):
@@ -110,22 +117,12 @@ def main(argv=None):
             else:
                 names = [args.model or config["default_model"]]
             models = list(dict.fromkeys(resolve_model(config, name) for name in names))
-        folder, code = run_experiment(client, config, models, cases, args.output.expanduser().absolute(), args.repeat,
-                                      getattr(args, "pull", False), demo, simple=args.simple_output)
-        if args.open_report:
-            try:
-                if not webbrowser.open((folder / "report.html").resolve().as_uri()):
-                    print("The browser did not open. Double-click report.html in the result folder.")
-            except (OSError, webbrowser.Error):
-                print("The browser did not open. Double-click report.html in the result folder.")
+        _, code = run_experiment(client, config, models, cases, args.output.expanduser().absolute(), args.repeat,
+                                 getattr(args, "pull", False), demo)
         return code
     except (LabError, OSError, EOFError) as error:
-        if "--simple-output" in argv or argv == ["--interactive"]:
-            code = error.code if isinstance(error, LabError) else "error"
-            print(friendly_error(code, str(error)), file=sys.stderr)
-        else:
-            print(f"ERROR: {error}", file=sys.stderr)
-            print("See docs/AI_TESTING.md for setup and troubleshooting.", file=sys.stderr)
+        print(f"ERROR: {error}", file=sys.stderr)
+        print("See docs/AI_TESTING.md for setup and troubleshooting.", file=sys.stderr)
         return 1
     except KeyboardInterrupt:
         print("\nCancelled.", file=sys.stderr)
