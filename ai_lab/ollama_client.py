@@ -1,11 +1,12 @@
 """Ollama HTTP adapter; no SDK, cloud access, tools or shell execution."""
 import json
+from copy import deepcopy
 import socket
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlsplit
 from urllib.request import Request, build_opener, ProxyHandler, HTTPRedirectHandler
 
-from .core import LabError, SCHEMA, messages_for
+from .core import LabError, SCHEMA, digest, messages_for
 
 
 class NoRedirect(HTTPRedirectHandler):
@@ -28,11 +29,13 @@ class OllamaClient:
         self.base_url = f"http://{host}:{port}"
         self.opener = build_opener(ProxyHandler({}), NoRedirect())
 
-    def request(self, path, data=None, timeout=None):
+    def request(self, path, data=None, timeout=None, on_chunk=None):
         body = None if data is None else json.dumps(data).encode("utf-8")
         req = Request(self.base_url + path, data=body, headers={"Content-Type": "application/json"})
         try:
             with self.opener.open(req, timeout=timeout or self.config["timeout_seconds"]) as response:
+                if on_chunk is not None:
+                    return self.read_chat_stream(response, on_chunk)
                 raw = response.read(8 * 1024 * 1024 + 1)
             if len(raw) > 8 * 1024 * 1024:
                 raise LabError("Ollama response exceeds 8 MiB.", "response_error")
@@ -52,6 +55,44 @@ class OllamaClient:
             raise LabError("Cannot reach Ollama. Open the Ollama app (or run ollama serve), then retry.", code) from error
         except (ValueError, UnicodeError, OSError) as error:
             raise LabError(f"Invalid/unreadable Ollama response: {error}", "response_error") from error
+
+    @staticmethod
+    def read_chat_stream(response, on_chunk):
+        """Join NDJSON message pieces and retain the final authoritative metrics."""
+        content, thinking, tools = [], [], []
+        size = 0
+        while True:
+            line = response.readline(8 * 1024 * 1024 + 1)
+            if not line:
+                raise LabError("Ollama stream ended before completion.", "response_error")
+            size += len(line)
+            if size > 8 * 1024 * 1024:
+                raise LabError("Ollama response exceeds 8 MiB.", "response_error")
+            if not line.strip():
+                continue
+            chunk = json.loads(line)
+            if not isinstance(chunk, dict):
+                raise LabError("Ollama returned a non-object stream response.", "response_error")
+            if chunk.get("error"):
+                raise LabError(str(chunk["error"]), "model_error")
+            message = chunk.get("message")
+            if not isinstance(message, dict):
+                raise LabError("Ollama stream returned no text message.", "response_error")
+            for key, pieces in (("content", content), ("thinking", thinking)):
+                value = message.get(key, "")
+                if not isinstance(value, str):
+                    raise LabError("Ollama stream returned a non-text message.", "response_error")
+                pieces.append(value)
+            if message.get("tool_calls"):
+                tools.extend(message["tool_calls"])
+            on_chunk(chunk)
+            if chunk.get("done") is True:
+                merged = {**message, "content": "".join(content)}
+                if any(thinking):
+                    merged["thinking"] = "".join(thinking)
+                if tools:
+                    merged["tool_calls"] = tools
+                return {**chunk, "message": merged}
 
     def version(self):
         return self.request("/api/version", timeout=5).get("version", "unknown")
@@ -74,7 +115,7 @@ class OllamaClient:
         return next((m for m in models if m.get("name", m.get("model")) in {tag, canonical}), None)
 
     def pull(self, tag):
-        print(f"Downloading {tag}. This can take several minutes; progress is shown below.", flush=True)
+        print(f"Downloading {tag}. The first download may take a few minutes.", flush=True)
         req = Request(self.base_url + "/api/pull", data=json.dumps({"model": tag, "stream": True}).encode(),
                       headers={"Content-Type": "application/json"})
         try:
@@ -127,11 +168,21 @@ class OllamaClient:
         if self.match(self.running(), tag) is not None:
             raise LabError("Model is still loaded after unload. Close other clients and retry.", "busy")
 
-    def analyze(self, tag, case):
+    def analyze(self, tag, case, on_chunk=None):
         options = {k: self.config[k] for k in ("num_ctx", "num_predict", "num_thread", "temperature", "seed")}
         options["num_gpu"] = 0 if self.config["device"] == "cpu" else -1
-        return self.request("/api/chat", {
-            "model": tag, "messages": messages_for(case), "format": SCHEMA,
-            "stream": False, "think": False, "keep_alive": "2m",
+        schema = deepcopy(SCHEMA)
+        # Every real nonempty input can cite a visible line, even for an unknown purpose.
+        # Let the decoder select a real position instead of inventing a line number.
+        schema["properties"]["evidence"]["minItems"] = 1
+        schema["properties"]["evidence"]["items"]["properties"]["line"]["enum"] = [
+            number for number, line in enumerate(case["source"].splitlines(), 1) if line.strip()
+        ]
+        response = self.request("/api/chat", {
+            "model": tag, "messages": messages_for(case), "format": schema,
+            "stream": on_chunk is not None, "think": False, "keep_alive": "2m",
             "truncate": False, "shift": False, "options": options,
-        })
+        }, on_chunk=on_chunk)
+        response["requested_schema"] = schema
+        response["requested_schema_hash"] = digest(json.dumps(schema, sort_keys=True))
+        return response

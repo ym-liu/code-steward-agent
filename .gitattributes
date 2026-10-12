@@ -1,2 +1,10 @@
 # Preserve intentional invalid encodings, NUL bytes and whitespace in input fixtures.
 ai_lab/datasets/v1/robustness/cases/* -text -diff
+
+# Keep imported source snapshots byte-for-byte identical on Windows and macOS.
+ai_lab/samples/leetcode/** -text
+ai_lab/samples/real_world/** -text
+
+# Use the correct launcher line endings after any Git clone.
+"Run AI Test.command" text eol=lf
+"Run AI Test.bat" text eol=crlf

@@ -8,6 +8,8 @@ import uuid
 
 from .core import ROOT, PROMPT, SCHEMA, SCHEMA_VERSION, LabError, digest, validate_analysis
 from .reporting import save_json, regenerate
+from .readable_report import friendly_error
+from .live_status import LiveStatus, clock_text
 
 
 def utc_now():
@@ -32,8 +34,8 @@ class DemoClient:
 
     def analyze(self, tag, case):
         return {"done": True, "done_reason": "stop", "message": {"content": json.dumps({
-            "purpose": None, "inputs": [], "outputs": [], "dependencies": [],
-            "unknowns": ["Scripted demo: no model analyzed this file. Run a real model to evaluate it."],
+            "purpose": None, "inputs": [], "outputs": [], "usage": [], "dependencies": [], "relationships": [],
+            "unknowns": ["Demo only: no real model was used."],
             "evidence": [],
         })}}
 
@@ -49,15 +51,19 @@ def numeric(response, key):
     return value if type(value) in (int, float) and value >= 0 else None
 
 
-def result_for(client, tag, case, config, demo=False):
+def result_for(client, tag, case, config, demo=False, live=False):
     row = {"status": "input_skipped", "json_valid": False, "schema_valid": False,
            "evidence_checks_passed": False, "wall_ms": None, "cpu_verified": None}
     if "input_error" in case:
         row["error"] = case["input_error"]
+        row["error_code"] = case.get("input_error_code")
         return row
     start = time.perf_counter()
+    progress = LiveStatus() if live and not demo else None
     try:
-        response = client.analyze(tag, case)
+        if progress:
+            progress.start()
+        response = client.analyze(tag, case, on_chunk=progress.on_chunk) if progress else client.analyze(tag, case)
         row["wall_ms"] = None if demo else round((time.perf_counter() - start) * 1000, 2)
         message = response.get("message")
         if not isinstance(message, dict) or not isinstance(message.get("content"), str):
@@ -66,6 +72,9 @@ def result_for(client, tag, case, config, demo=False):
         analysis, json_valid, schema_valid, errors = validate_analysis(raw, case["facts"]["line_count"])
         row.update(raw_output=raw, analysis=analysis, json_valid=json_valid, schema_valid=schema_valid,
                    evidence_checks_passed=schema_valid and not errors, done_reason=response.get("done_reason"))
+        if response.get("requested_schema"):
+            row["requested_schema"] = response["requested_schema"]
+            row["requested_schema_hash"] = response["requested_schema_hash"]
         if response.get("done") is not True or response.get("done_reason") not in {None, "stop"}:
             errors.append("Generation was incomplete or stopped at a limit.")
         if message.get("tool_calls"):
@@ -97,10 +106,15 @@ def result_for(client, tag, case, config, demo=False):
     except LabError as error:
         row.update(status=error.code, error=str(error))
         row["wall_ms"] = None if demo else round((time.perf_counter() - start) * 1000, 2)
+    finally:
+        if progress:
+            progress.stop()
+            row.update(progress.summary())
     return row
 
 
-def run_experiment(client, config, models, cases, output_root, repeat=1, allow_pull=False, demo=False):
+def run_experiment(client, config, models, cases, output_root, repeat=1, allow_pull=False, demo=False, simple=False):
+    run_started = time.perf_counter()
     run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ") + "-" + uuid.uuid4().hex[:8]
     folder = output_root / (("demo-" if demo else "") + run_id)
     folder.mkdir(parents=True, exist_ok=False)
@@ -113,6 +127,11 @@ def run_experiment(client, config, models, cases, output_root, repeat=1, allow_p
         "prompt_hash": digest(PROMPT), "git_revision": git_revision(),
         "hardware": {"os": platform.platform(), "cpu": platform.processor(), "python": platform.python_version()},
         "model_details": [], "errors": [],
+        "live_metrics": {"enabled": simple and not demo, "refresh_seconds": 1,
+                         "resource_scope": "whole machine, including other applications",
+                         "ram_method": "physical RAM used; macOS excludes free and inactive pages",
+                         "live_speed": "estimate from nonempty streamed chunks over the last five seconds",
+                         "final_speed": "Ollama eval_count divided by eval_duration"},
     }
     save_json(folder / "run.json", metadata)
     save_json(folder / "inputs.json", cases)
@@ -120,21 +139,21 @@ def run_experiment(client, config, models, cases, output_root, repeat=1, allow_p
     save_json(folder / "schema.json", SCHEMA)
     (folder / "results.jsonl").touch()
     records, aborted, interrupted = [], False, False
-    print(f"Results folder: {folder}", flush=True)
+    print(f"Testing {len(cases)} code files." if simple else f"Results folder: {folder}", flush=True)
     try:
         metadata["ollama_version"] = client.version()
         for model_index, tag in enumerate(models):
             prepared = False
             fatal = False
             try:
-                print(f"\nModel {model_index + 1}/{len(models)}: {tag}", flush=True)
+                print(f"\nModel: {tag}" if simple else f"\nModel {model_index + 1}/{len(models)}: {tag}", flush=True)
                 details = client.prepare(tag, allow_pull)
                 prepared = True
                 metadata["model_details"].append(details)
                 for iteration in range(1, repeat + 1):
                     for sample_index, case in enumerate(cases):
-                        print(f"  [{iteration}/{repeat}] {case['name']} ...", flush=True)
-                        row = result_for(client, tag, case, config, demo)
+                        print(f"  {sample_index + 1}/{len(cases)}  {case['name']} ..." if simple else f"  [{iteration}/{repeat}] {case['name']} ...", flush=True)
+                        row = result_for(client, tag, case, config, demo, live=simple)
                         row.update(record_id=f"m{model_index+1}-r{iteration}-s{sample_index+1}",
                                    model=tag, sample=case["name"], repeat=iteration,
                                    source_hash=case.get("source_hash"), model_digest=details.get("digest"), demo=demo)
@@ -143,7 +162,17 @@ def run_experiment(client, config, models, cases, output_root, repeat=1, allow_p
                         with (folder / "results.jsonl").open("a", encoding="utf-8") as stream:
                             stream.write(json.dumps(row, ensure_ascii=False) + "\n")
                             stream.flush()
-                        print(f"    {row['status']}" + (f": {row['error']}" if row.get("error") else ""), flush=True)
+                        if simple:
+                            status = "Explanation ready" if row["status"] == "valid" else friendly_error(
+                                row.get("error_code") or row["status"], row.get("error", ""))
+                            metrics = []
+                            if row.get("wall_ms") is not None:
+                                metrics.append(clock_text(row["wall_ms"] / 1000))
+                            if row.get("tokens_per_second") is not None:
+                                metrics.append(f"{row['tokens_per_second']:.1f} tok/s")
+                            print("    " + status + (" | " + " | ".join(metrics) if metrics else ""), flush=True)
+                        else:
+                            print(f"    {row['status']}" + (f": {row['error']}" if row.get("error") else ""), flush=True)
                         if row["status"] in {"timeout", "connection_error", "response_error"}:
                             # A timed-out HTTP call may still be computing server-side.
                             fatal = aborted = True
@@ -153,7 +182,7 @@ def run_experiment(client, config, models, cases, output_root, repeat=1, allow_p
                         break
             except LabError as error:
                 metadata["errors"].append(f"{tag}: {error}")
-                print(f"  ERROR: {error}", flush=True)
+                print("  " + friendly_error(error.code, str(error)) if simple else f"  ERROR: {error}", flush=True)
                 if error.code in {"timeout", "connection_error", "busy", "response_error"}:
                     fatal = aborted = True
             except KeyboardInterrupt:
@@ -175,13 +204,19 @@ def run_experiment(client, config, models, cases, output_root, repeat=1, allow_p
     except LabError as error:
         aborted = True
         metadata["errors"].append(str(error))
-        print(f"ERROR: {error}", flush=True)
+        print(friendly_error(error.code, str(error)) if simple else f"ERROR: {error}", flush=True)
     finally:
         has_errors = bool(metadata["errors"]) or any(r["status"] != "valid" for r in records)
         complete = len(records) == metadata["expected_records"]
         metadata["status"] = "interrupted" if interrupted else "aborted" if aborted else "completed_with_errors" if has_errors or not complete else "completed"
         metadata["finished_at"] = utc_now()
+        metadata["wall_ms"] = None if demo else round((time.perf_counter() - run_started) * 1000, 2)
         save_json(folder / "run.json", metadata)
         regenerate(folder)
-    print(f"\nOpen {folder / 'summary.md'}\nFill {folder / 'review.csv'} for human quality scores.", flush=True)
+    if simple:
+        if metadata["wall_ms"] is not None:
+            print(f"\nTotal time: {clock_text(metadata['wall_ms'] / 1000)}", flush=True)
+        print(f"Results saved: {folder / 'report.html'}", flush=True)
+    else:
+        print(f"\nOpen {folder / 'report.html'}\nTechnical records: {folder / 'summary.md'}\nFill {folder / 'review.csv'} for human quality scores.", flush=True)
     return folder, 130 if interrupted else 0 if metadata["status"] == "completed" else 1

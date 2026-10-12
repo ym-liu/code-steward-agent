@@ -1,0 +1,22 @@
+{
+  "files": [
+    {
+      "file": "real_world/a4.py",
+      "origin": "User-provided a4_(1)_(2).py, copied unchanged as a4.py",
+      "sha256": "3a635ee4ef26eed48c3a506886821587cb5d9952be19ed2e2dffe208dc9d3db2",
+      "lines": 791
+    },
+    {
+      "file": "real_world/code_steward/runner.py",
+      "origin": "local project ai_lab/runner.py",
+      "sha256": "8abb0f0f53b978ad43f1e595b255960c5496cc91da1a7ad1d88feb0cab3fcb1e",
+      "lines": 199
+    },
+    {
+      "file": "real_world/code_steward/readable_report.py",
+      "origin": "local project ai_lab/readable_report.py",
+      "sha256": "248972799397009d59dfb528aa39a51bc14424c95868d97d56737150f9abd9e5",
+      "lines": 121
+    }
+  ]
+}

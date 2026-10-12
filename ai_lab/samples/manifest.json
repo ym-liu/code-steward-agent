@@ -58,5 +58,362 @@
       "evidence": "Only literal symbols/lines can be cited; no support for business or domain-specific claims.",
       "unknowns": "Language, GLORP semantics, input format, runtime and actual outputs are unknown."
     }
+  },
+  {
+    "file": "leetcode/cpp/0021-merge-two-sorted-lists.cpp",
+    "case_id": "LC-CPP-0021",
+    "category": "algorithm_solution",
+    "difficulty": "mixed",
+    "family": "leetcode-0021",
+    "rubric": {
+      "purpose": "Merge two sorted singly linked lists into one sorted list.",
+      "inputs_outputs": "Two list heads -> merged head. Existing next links are changed.",
+      "usage": "This is a class/method solution excerpt, not a standalone command-line program. A compatible LeetCode-style harness or caller supplies arguments and any missing types/imports.",
+      "dependencies": "C++ with a caller-provided ListNode definition; the shown struct is only a comment. No main function or complete build environment is provided.",
+      "relationships": "No external file, configuration or network relationships are established by this excerpt.",
+      "evidence": "mergeTwoLists links the lower-valued head to curr->next and finally attaches the remaining list. It returns dummy->next; existing node links are changed.",
+      "unknowns": "Do not claim successful execution. Missing harness/type definitions/imports and any visible syntax defects matter.",
+      "must_not_claim": "No invented CLI flags, source files, generated output files or runtime performance measurements."
+    }
+  },
+  {
+    "file": "leetcode/cpp/0207-course-schedule.cpp",
+    "case_id": "LC-CPP-0207",
+    "category": "algorithm_solution",
+    "difficulty": "mixed",
+    "family": "leetcode-0207",
+    "rubric": {
+      "purpose": "Check whether course prerequisites contain a cycle and all courses can be completed.",
+      "inputs_outputs": "Course count and prerequisite pairs -> boolean.",
+      "usage": "This is a class/method solution excerpt, not a standalone command-line program. A compatible LeetCode-style harness or caller supplies arguments and any missing types/imports.",
+      "dependencies": "C++ standard containers vector, unordered_map and unordered_set; the excerpt omits headers and namespace setup.",
+      "relationships": "No external file, configuration or network relationships are established by this excerpt.",
+      "evidence": "canFinish builds prerequisite lists. dfs detects a course already on the current path and clears completed prerequisite lists.",
+      "unknowns": "Do not claim successful execution. Missing harness/type definitions/imports and any visible syntax defects matter.",
+      "must_not_claim": "No invented CLI flags, source files, generated output files or runtime performance measurements."
+    }
+  },
+  {
+    "file": "leetcode/cpp/0297-serialize-and-deserialize-binary-tree.cpp",
+    "case_id": "LC-CPP-0297",
+    "category": "algorithm_solution",
+    "difficulty": "mixed",
+    "family": "leetcode-0297",
+    "rubric": {
+      "purpose": "Encode a binary tree to text and reconstruct a tree from that text.",
+      "inputs_outputs": "Tree -> serialized string; string -> tree.",
+      "usage": "This is a class/method solution excerpt, not a standalone command-line program. A compatible LeetCode-style harness or caller supplies arguments and any missing types/imports.",
+      "dependencies": "C++ string and string-stream facilities plus a caller-provided TreeNode definition; the shown struct is a comment. Headers and namespace setup are omitted.",
+      "relationships": "No external file, configuration or network relationships are established by this excerpt.",
+      "evidence": "encode writes node values and N markers in preorder. decode reads those tokens and recursively creates child nodes; no file is written.",
+      "unknowns": "Do not claim successful execution. Missing harness/type definitions/imports and any visible syntax defects matter.",
+      "must_not_claim": "No invented CLI flags, source files, generated output files or runtime performance measurements."
+    }
+  },
+  {
+    "file": "leetcode/java/0001-two-sum.java",
+    "case_id": "LC-JAVA-0001",
+    "category": "algorithm_solution",
+    "difficulty": "mixed",
+    "family": "leetcode-0001",
+    "rubric": {
+      "purpose": "Find the indices of two numbers whose sum equals the target.",
+      "inputs_outputs": "Number list and target -> index pair.",
+      "usage": "This is a class/method solution excerpt, not a standalone command-line program. A compatible LeetCode-style harness or caller supplies arguments and any missing types/imports.",
+      "dependencies": "Java with java.util.HashMap; its import is omitted. A caller or judge invokes twoSum; there is no main method.",
+      "relationships": "No external file, configuration or network relationships are established by this excerpt.",
+      "evidence": "twoSum stores previous values in prevMap and returns two indices when the complement is found. It returns an empty array if none is found.",
+      "unknowns": "Do not claim successful execution. Missing harness/type definitions/imports and any visible syntax defects matter.",
+      "must_not_claim": "No invented CLI flags, source files, generated output files or runtime performance measurements."
+    }
+  },
+  {
+    "file": "leetcode/java/0146-lru-cache.java",
+    "case_id": "LC-JAVA-0146",
+    "category": "algorithm_solution",
+    "difficulty": "mixed",
+    "family": "leetcode-0146",
+    "rubric": {
+      "purpose": "Maintain a capacity-limited least-recently-used cache.",
+      "inputs_outputs": "Capacity and get/put operations -> returned values or -1; put changes cache state.",
+      "usage": "This is a class/method solution excerpt, not a standalone command-line program. A compatible LeetCode-style harness or caller supplies arguments and any missing types/imports.",
+      "dependencies": "Java with java.util.Map and java.util.HashMap; their imports are omitted. Node is defined inside LRUCache.",
+      "relationships": "No external file, configuration or network relationships are established by this excerpt.",
+      "evidence": "get and put move nodes to the right end of the linked list. put evicts left.next when cache.size() exceeds capacity.",
+      "unknowns": "Do not claim successful execution. Missing harness/type definitions/imports and any visible syntax defects matter.",
+      "must_not_claim": "No invented CLI flags, source files, generated output files or runtime performance measurements."
+    }
+  },
+  {
+    "file": "leetcode/java/0200-number-of-islands.java",
+    "case_id": "LC-JAVA-0200",
+    "category": "algorithm_solution",
+    "difficulty": "mixed",
+    "family": "leetcode-0200",
+    "rubric": {
+      "purpose": "Count four-directionally connected islands in a grid.",
+      "inputs_outputs": "A character grid -> island count. The supplied grid is changed: visited land is set to zero.",
+      "usage": "This is a class/method solution excerpt, not a standalone command-line program. A compatible LeetCode-style harness or caller supplies arguments and any missing types/imports.",
+      "dependencies": "Java arrays and recursion; no third-party package is shown. A caller or judge invokes numIslands; there is no main method.",
+      "relationships": "No external file, configuration or network relationships are established by this excerpt.",
+      "evidence": "numIslands starts dfs at each unvisited land cell. dfs sets that cell to zero and visits its four neighboring cells.",
+      "unknowns": "Do not claim successful execution. Missing harness/type definitions/imports and any visible syntax defects matter.",
+      "must_not_claim": "No invented CLI flags, source files, generated output files or runtime performance measurements."
+    }
+  },
+  {
+    "file": "leetcode/python/0001-two-sum.py",
+    "case_id": "LC-PYTHON-0001",
+    "category": "algorithm_solution",
+    "difficulty": "mixed",
+    "family": "leetcode-0001",
+    "rubric": {
+      "purpose": "Find the indices of two numbers whose sum equals the target.",
+      "inputs_outputs": "Number list and target -> index pair.",
+      "usage": "This is a class/method solution excerpt, not a standalone command-line program. A compatible LeetCode-style harness or caller supplies arguments and any missing types/imports.",
+      "dependencies": "Only visible language/runtime facilities. Required judge types and missing imports should be identified; no invented pip packages, versions or install commands.",
+      "relationships": "No external file, configuration or network relationships are established by this excerpt.",
+      "evidence": "Use actual implementation lines rather than relying only on the filename or problem title. Hash map remembers previously seen values; do not invent file or network I/O.",
+      "unknowns": "Do not claim successful execution. Missing harness/type definitions/imports and any visible syntax defects matter.",
+      "must_not_claim": "No invented CLI flags, source files, generated output files or runtime performance measurements."
+    }
+  },
+  {
+    "file": "leetcode/python/0004-median-of-two-sorted-arrays.py",
+    "case_id": "LC-PYTHON-0004",
+    "category": "algorithm_solution",
+    "difficulty": "mixed",
+    "family": "leetcode-0004",
+    "rubric": {
+      "purpose": "Find the median of two sorted number arrays by partitioning them.",
+      "inputs_outputs": "Two sorted arrays -> median number.",
+      "usage": "This is a class/method solution excerpt, not a standalone command-line program. A compatible LeetCode-style harness or caller supplies arguments and any missing types/imports.",
+      "dependencies": "Only visible language/runtime facilities. Required judge types and missing imports should be identified; no invented pip packages, versions or install commands.",
+      "relationships": "No external file, configuration or network relationships are established by this excerpt.",
+      "evidence": "Use actual implementation lines rather than relying only on the filename or problem title. Binary search partitions; array sortedness is a precondition, not established by executing.",
+      "unknowns": "Do not claim successful execution. Missing harness/type definitions/imports and any visible syntax defects matter.",
+      "must_not_claim": "No invented CLI flags, source files, generated output files or runtime performance measurements."
+    }
+  },
+  {
+    "file": "leetcode/python/0020-valid-parentheses.py",
+    "case_id": "LC-PYTHON-0020",
+    "category": "algorithm_solution",
+    "difficulty": "mixed",
+    "family": "leetcode-0020",
+    "rubric": {
+      "purpose": "Check whether opening and closing brackets are correctly nested.",
+      "inputs_outputs": "Bracket string -> boolean.",
+      "usage": "This is a class/method solution excerpt, not a standalone command-line program. A compatible LeetCode-style harness or caller supplies arguments and any missing types/imports.",
+      "dependencies": "Only visible language/runtime facilities. Required judge types and missing imports should be identified; no invented pip packages, versions or install commands.",
+      "relationships": "No external file, configuration or network relationships are established by this excerpt.",
+      "evidence": "Use actual implementation lines rather than relying only on the filename or problem title. Stack-based matching; do not claim to parse arbitrary source code.",
+      "unknowns": "Do not claim successful execution. Missing harness/type definitions/imports and any visible syntax defects matter.",
+      "must_not_claim": "No invented CLI flags, source files, generated output files or runtime performance measurements."
+    }
+  },
+  {
+    "file": "leetcode/python/0021-merge-two-sorted-lists.py",
+    "case_id": "LC-PYTHON-0021",
+    "category": "algorithm_solution",
+    "difficulty": "mixed",
+    "family": "leetcode-0021",
+    "rubric": {
+      "purpose": "Merge two sorted singly linked lists into one sorted list.",
+      "inputs_outputs": "Two list heads -> merged head. Existing next links are changed.",
+      "usage": "This is a class/method solution excerpt, not a standalone command-line program. A compatible LeetCode-style harness or caller supplies arguments and any missing types/imports.",
+      "dependencies": "Only visible language/runtime facilities. Required judge types and missing imports should be identified; no invented pip packages, versions or install commands.",
+      "relationships": "No external file, configuration or network relationships are established by this excerpt.",
+      "evidence": "Use actual implementation lines rather than relying only on the filename or problem title. ListNode is supplied by a caller/judge; Python includes two Solution classes, and the second overrides the first if loaded as one file.",
+      "unknowns": "Do not claim successful execution. Missing harness/type definitions/imports and any visible syntax defects matter.",
+      "must_not_claim": "No invented CLI flags, source files, generated output files or runtime performance measurements."
+    }
+  },
+  {
+    "file": "leetcode/python/0076-minimum-window-substring.py",
+    "case_id": "LC-PYTHON-0076",
+    "category": "algorithm_solution",
+    "difficulty": "mixed",
+    "family": "leetcode-0076",
+    "rubric": {
+      "purpose": "Find the shortest substring containing all requested characters with multiplicities.",
+      "inputs_outputs": "Strings s and t -> shortest matching substring, or empty string.",
+      "usage": "This is a class/method solution excerpt, not a standalone command-line program. A compatible LeetCode-style harness or caller supplies arguments and any missing types/imports.",
+      "dependencies": "Only visible language/runtime facilities. Required judge types and missing imports should be identified; no invented pip packages, versions or install commands.",
+      "relationships": "No external file, configuration or network relationships are established by this excerpt.",
+      "evidence": "Use actual implementation lines rather than relying only on the filename or problem title. Sliding-window counts; not a word search or file filter.",
+      "unknowns": "Do not claim successful execution. Missing harness/type definitions/imports and any visible syntax defects matter.",
+      "must_not_claim": "No invented CLI flags, source files, generated output files or runtime performance measurements."
+    }
+  },
+  {
+    "file": "leetcode/python/0102-binary-tree-level-order-traversal.py",
+    "case_id": "LC-PYTHON-0102",
+    "category": "algorithm_solution",
+    "difficulty": "mixed",
+    "family": "leetcode-0102",
+    "rubric": {
+      "purpose": "Return binary-tree values grouped by breadth-first traversal level.",
+      "inputs_outputs": "Tree root -> list of value lists.",
+      "usage": "This is a class/method solution excerpt, not a standalone command-line program. A compatible LeetCode-style harness or caller supplies arguments and any missing types/imports.",
+      "dependencies": "Only visible language/runtime facilities. Required judge types and missing imports should be identified; no invented pip packages, versions or install commands.",
+      "relationships": "No external file, configuration or network relationships are established by this excerpt.",
+      "evidence": "Use actual implementation lines rather than relying only on the filename or problem title. TreeNode, List annotations and collections.deque are referenced; complete imports/harness are not supplied.",
+      "unknowns": "Do not claim successful execution. Missing harness/type definitions/imports and any visible syntax defects matter.",
+      "must_not_claim": "No invented CLI flags, source files, generated output files or runtime performance measurements."
+    }
+  },
+  {
+    "file": "leetcode/python/0146-lru-cache.py",
+    "case_id": "LC-PYTHON-0146",
+    "category": "algorithm_solution",
+    "difficulty": "mixed",
+    "family": "leetcode-0146",
+    "rubric": {
+      "purpose": "Maintain a capacity-limited least-recently-used cache.",
+      "inputs_outputs": "Capacity and get/put operations -> returned values or -1; put changes cache state.",
+      "usage": "This is a class/method solution excerpt, not a standalone command-line program. A compatible LeetCode-style harness or caller supplies arguments and any missing types/imports.",
+      "dependencies": "Only visible language/runtime facilities. Required judge types and missing imports should be identified; no invented pip packages, versions or install commands.",
+      "relationships": "No external file, configuration or network relationships are established by this excerpt.",
+      "evidence": "Use actual implementation lines rather than relying only on the filename or problem title. Hash map plus doubly linked nodes; no disk persistence or external cache service is shown.",
+      "unknowns": "Do not claim successful execution. Missing harness/type definitions/imports and any visible syntax defects matter.",
+      "must_not_claim": "No invented CLI flags, source files, generated output files or runtime performance measurements."
+    }
+  },
+  {
+    "file": "leetcode/python/0200-number-of-islands.py",
+    "case_id": "LC-PYTHON-0200",
+    "category": "algorithm_solution",
+    "difficulty": "mixed",
+    "family": "leetcode-0200",
+    "rubric": {
+      "purpose": "Count four-directionally connected islands in a grid.",
+      "inputs_outputs": "Binary grid -> island count; some versions modify the grid.",
+      "usage": "This is a class/method solution excerpt, not a standalone command-line program. A compatible LeetCode-style harness or caller supplies arguments and any missing types/imports.",
+      "dependencies": "Only visible language/runtime facilities. Required judge types and missing imports should be identified; no invented pip packages, versions or install commands.",
+      "relationships": "No external file, configuration or network relationships are established by this excerpt.",
+      "evidence": "The file contains multiple Solution classes. The DFS version changes land cells to zero; the BFS section has an indentation defect at line 60. Do not claim the whole file runs as supplied.",
+      "unknowns": "Do not claim successful execution. Missing harness/type definitions/imports and any visible syntax defects matter. Original indentation error at line 60: unexpected indent.",
+      "must_not_claim": "No invented CLI flags, source files, generated output files or runtime performance measurements."
+    }
+  },
+  {
+    "file": "leetcode/python/0207-course-schedule.py",
+    "case_id": "LC-PYTHON-0207",
+    "category": "algorithm_solution",
+    "difficulty": "mixed",
+    "family": "leetcode-0207",
+    "rubric": {
+      "purpose": "Check whether course prerequisites contain a cycle and all courses can be completed.",
+      "inputs_outputs": "Course count and prerequisite pairs -> boolean.",
+      "usage": "This is a class/method solution excerpt, not a standalone command-line program. A compatible LeetCode-style harness or caller supplies arguments and any missing types/imports.",
+      "dependencies": "Only visible language/runtime facilities. Required judge types and missing imports should be identified; no invented pip packages, versions or install commands.",
+      "relationships": "No external file, configuration or network relationships are established by this excerpt.",
+      "evidence": "Use actual implementation lines rather than relying only on the filename or problem title. Depth-first cycle detection, not an actual course scheduler or external API.",
+      "unknowns": "Do not claim successful execution. Missing harness/type definitions/imports and any visible syntax defects matter.",
+      "must_not_claim": "No invented CLI flags, source files, generated output files or runtime performance measurements."
+    }
+  },
+  {
+    "file": "leetcode/python/0212-word-search-ii.py",
+    "case_id": "LC-PYTHON-0212",
+    "category": "algorithm_solution",
+    "difficulty": "mixed",
+    "family": "leetcode-0212",
+    "rubric": {
+      "purpose": "Find dictionary words in a character grid using a trie and backtracking.",
+      "inputs_outputs": "Board and word list -> found words.",
+      "usage": "This is a class/method solution excerpt, not a standalone command-line program. A compatible LeetCode-style harness or caller supplies arguments and any missing types/imports.",
+      "dependencies": "Only visible language/runtime facilities. Required judge types and missing imports should be identified; no invented pip packages, versions or install commands.",
+      "relationships": "No external file, configuration or network relationships are established by this excerpt.",
+      "evidence": "Use actual implementation lines rather than relying only on the filename or problem title. TrieNode is defined locally; List annotations/harness are not supplied; no files or network are involved.",
+      "unknowns": "Do not claim successful execution. Missing harness/type definitions/imports and any visible syntax defects matter.",
+      "must_not_claim": "No invented CLI flags, source files, generated output files or runtime performance measurements."
+    }
+  },
+  {
+    "file": "leetcode/python/0297-serialize-and-deserialize-binary-tree.py",
+    "case_id": "LC-PYTHON-0297",
+    "category": "algorithm_solution",
+    "difficulty": "mixed",
+    "family": "leetcode-0297",
+    "rubric": {
+      "purpose": "Encode a binary tree to text and reconstruct a tree from that text.",
+      "inputs_outputs": "Tree -> serialized string; string -> tree.",
+      "usage": "This is a class/method solution excerpt, not a standalone command-line program. A compatible LeetCode-style harness or caller supplies arguments and any missing types/imports.",
+      "dependencies": "Only visible language/runtime facilities. Required judge types and missing imports should be identified; no invented pip packages, versions or install commands.",
+      "relationships": "No external file, configuration or network relationships are established by this excerpt.",
+      "evidence": "Use actual implementation lines rather than relying only on the filename or problem title. TreeNode is caller/judge-provided; not encryption or writing a serialized file.",
+      "unknowns": "Do not claim successful execution. Missing harness/type definitions/imports and any visible syntax defects matter.",
+      "must_not_claim": "No invented CLI flags, source files, generated output files or runtime performance measurements."
+    }
+  },
+  {
+    "file": "leetcode/python/0322-coin-change.py",
+    "case_id": "LC-PYTHON-0322",
+    "category": "algorithm_solution",
+    "difficulty": "mixed",
+    "family": "leetcode-0322",
+    "rubric": {
+      "purpose": "Compute the fewest coins needed to reach an amount, or return -1.",
+      "inputs_outputs": "Coin denominations and amount -> minimum count.",
+      "usage": "This is a class/method solution excerpt, not a standalone command-line program. A compatible LeetCode-style harness or caller supplies arguments and any missing types/imports.",
+      "dependencies": "Only visible language/runtime facilities. Required judge types and missing imports should be identified; no invented pip packages, versions or install commands.",
+      "relationships": "No external file, configuration or network relationships are established by this excerpt.",
+      "evidence": "Use actual implementation lines rather than relying only on the filename or problem title. Dynamic programming; not counting all combinations or handling real payments.",
+      "unknowns": "Do not claim successful execution. Missing harness/type definitions/imports and any visible syntax defects matter.",
+      "must_not_claim": "No invented CLI flags, source files, generated output files or runtime performance measurements."
+    }
+  },
+  {
+    "file": "real_world/a4.py",
+    "case_id": "REAL-A4",
+    "category": "ml_workflow",
+    "difficulty": "long",
+    "family": "user-segmentation",
+    "rubric": {
+      "purpose": "Semantic segmentation experiment: image/mask data preparation, a K-Means baseline, SegFormer training/validation and predicted-mask export.",
+      "inputs_outputs": "Drive/Oxford.zip, images and masks plus external/test images -> metrics/plots, best_model_weights.h5 and predicted masks. Internal tensors are not all separate external outputs.",
+      "usage": "Exported Colab Python containing !cp and Drive mounting; use compatible Colab/IPython and provide data. Do not suggest it runs unchanged with plain python a4.py.",
+      "dependencies": "Visible imports include TensorFlow/Keras, transformers, OpenCV, NumPy, Albumentations and scikit-learn; exact versions and data are absent. Do not equate an unused import with a used API.",
+      "relationships": "Drive archive, dataset folders, pretrained SegFormer identifier, saved weights and test-mask folder are explicit references. No other local implementation was provided.",
+      "evidence": "Use model constructor, dataset reading, training loop or cv2.imwrite lines. SegFormer constructor around line 390 and final mask saving around line 788.",
+      "unknowns": "External data/configured paths and actual successful execution were not verified. The !cp line is IPython syntax, not corruption or a reason to reject the complete source.",
+      "must_not_claim": "Do not invent a medical domain, animal-breed classes, successful training, measured accuracy, or a normal standalone-Python invocation."
+    }
+  },
+  {
+    "file": "real_world/code_steward/runner.py",
+    "case_id": "REAL-RUNNER",
+    "category": "application_module",
+    "difficulty": "medium",
+    "family": "code-steward-evaluation",
+    "rubric": {
+      "purpose": "Run model evaluations in sequence and preserve complete or partial test records.",
+      "inputs_outputs": "Model settings and code snapshots -> JSON/CSV files and reports.",
+      "usage": "Imported within the ai_lab package; it is not a standalone script.",
+      "dependencies": "Python standard library plus only the visible relative module imports. No web server or browser framework is required to generate the HTML file.",
+      "relationships": "Relative core/reporting/readable_report modules and an injected model client.",
+      "evidence": "Cite the relevant function/call/write operation. Do not treat definitions as proof of completed work.",
+      "unknowns": "Caller data, related module implementations and actual execution are not supplied to this single-file analysis.",
+      "must_not_claim": "No source files are executed by the shown evaluation runner. Do not claim HTML output itself is a hosted website or that a valid response establishes accuracy."
+    }
+  },
+  {
+    "file": "real_world/code_steward/readable_report.py",
+    "case_id": "REAL-READABLE_REPORT",
+    "category": "application_module",
+    "difficulty": "medium",
+    "family": "code-steward-evaluation",
+    "rubric": {
+      "purpose": "Build short English HTML and Markdown reports from saved analysis records.",
+      "inputs_outputs": "Run metadata, source snapshots and model results -> report.html and report.md.",
+      "usage": "Call write_readable_reports from a compatible Python application.",
+      "dependencies": "Python standard library html and pathlib; no third-party packages or relative module imports are shown.",
+      "relationships": "It writes reports in the supplied folder; raw technical records are separate.",
+      "evidence": "Cite the relevant function/call/write operation. Do not treat definitions as proof of completed work.",
+      "unknowns": "Caller data, related module implementations and actual execution are not supplied to this single-file analysis.",
+      "must_not_claim": "Generating HTML does not host a website. Ready status does not establish semantic accuracy; model strings are escaped before HTML output."
+    }
   }
 ]
