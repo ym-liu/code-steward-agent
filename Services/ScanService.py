@@ -2,34 +2,143 @@ import os
 import hashlib
 import json
 import logging
+import threading
+import time
 from datetime import datetime, timezone
+
+from Services.ClassificationService import HEAD_BYTES, ClassificationService
 
 logger = logging.getLogger("code-steward.scanner")
 CHECKPOINT_FILE = "scan_checkpoint.json"
 
+# Operating-system folders are never scanned, even inside a configured root.
+# Add more folders with scanning.deny_paths in config.yaml.
+if os.name == "nt":
+    SYSTEM_FOLDERS = [os.environ.get(name, default) for name, default in (
+        ("SystemRoot", r"C:\Windows"), ("ProgramFiles", r"C:\Program Files"),
+        ("ProgramFiles(x86)", r"C:\Program Files (x86)"), ("ProgramData", r"C:\ProgramData"))]
+else:
+    SYSTEM_FOLDERS = ["/System", "/Library", "/usr", "/bin", "/sbin", "/etc", "/private/etc", "/dev", "/proc",
+                      "/sys", "/boot"]
+
+# Temporary files that editors, browsers and operating systems create; they are never registered.
+IGNORED_NAMES = {".ds_store", "thumbs.db", "desktop.ini", "4913"}
+IGNORED_SUFFIXES = (".swp", ".swo", ".swx", ".tmp", ".temp", ".part", ".crdownload", ".download", "~")
+IGNORED_PREFIXES = (".#", "~$")
+
+
+def _inside(path, folder):
+    path, folder = os.path.normcase(path), os.path.normcase(folder).rstrip(os.sep)
+    return path == folder or path.startswith(folder + os.sep)
+
+
 class ScanService:
-    def __init__(self, config_service, logs_service, artifacts_service=None, code_steward_service=None):
+    """Keeps the saved artifacts in step with the files under the configured roots.
+
+    process() checks single paths (from the event aggregator) and, when asked, walks every root.
+    Single paths are always compared by content; a full walk skips files whose size and
+    modification time are unchanged, so it stays cheap. Only one scan runs at a time.
+    """
+
+    def __init__(self, config_service, logs_service, artifacts_service=None, code_steward_service=None,
+                 classifier=None):
         self.config_service = config_service
         self.logs_service = logs_service
         self.artifacts_service = artifacts_service
         self.code_steward_service = code_steward_service
+        self.classifier = classifier or ClassificationService()
+        self.own_paths = set()   # the agent's own files (log, config); set by ServiceContainer
+        self.own_folder = None   # the program folder; skipped when a wider root contains it
+        self._lock = threading.Lock()
         self._is_scanning   = False
         self._last_scan_at  = None
+        self._last_full_scan_at = None
         self._last_results  = []
+        self._last_summary = None
+        self._checkpoint = {}
 
     def get_status(self):
         return {
             "is_scanning":   self._is_scanning,
             "last_scan_at":  self._last_scan_at.isoformat() if self._last_scan_at else None,
             "files_found":   len(self._last_results),
+            "last_full_scan_at": self._last_full_scan_at.isoformat() if self._last_full_scan_at else None,
+            "last_summary": self._last_summary,
+            "roots": [{"path": root, "available": os.path.isdir(root)} for root in self.roots()],
         }
-    
+
     def _is_service_running(self) -> bool:
         if self.code_steward_service is None:
             return True
         return self.code_steward_service.state.value == "running"
 
+    # Settings and scope
+
+    def setting(self, key, default):
+        if self.config_service is None:
+            return default
+        value = self.config_service.get("scanning", key, default=default)
+        return default if value is None else value
+
+    def roots(self):
+        roots = self.setting("root_paths", [])
+        if isinstance(roots, str):
+            roots = [roots]
+        return [os.path.abspath(os.path.expanduser(root)) for root in roots if isinstance(root, str) and root.strip()]
+
+    def root_of(self, path):
+        return next((root for root in self.roots() if _inside(path, root)), None)
+
+    def canonical(self, path):
+        """Spell a reported path the way scans store it (macOS reports /private/var for /var)."""
+        path = os.path.abspath(path)
+        if self.root_of(path):
+            return path
+        for root in self.roots():
+            real = os.path.realpath(root)
+            if real != root and _inside(path, real):
+                return root + path[len(real.rstrip(os.sep)):]
+        return path
+
+    def _denied(self, path):
+        return any(_inside(os.path.abspath(path), os.path.abspath(os.path.expanduser(folder)))
+                   for folder in SYSTEM_FOLDERS + list(self.setting("deny_paths", [])))
+
+    def _own_folder_inside(self, path, root):
+        """True for the agent's own folder (code, database, logs) when a wider root contains it."""
+        return bool(self.own_folder) and not _inside(root, self.own_folder) and _inside(path, self.own_folder)
+
+    def _extension_allowed(self, name):
+        extensions = self.setting("include_extensions", [])
+        return not extensions or any(name.lower().endswith(extension.lower()) for extension in extensions)
+
+    def in_scope(self, path, folder=False):
+        """True when a path may be registered: inside a root and not excluded, protected or temporary."""
+        path = os.path.abspath(path)
+        root = self.root_of(path)
+        if root is None or self._denied(path) or self._own_folder_inside(path, root):
+            return False
+        relative = os.path.relpath(path, root)
+        parts = [] if relative == "." else relative.split(os.sep)
+        excluded = set(self.setting("exclude_folders", []))
+        if any(part in excluded for part in (parts if folder else parts[:-1])):
+            return False
+        if folder:
+            return True
+        name = os.path.basename(path)
+        lower = name.lower()
+        if lower in IGNORED_NAMES or lower.endswith(IGNORED_SUFFIXES) or name.startswith(IGNORED_PREFIXES):
+            return False
+        if os.path.normcase(path) in self.own_paths:
+            return False
+        if self.artifacts_service is not None and self.artifacts_service.is_storage_file(path):
+            return False
+        return self._extension_allowed(name)
+
+    # Scanning
+
     def enqueue_manual_scan(self, events=None):
+        """Scan now and return the result (tests and direct calls). The API queues scans instead."""
         if not self._is_service_running():
             logger.warning("Scan blocked: service is %s; start or resume it before scanning.",
                            self.code_steward_service.state.value)
@@ -37,141 +146,238 @@ class ScanService:
         if self._is_scanning:
             logger.warning("Scan blocked: another scan is already in progress.")
             return {"message": "Scan already in progress."}
-        logger.info("Scan requested (%s, %d file events).", "file watcher" if events else "manual", len(events or []))
-        results = self._run_scan(events=events)
+        logger.info("Scan requested (%s, %d file events).", "file events" if events else "manual", len(events or []))
+        items = [item for item in (self._item_from_event(event) for event in events or []) if item]
+        run = self.process(files=items, full_scan=None if events else "manual-scan")
         return {
             "message": "Scan complete.",
-            "files_found": len(results),
-            "results": results,
-    }
-    
-    def _run_scan(self, events=None):
-        self._is_scanning  = True
-        self._last_scan_at = datetime.now(timezone.utc)
-        results = []
-        extension_skips = 0
-    
+            "files_found": len(run["results"]),
+            "results": run["results"],
+            "removed": run["removed"],
+            "summary": run["summary"],
+        }
+
+    @staticmethod
+    def _item_from_event(event):
+        """Turn an event dictionary {event_type, source_path, destination_path} into a path to check."""
+        source = event.get("source_path")
+        if event.get("event_type") == "moved" and event.get("destination_path"):
+            return {"path": event["destination_path"], "moved_from": source, "source": "manual-scan"}
+        return {"path": source, "moved_from": None, "source": "manual-scan"} if source else None
+
+    def process(self, files=(), folders=(), full_scan=None):
+        """Check waiting paths and, when full_scan names a reason, every file under the roots.
+
+        Moves go first so a renamed file keeps its identity. Storage errors stop the scan and are
+        raised; problems with single files are logged and the scan continues.
+        """
+        with self._lock:
+            self._is_scanning = True
+            self._last_scan_at = datetime.now(timezone.utc)
+            started = time.monotonic()
+            run = {"results": [], "removed": [], "extension_skips": 0,
+                   "counts": dict.fromkeys(("created", "modified", "moved", "deleted", "unchanged", "skipped", "errors"), 0)}
+            try:
+                if self.artifacts_service is None:
+                    self._checkpoint = self._load_checkpoint()
+                for item in sorted(files, key=lambda item: item.get("moved_from") is None):
+                    self._check_file(item["path"], item.get("moved_from"), item.get("source", "watcher"), run)
+                for item in folders:
+                    self._check_folder(item["path"], item.get("source", "watcher"), run)
+                if full_scan:
+                    self._full_scan(full_scan, run)
+                    self._last_full_scan_at = datetime.now(timezone.utc)
+                if self.artifacts_service is None:
+                    self._save_checkpoint(self._checkpoint)
+            except Exception:
+                logger.exception("Scan failed unexpectedly.")
+                raise
+            finally:
+                self._is_scanning = False
+            run["summary"] = {**run["counts"], "source": full_scan or "file events",
+                              "seconds": round(time.monotonic() - started, 3)}
+            self._last_results = run["results"]
+            self._last_summary = run["summary"]
+            if run["extension_skips"]:
+                logger.info("Skipped %d files because their extensions are not in include_extensions.",
+                            run["extension_skips"])
+            counts = run["counts"]
+            level = logging.INFO if full_scan or run["results"] or run["removed"] else logging.DEBUG
+            logger.log(level, "Scan complete. %d new/changed files found (%d removed, %d unchanged; %s, %.1f s).",
+                       len(run["results"]), counts["deleted"], counts["unchanged"], run["summary"]["source"],
+                       run["summary"]["seconds"])
+            return run
+
+    def _check_file(self, path, moved_from, source, run, trust_stat=False):
+        """Compare one path with its saved record and save what changed.
+
+        With trust_stat (full scans) a file whose size and modification time are unchanged is not
+        read. Event checks always compare contents, because some file systems keep the same time.
+        """
+        path = self.canonical(path)
+        known = self._known(path)
+        if not self.in_scope(path):
+            if known is not None:
+                self._remove(path, run, "no longer included by the settings")
+            else:
+                run["counts"]["skipped"] += 1
+            return
+        if os.path.islink(path) or not os.path.isfile(path):
+            if known is not None:
+                self._remove(path, run, "replaced by a link" if os.path.islink(path) else "deleted")
+            return
         try:
-            
-            # Read settings from config
-            root_paths = self.config_service.get("scanning", "root_paths", default=[])
-            include_extensions = self.config_service.get("scanning", "include_extensions", default=[])
-            exclude_folders = self.config_service.get("scanning", "exclude_folders", default=[])
-            max_file_size = self.config_service.get("scanning", "max_file_size_bytes", default=10485760)
-            if not root_paths:
-                logger.warning("Scan has no configured root paths; no files will be scanned.")
-            
-            # Load checkpoint to skip already seen files
-            checkpoint = self._load_checkpoint()
-            event_hints = self._build_event_hints(events or [], checkpoint)
-            
-            for root_path in root_paths:
-                if not os.path.exists(root_path):
-                    logger.warning("Root path does not exist, skipping: %s", root_path)
+            size = os.path.getsize(path)
+        except OSError as error:
+            logger.warning("Could not read file size %s: %s", path, error)
+            run["counts"]["errors"] += 1
+            return
+        try:
+            mtime = os.path.getmtime(path)
+        except OSError as error:
+            logger.warning("Could not read modification time %s: %s", path, error)
+            run["counts"]["errors"] += 1
+            return
+        version = self.classifier.VERSION
+        if (trust_stat and known is not None and known.get("size") == size and known.get("mtime") == mtime
+                and known.get("classifier_version") == version):
+            run["counts"]["unchanged"] += 1
+            return
+        too_large = size > self.setting("max_file_size_bytes", 10485760)
+        file_hash = None
+        if not too_large:
+            file_hash = self._hash_file(path)
+            if file_hash is None:
+                run["counts"]["errors"] += 1
+                return
+        classification = self.classifier.describe(path, self._read_head(path), self.root_of(path))
+        if too_large:
+            classification["reasons"] = classification["reasons"] + [
+                "Larger than max_file_size_bytes, so its contents were not hashed."]
+        modified = datetime.fromtimestamp(mtime, timezone.utc).isoformat()
+        if known is not None and (known.get("hash") == file_hash if not too_large
+                                  else known.get("size") == size and known.get("mtime") == mtime):
+            if known.get("mtime") != mtime or known.get("classifier_version") != version:
+                self._touch(path, mtime, modified, classification)  # same contents: refresh quietly
+            run["counts"]["unchanged"] += 1
+            return
+        change_type, previous_path = ("created" if known is None else "modified"), None
+        if known is None and moved_from:
+            moved_from = self.canonical(moved_from)
+            if (os.path.normcase(moved_from) != os.path.normcase(path) and not os.path.lexists(moved_from)
+                    and self._known(moved_from) is not None):
+                change_type, previous_path = "moved", moved_from
+        record = {"path": path, "size": size, "hash": file_hash, "modified": modified, "mtime": mtime,
+                  "discovered_by": source, "classification": classification}
+        stored = self._store(record, change_type, previous_path)
+        run["results"].append(stored)
+        run["counts"][change_type] += 1
+        logger.info("Artifact %s: %s%s", change_type, path,
+                    " (previous path: " + previous_path + ")" if previous_path else "")
+
+    def _check_folder(self, folder, source, run):
+        """A folder was created, deleted or moved: drop records for files that are gone, register new ones."""
+        folder = self.canonical(folder)
+        for known_path in self._known_paths():
+            if _inside(known_path, folder) and os.path.normcase(known_path) != os.path.normcase(folder) \
+                    and not os.path.isfile(known_path):
+                self._remove(known_path, run, "folder deleted or moved away")
+        if os.path.isdir(folder) and self.in_scope(folder, folder=True):
+            self._walk(folder, source, run, set(), set())
+
+    def _full_scan(self, source, run):
+        """Walk every root; then remove records of files that are gone or no longer included."""
+        seen, failed, walked = set(), set(), []
+        for root in self.roots():
+            if not os.path.isdir(root):
+                logger.warning("Root path does not exist, skipping: %s", root)
+                continue
+            if self._denied(root):
+                logger.warning("Root path is a protected system folder, skipping: %s", root)
+                continue
+            logger.info("Scanning: %s", root)
+            self._walk(root, source, run, seen, failed)
+            walked.append(root)
+        for known_path in self._known_paths():
+            if os.path.normcase(known_path) in seen:
+                continue
+            root = self.root_of(known_path)
+            if root is None:
+                self._remove(known_path, run, "outside the configured folders")
+            elif root in walked and not any(_inside(known_path, folder) for folder in failed):
+                # Records under a missing root (for example an unplugged drive) are kept.
+                if not os.path.lexists(known_path):
+                    self._remove(known_path, run, "deleted")
+                elif not self.in_scope(known_path):
+                    self._remove(known_path, run, "no longer included by the settings")
+
+    def _walk(self, top, source, run, seen, failed):
+        excluded = set(self.setting("exclude_folders", []))
+        root = self.root_of(top) or top
+        skipped_level = logging.INFO if source == "manual-scan" else logging.DEBUG
+
+        def unreadable(error):
+            logger.warning("Cannot open folder %s: %s", error.filename, error.strerror or error)
+            failed.add(error.filename)
+
+        for dirpath, dirnames, filenames in os.walk(top, onerror=unreadable):
+            kept = []
+            for name in dirnames:
+                folder = os.path.join(dirpath, name)
+                if name in excluded:
+                    logger.log(skipped_level, "Directory skipped by exclude_folders: %s", folder)
+                elif os.path.islink(folder) or self._denied(folder) or self._own_folder_inside(folder, root):
+                    logger.debug("Directory skipped: %s", folder)
+                else:
+                    kept.append(name)
+            dirnames[:] = kept
+            for filename in filenames:
+                path = os.path.abspath(os.path.join(dirpath, filename))
+                if not self.in_scope(path):
+                    if not self._extension_allowed(filename):
+                        run["extension_skips"] += 1
                     continue
-                
-                logger.info("Scanning: %s", root_path)
-                
-                for dirpath, dirnames, filenames in os.walk(root_path):
-                    
-                    # Remove excluded folders 
-                    for excluded in dirnames:
-                        if excluded in exclude_folders:
-                            logger.info("Directory skipped by exclude_folders: %s", os.path.join(dirpath, excluded))
-                    dirnames[:] = [
-                        d for d in dirnames
-                        if d not in exclude_folders
-                    ]
-                    
-                    for filename in filenames:
-                        # Only process files with an included extension (if a filter is set)
-                        if include_extensions and not any(
-                            filename.endswith(ext) for ext in include_extensions
-                        ):
-                            extension_skips += 1
-                            logger.debug("File skipped by extension filter: %s", os.path.join(dirpath, filename))
-                            continue
-     
-                        filepath = os.path.abspath(os.path.join(dirpath, filename))
-                        if self.artifacts_service is not None and self.artifacts_service.is_storage_file(filepath):
-                            continue
-                        
-                        # Skip files that are too large
-                        
-                        try:
-                            size = os.path.getsize(filepath)
-                        except OSError as error:
-                            logger.warning("Could not read file size %s: %s", filepath, error)
-                            continue
-                        if size > max_file_size:
-                            logger.info("Skipping large file %s (%d bytes)", filepath, size)
-                            continue
-                    
-                    
-                        # Compute hash
-                        file_hash = self._hash_file(filepath)
-                        if file_hash is None:
-                            continue
-                        
-                        
-                        # Get last modified timestamp
-                        try:
-                            modified = datetime.fromtimestamp(
-                                os.path.getmtime(filepath), timezone.utc
-                            ).isoformat()
-                        except OSError as error:
-                            logger.warning("Could not read modification time %s: %s", filepath, error)
-                            continue
-                            
-                        record = {
-                            "path":		filepath,
-                            "size":		size,
-                            "hash":		file_hash,
-                            "modified":	modified,
-                        }
-                        
-                        # Only add to results if the file is new or changed
-                        old_hash = checkpoint.get(filepath)
-                        if old_hash != file_hash:
-                            hint = event_hints.get(os.path.abspath(filepath), {})
-                            change_type = hint.get(
-                                "change_type",
-                                "created" if old_hash is None else "modified",
-                            )
-                            previous_path = hint.get("previous_path")
+                seen.add(os.path.normcase(path))
+                self._check_file(path, None, source, run, trust_stat=True)
 
-                            classified = record
-                            if self.artifacts_service is not None:
-                                classified = self.artifacts_service.classify(
-                                    record,
-                                    change_type=change_type,
-                                    previous_path=previous_path,
-                                )
+    # Storage: the artifacts database, or the JSON checkpoint when used on its own
 
-                            results.append(classified)
-                            checkpoint[filepath] = file_hash
-                            logger.info("Artifact %s: %s%s", change_type, filepath,
-                                        " (previous path: " + previous_path + ")" if previous_path else "")
-                        
-                        
-            self._save_checkpoint(checkpoint)
-            
-            self._last_results = results
-            self._is_scanning = False
-            if extension_skips:
-                logger.info("Skipped %d files because their extensions are not in include_extensions.", extension_skips)
-            logger.info("Scan complete. %d new/changed files found.", len(results))
-            return results
-    
-        except Exception:
-             logger.exception("Scan failed unexpectedly.")
-             raise
-        finally:
-            self._is_scanning = False
-    
-    
+    def _known(self, path):
+        if self.artifacts_service is not None:
+            return self.artifacts_service.known_state(path)
+        file_hash = self._checkpoint.get(path)
+        return None if file_hash is None else {"hash": file_hash}
+
+    def is_known(self, path):
+        return self._known(path) is not None
+
+    def _known_paths(self):
+        if self.artifacts_service is not None:
+            return self.artifacts_service.known_paths()
+        return list(self._checkpoint)
+
+    def _store(self, record, change_type, previous_path):
+        if self.artifacts_service is not None:
+            return self.artifacts_service.classify(record, change_type=change_type, previous_path=previous_path)
+        self._checkpoint.pop(previous_path, None)
+        self._checkpoint[record["path"]] = record["hash"]
+        return {**record, "change_type": change_type, "previous_path": previous_path}
+
+    def _touch(self, path, mtime, modified, classification):
+        if self.artifacts_service is not None:
+            self.artifacts_service.touch(path, mtime, modified, classification)
+
+    def _remove(self, path, run, reason):
+        if self.artifacts_service is not None:
+            self.artifacts_service.remove(path)
+        else:
+            self._checkpoint.pop(path, None)
+        run["removed"].append(path)
+        run["counts"]["deleted"] += 1
+        logger.info("Artifact removed (%s): %s", reason, path)
+
     #Hashing
-    
+
     def _hash_file(self, filepath) -> str | None:
         """Compute SHA-256 hash of a file. Returns None on permission error."""
         hasher = hashlib.sha256()
@@ -186,17 +392,18 @@ class ScanService:
         except OSError as e:
             logger.warning("Could not read file %s: %s", filepath, e)
             return None
-                
-    
-    #checkpoint for resumable scans
-                
+
+    @staticmethod
+    def _read_head(path):
+        try:
+            with open(path, "rb") as stream:
+                return stream.read(HEAD_BYTES)
+        except OSError:
+            return b""
+
+    #checkpoint for scans without the artifacts database
+
     def _load_checkpoint(self) -> dict:
-        """Use saved artifacts as the checkpoint; keep JSON for standalone scans."""
-        if self.artifacts_service is not None:
-            return {
-                artifact["path"]: artifact["hash"]
-                for artifact in self.artifacts_service.list_artifacts()["items"]
-            }
         if not os.path.exists(CHECKPOINT_FILE):
             return {}
         try:
@@ -205,47 +412,11 @@ class ScanService:
         except Exception as e:
             logger.warning("Could not load checkpoint: %s", e)
             return {}
-            
+
     def _save_checkpoint(self, checkpoint: dict):
         """Save the current scan checkpoint to disk"""
-        if self.artifacts_service is not None:
-            # classify/remove already committed the metadata and hash together.
-            return
         try:
             with open(CHECKPOINT_FILE, "w") as f:
                 json.dump(checkpoint, f, indent=2)
         except Exception as e:
             logger.warning("Could not save checkpoint: %s", e)
-
-    def _build_event_hints(self, events, checkpoint):
-        """Translate debounced watcher events into scan classification hints."""
-        hints = {}
-        priorities = {"modified": 1, "created": 2, "moved": 3}
-
-        for event in events:
-            event_type = event.get("event_type")
-            source_path = os.path.abspath(event["source_path"])
-
-            if event_type == "deleted":
-                checkpoint.pop(source_path, None)
-                if self.artifacts_service is not None:
-                    self.artifacts_service.remove(source_path)
-                logger.info("File deletion processed: %s", source_path)
-                continue
-
-            target_path = source_path
-            previous_path = None
-            if event_type == "moved":
-                target_path = os.path.abspath(event["destination_path"])
-                previous_path = source_path
-                checkpoint.pop(source_path, None)
-
-            current = hints.get(target_path)
-            if current and priorities[current["change_type"]] > priorities[event_type]:
-                continue
-            hints[target_path] = {
-                "change_type": event_type,
-                "previous_path": previous_path,
-            }
-
-        return hints

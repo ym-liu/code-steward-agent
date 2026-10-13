@@ -1,5 +1,6 @@
 import json
 import logging
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
 import re
 import threading
@@ -26,18 +27,31 @@ def _formatter():
     return UTCLogFormatter("%(asctime)s [%(levelname)s] [%(name)s] %(message)s")
 
 
-def configure_logging(log_file=LOG_FILE):
-    """Capture project loggers without changing unrelated library loggers."""
+def configure_logging(log_file=LOG_FILE, level="INFO", max_bytes=0, backup_count=0):
+    """Capture project loggers without changing unrelated library loggers.
+
+    With max_bytes above 0 the log starts a new file at that size and keeps backup_count
+    older files (service.log.1, service.log.2, ...), so a long-running agent cannot fill the disk.
+    """
     project_logger = logging.getLogger("code-steward")
-    project_logger.setLevel(logging.INFO)
+    project_logger.setLevel(getattr(logging, str(level).upper(), logging.INFO))
     project_logger.propagate = False
     target = str(Path(log_file).resolve())
-    for handler in project_logger.handlers:
+    rotation = (max_bytes, backup_count)
+    for handler in list(project_logger.handlers):
         if getattr(handler, "_code_steward_log_file", None) == target:
-            return
-    file_handler = logging.FileHandler(target, encoding="utf-8", errors="backslashreplace")
+            if getattr(handler, "_code_steward_rotation", (0, 0)) == rotation:
+                return
+            project_logger.removeHandler(handler)  # same file, new size limits
+            handler.close()
+    if max_bytes > 0:
+        file_handler = RotatingFileHandler(target, maxBytes=max_bytes, backupCount=backup_count,
+                                           encoding="utf-8", errors="backslashreplace")
+    else:
+        file_handler = logging.FileHandler(target, encoding="utf-8", errors="backslashreplace")
     file_handler.lock = _WRITE_LOCK
     file_handler._code_steward_log_file = target
+    file_handler._code_steward_rotation = rotation
     file_handler.setFormatter(_formatter())
     project_logger.addHandler(file_handler)
     if not any(getattr(handler, "_code_steward_console", False) for handler in project_logger.handlers):

@@ -1,0 +1,963 @@
+{
+ "note": "Reference answers for future classification and grouping tests. Never sent to a model. Artifact types follow Requirements ID-6.1.",
+ "exact_duplicates": [
+  [
+   "simulated/lab_project/train.py",
+   "simulated/lab_project/backup/train.py"
+  ],
+  [
+   "simulated/misc_messy/helper.py",
+   "simulated/misc_messy/process_logs (copy).py"
+  ]
+ ],
+ "variants": [
+  {
+   "mainline": "simulated/lab_project/train.py",
+   "sidings": [
+    "simulated/lab_project/train_v1_old.py"
+   ],
+   "why": "older version without the config file"
+  },
+  {
+   "mainline": "simulated/office_automation/rename_photos_final2.py",
+   "sidings": [
+    "simulated/office_automation/rename_photos.py"
+   ],
+   "why": "later tweak adds --recursive; otherwise identical",
+   "note": "either could be mainline; prefer the newer superset"
+  },
+  {
+   "same_tool_other_language": [
+    "simulated/misc_messy/final_FINAL_v3.py",
+    "simulated/misc_messy/csv_to_json.js"
+   ],
+   "why": "CSV to JSON converter in Python and Node"
+  },
+  {
+   "same_tool_other_platform": [
+    "simulated/lab_project/run_all.sh",
+    "simulated/lab_project/run_all_windows.bat"
+   ],
+   "why": "same launcher for macOS/Linux and Windows"
+  },
+  {
+   "same_problem_other_language": [
+    [
+     "leetcode/python/0001-two-sum.py",
+     "leetcode/java/0001-two-sum.java"
+    ],
+    [
+     "leetcode/python/0021-merge-two-sorted-lists.py",
+     "leetcode/cpp/0021-merge-two-sorted-lists.cpp"
+    ],
+    [
+     "leetcode/python/0146-lru-cache.py",
+     "leetcode/java/0146-lru-cache.java"
+    ],
+    [
+     "leetcode/python/0200-number-of-islands.py",
+     "leetcode/java/0200-number-of-islands.java"
+    ],
+    [
+     "leetcode/python/0207-course-schedule.py",
+     "leetcode/cpp/0207-course-schedule.cpp"
+    ],
+    [
+     "leetcode/python/0297-serialize-and-deserialize-binary-tree.py",
+     "leetcode/cpp/0297-serialize-and-deserialize-binary-tree.cpp"
+    ]
+   ]
+  }
+ ],
+ "wrappers": [
+  {
+   "wrapper": "launch.sh",
+   "runs": [
+    "./bin/report-tool (missing binary)"
+   ]
+  },
+  {
+   "wrapper": "simulated/lab_project/run_all.sh",
+   "runs": [
+    "simulated/lab_project/train.py",
+    "simulated/lab_project/evaluate.py",
+    "simulated/lab_project/plot_results.py"
+   ]
+  },
+  {
+   "wrapper": "simulated/lab_project/run_all_windows.bat",
+   "runs": [
+    "simulated/lab_project/train.py",
+    "simulated/lab_project/evaluate.py"
+   ]
+  },
+  {
+   "wrapper": "simulated/office_automation/daily_report.bat",
+   "runs": [
+    "simulated/office_automation/merge_monthly_excel.py",
+    "simulated/office_automation/send_report.py"
+   ]
+  },
+  {
+   "wrapper": "simulated/data_pipeline/run_pipeline.sh",
+   "runs": [
+    "simulated/data_pipeline/scrape_prices.js",
+    "simulated/data_pipeline/prices_to_csv.py",
+    "simulated/data_pipeline/sql/load_prices.sql",
+    "simulated/data_pipeline/sql/weekly_summary.sql",
+    "simulated/data_pipeline/report.R"
+   ]
+  },
+  {
+   "wrapper": "open_source/vcpkg/bootstrap-vcpkg.sh",
+   "runs": [
+    "open_source/vcpkg/scripts/bootstrap.sh"
+   ]
+  },
+  {
+   "wrapper": "open_source/vcpkg/bootstrap-vcpkg.bat",
+   "runs": [
+    "open_source/vcpkg/scripts/bootstrap.ps1"
+   ]
+  }
+ ],
+ "tool_families": [
+  [
+   "simulated/lab_project/train.py",
+   "simulated/lab_project/evaluate.py",
+   "simulated/lab_project/utils/metrics.py",
+   "simulated/lab_project/plot_results.py"
+  ],
+  [
+   "open_source/pytorch-examples/word_language_model/main.py",
+   "open_source/pytorch-examples/word_language_model/model.py",
+   "open_source/pytorch-examples/word_language_model/data.py",
+   "open_source/pytorch-examples/word_language_model/generate.py"
+  ],
+  [
+   "open_source/flask-tutorial/flaskr/__init__.py",
+   "open_source/flask-tutorial/flaskr/db.py",
+   "open_source/flask-tutorial/flaskr/auth.py",
+   "open_source/flask-tutorial/flaskr/blog.py"
+  ]
+ ],
+ "artifact_types": {
+  "data": [
+   "simulated/data_pipeline/urls.txt",
+   "simulated/lab_project/.env",
+   "simulated/lab_project/configs/base.yaml",
+   "simulated/lab_project/results/accuracy.png",
+   "simulated/lab_project/results/metrics.json"
+  ],
+  "documentation": [
+   "simulated/misc_messy/notes_snippets.txt"
+  ],
+  "unknown": [
+   "unknown.txt"
+  ],
+  "sensitive_by_default": [
+   "simulated/lab_project/.env",
+   "simulated/lab_project/configs/base.yaml"
+  ],
+  "binary": [
+   "simulated/misc_messy/hello"
+  ],
+  "sample": [
+   "simulated/misc_messy/examples/people.csv",
+   "simulated/misc_messy/examples/people_expected.json"
+  ]
+ },
+ "classification": {
+  "note": "Per-file answers for tuning files, written 2026-10-12 before the classifier existed. type follows the requirement list (wrapper, script, binary, sample, data, documentation, unknown); role is listed for code (tool = does work when started, module = used by other code, test); topic lists every acceptable topic folder, best first. Sealed files are added only before their single final test.",
+  "files": {
+   "filter_csv.py": {
+    "type": "script",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "data-processing"
+    ]
+   },
+   "injection.py": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "other",
+     "data-processing",
+     "algorithms-and-exercises"
+    ]
+   },
+   "launch.sh": {
+    "type": "wrapper",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "other",
+     "data-processing"
+    ]
+   },
+   "missing_config.py": {
+    "type": "script",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "file-automation",
+     "data-processing"
+    ]
+   },
+   "process.py": {
+    "type": "script",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "data-processing",
+     "other"
+    ]
+   },
+   "unknown.txt": {
+    "type": "unknown"
+   },
+   "leetcode/cpp/0021-merge-two-sorted-lists.cpp": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "algorithms-and-exercises"
+    ]
+   },
+   "leetcode/cpp/0207-course-schedule.cpp": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "algorithms-and-exercises"
+    ]
+   },
+   "leetcode/cpp/0297-serialize-and-deserialize-binary-tree.cpp": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "algorithms-and-exercises"
+    ]
+   },
+   "leetcode/java/0001-two-sum.java": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "algorithms-and-exercises"
+    ]
+   },
+   "leetcode/java/0146-lru-cache.java": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "algorithms-and-exercises"
+    ]
+   },
+   "leetcode/java/0200-number-of-islands.java": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "algorithms-and-exercises"
+    ]
+   },
+   "leetcode/python/0001-two-sum.py": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "algorithms-and-exercises"
+    ]
+   },
+   "leetcode/python/0004-median-of-two-sorted-arrays.py": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "algorithms-and-exercises"
+    ]
+   },
+   "leetcode/python/0020-valid-parentheses.py": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "algorithms-and-exercises"
+    ]
+   },
+   "leetcode/python/0021-merge-two-sorted-lists.py": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "algorithms-and-exercises"
+    ]
+   },
+   "leetcode/python/0076-minimum-window-substring.py": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "algorithms-and-exercises"
+    ]
+   },
+   "leetcode/python/0102-binary-tree-level-order-traversal.py": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "algorithms-and-exercises"
+    ]
+   },
+   "leetcode/python/0146-lru-cache.py": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "algorithms-and-exercises"
+    ]
+   },
+   "leetcode/python/0200-number-of-islands.py": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "algorithms-and-exercises"
+    ]
+   },
+   "leetcode/python/0207-course-schedule.py": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "algorithms-and-exercises"
+    ]
+   },
+   "leetcode/python/0212-word-search-ii.py": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "algorithms-and-exercises"
+    ]
+   },
+   "leetcode/python/0297-serialize-and-deserialize-binary-tree.py": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "algorithms-and-exercises"
+    ]
+   },
+   "leetcode/python/0322-coin-change.py": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "algorithms-and-exercises"
+    ]
+   },
+   "real_world/a4.py": {
+    "type": "script",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "machine-learning"
+    ]
+   },
+   "real_world/code_steward/readable_report.py": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "developer-tools"
+    ]
+   },
+   "real_world/code_steward/runner.py": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "developer-tools"
+    ]
+   },
+   "open_source/pytorch-examples/word_language_model/main.py": {
+    "type": "script",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "machine-learning"
+    ]
+   },
+   "open_source/pytorch-examples/word_language_model/generate.py": {
+    "type": "script",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "machine-learning"
+    ]
+   },
+   "open_source/pytorch-examples/word_language_model/data.py": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "machine-learning"
+    ]
+   },
+   "open_source/pytorch-examples/word_language_model/model.py": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "machine-learning"
+    ]
+   },
+   "open_source/pytorch-examples/mnist/main.py": {
+    "type": "script",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "machine-learning"
+    ]
+   },
+   "open_source/pytorch-examples/vae/main.py": {
+    "type": "script",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "machine-learning"
+    ]
+   },
+   "open_source/scikit-learn-examples/classification/plot_digits_classification.py": {
+    "type": "script",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "machine-learning"
+    ]
+   },
+   "open_source/scikit-learn-examples/cluster/plot_kmeans_digits.py": {
+    "type": "script",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "machine-learning"
+    ]
+   },
+   "open_source/flask-tutorial/flaskr/__init__.py": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "web-and-network"
+    ]
+   },
+   "open_source/flask-tutorial/flaskr/auth.py": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "web-and-network"
+    ]
+   },
+   "open_source/flask-tutorial/flaskr/blog.py": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "web-and-network"
+    ]
+   },
+   "open_source/flask-tutorial/flaskr/db.py": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "web-and-network"
+    ]
+   },
+   "open_source/flask-tutorial/tests/conftest.py": {
+    "type": "script",
+    "role": [
+     "test"
+    ],
+    "topic": [
+     "web-and-network"
+    ]
+   },
+   "open_source/vscode-extension-samples/task-provider-sample/src/extension.ts": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "developer-tools"
+    ]
+   },
+   "open_source/vscode-extension-samples/task-provider-sample/src/rakeTaskProvider.ts": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "developer-tools"
+    ]
+   },
+   "open_source/vscode-extension-samples/tree-view-sample/src/extension.ts": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "developer-tools"
+    ]
+   },
+   "open_source/nvm/install.sh": {
+    "type": "script",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "setup-and-deployment"
+    ]
+   },
+   "open_source/vcpkg/bootstrap-vcpkg.sh": {
+    "type": "wrapper",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "setup-and-deployment",
+     "developer-tools"
+    ]
+   },
+   "open_source/vcpkg/bootstrap-vcpkg.bat": {
+    "type": "wrapper",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "setup-and-deployment",
+     "developer-tools"
+    ]
+   },
+   "open_source/vcpkg/scripts/bootstrap.sh": {
+    "type": "script",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "setup-and-deployment",
+     "developer-tools"
+    ]
+   },
+   "open_source/vcpkg/scripts/bootstrap.ps1": {
+    "type": "script",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "setup-and-deployment",
+     "developer-tools"
+    ]
+   },
+   "open_source/thealgorithms-python/ciphers/caesar_cipher.py": {
+    "type": "script",
+    "role": [
+     "tool",
+     "module"
+    ],
+    "topic": [
+     "algorithms-and-exercises"
+    ]
+   },
+   "open_source/thealgorithms-python/conversions/roman_numerals.py": {
+    "type": "script",
+    "role": [
+     "tool",
+     "module"
+    ],
+    "topic": [
+     "algorithms-and-exercises"
+    ]
+   },
+   "open_source/thealgorithms-python/graphs/dijkstra.py": {
+    "type": "script",
+    "role": [
+     "tool",
+     "module"
+    ],
+    "topic": [
+     "algorithms-and-exercises"
+    ]
+   },
+   "open_source/thealgorithms-python/scheduling/round_robin.py": {
+    "type": "script",
+    "role": [
+     "tool",
+     "module"
+    ],
+    "topic": [
+     "algorithms-and-exercises"
+    ]
+   },
+   "open_source/thealgorithms-python/file_transfer/send_file.py": {
+    "type": "script",
+    "role": [
+     "tool",
+     "module"
+    ],
+    "topic": [
+     "algorithms-and-exercises",
+     "web-and-network"
+    ]
+   },
+   "open_source/thealgorithms-cpp/data_structures/queue_using_array.cpp": {
+    "type": "script",
+    "role": [
+     "tool",
+     "module"
+    ],
+    "topic": [
+     "algorithms-and-exercises"
+    ]
+   },
+   "open_source/thealgorithms-cpp/others/decimal_to_binary.cpp": {
+    "type": "script",
+    "role": [
+     "tool",
+     "module"
+    ],
+    "topic": [
+     "algorithms-and-exercises"
+    ]
+   },
+   "simulated/lab_project/train.py": {
+    "type": "script",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "machine-learning"
+    ]
+   },
+   "simulated/lab_project/backup/train.py": {
+    "type": "script",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "machine-learning"
+    ]
+   },
+   "simulated/lab_project/train_v1_old.py": {
+    "type": "script",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "machine-learning"
+    ]
+   },
+   "simulated/lab_project/evaluate.py": {
+    "type": "script",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "machine-learning"
+    ]
+   },
+   "simulated/lab_project/utils/metrics.py": {
+    "type": "script",
+    "role": [
+     "module"
+    ],
+    "topic": [
+     "machine-learning"
+    ]
+   },
+   "simulated/lab_project/run_all.sh": {
+    "type": "wrapper",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "machine-learning"
+    ]
+   },
+   "simulated/lab_project/run_all_windows.bat": {
+    "type": "wrapper",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "machine-learning"
+    ]
+   },
+   "simulated/lab_project/plot_results.py": {
+    "type": "script",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "machine-learning",
+     "data-processing"
+    ]
+   },
+   "simulated/lab_project/analysis_colab.py": {
+    "type": "script",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "data-processing",
+     "machine-learning"
+    ]
+   },
+   "simulated/lab_project/configs/base.yaml": {
+    "type": "data",
+    "sensitive": true
+   },
+   "simulated/lab_project/.env": {
+    "type": "data",
+    "sensitive": true
+   },
+   "simulated/lab_project/results/metrics.json": {
+    "type": "data"
+   },
+   "simulated/lab_project/results/accuracy.png": {
+    "type": "data"
+   },
+   "simulated/misc_messy/final_FINAL_v3.py": {
+    "type": "script",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "data-processing"
+    ]
+   },
+   "simulated/misc_messy/csv_to_json.js": {
+    "type": "script",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "data-processing"
+    ]
+   },
+   "simulated/misc_messy/helper.py": {
+    "type": "script",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "data-processing"
+    ]
+   },
+   "simulated/misc_messy/process_logs (copy).py": {
+    "type": "script",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "data-processing"
+    ]
+   },
+   "simulated/misc_messy/untitled1.py": {
+    "type": "script",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "other",
+     "algorithms-and-exercises"
+    ]
+   },
+   "simulated/misc_messy/old_backup.sh": {
+    "type": "script",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "file-automation"
+    ]
+   },
+   "simulated/misc_messy/hello_world.cpp": {
+    "type": "script",
+    "role": [
+     "tool"
+    ],
+    "topic": [
+     "algorithms-and-exercises"
+    ]
+   },
+   "simulated/misc_messy/notes_snippets.txt": {
+    "type": "documentation"
+   },
+   "simulated/misc_messy/hello": {
+    "type": "binary"
+   },
+   "simulated/misc_messy/examples/people.csv": {
+    "type": "sample"
+   },
+   "simulated/misc_messy/examples/people_expected.json": {
+    "type": "sample"
+   },
+   "leetcode/LICENSE": {
+    "type": "documentation"
+   },
+   "leetcode/README.md": {
+    "type": "documentation"
+   },
+   "open_source/pytorch-examples/LICENSE": {
+    "type": "documentation"
+   },
+   "open_source/scikit-learn-examples/LICENSE": {
+    "type": "documentation"
+   },
+   "open_source/flask-tutorial/LICENSE": {
+    "type": "documentation"
+   },
+   "open_source/vscode-extension-samples/LICENSE": {
+    "type": "documentation"
+   },
+   "open_source/nvm/LICENSE": {
+    "type": "documentation"
+   },
+   "open_source/vcpkg/LICENSE": {
+    "type": "documentation"
+   },
+   "open_source/thealgorithms-python/LICENSE": {
+    "type": "documentation"
+   },
+   "open_source/thealgorithms-cpp/LICENSE": {
+    "type": "documentation"
+   },
+   "leetcode/SOURCE.json": {
+    "type": "data"
+   },
+   "real_world/SOURCE.json": {
+    "type": "data"
+   },
+   "open_source/SOURCE.json": {
+    "type": "data"
+   },
+   "simulated/SOURCE.json": {
+    "type": "data"
+   }
+  }
+ },
+ "plan": {
+  "note": "What a careful person would keep together or apart. Checked only on tuning files.",
+  "keep_together": [
+   [
+    "leetcode/"
+   ],
+   [
+    "open_source/pytorch-examples/"
+   ],
+   [
+    "open_source/scikit-learn-examples/"
+   ],
+   [
+    "open_source/flask-tutorial/"
+   ],
+   [
+    "open_source/vscode-extension-samples/"
+   ],
+   [
+    "open_source/nvm/"
+   ],
+   [
+    "open_source/vcpkg/"
+   ],
+   [
+    "open_source/thealgorithms-python/"
+   ],
+   [
+    "open_source/thealgorithms-cpp/"
+   ],
+   [
+    "real_world/code_steward/"
+   ],
+   [
+    "simulated/lab_project/train.py",
+    "simulated/lab_project/evaluate.py",
+    "simulated/lab_project/utils/metrics.py",
+    "simulated/lab_project/plot_results.py",
+    "simulated/lab_project/run_all.sh",
+    "simulated/lab_project/run_all_windows.bat",
+    "simulated/lab_project/configs/base.yaml",
+    "simulated/lab_project/results/metrics.json"
+   ]
+  ],
+  "keep_apart": [
+   "filter_csv.py",
+   "injection.py",
+   "launch.sh",
+   "missing_config.py",
+   "process.py",
+   "simulated/misc_messy/final_FINAL_v3.py",
+   "simulated/misc_messy/csv_to_json.js",
+   "simulated/misc_messy/helper.py",
+   "simulated/misc_messy/untitled1.py",
+   "simulated/misc_messy/old_backup.sh",
+   "simulated/misc_messy/hello_world.cpp"
+  ],
+  "not_copied_twice": [
+   [
+    "simulated/misc_messy/helper.py",
+    "simulated/misc_messy/process_logs (copy).py"
+   ]
+  ],
+  "needs_review": [
+   "unknown.txt"
+  ]
+ }
+}

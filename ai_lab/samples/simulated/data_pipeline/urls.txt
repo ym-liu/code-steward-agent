@@ -1,0 +1,4 @@
+https://shop.example.com/products/espresso-machine-x200
+https://shop.example.com/products/burr-grinder-pro
+https://shop.example.com/products/milk-frother-mini
+https://shop.example.com/products/kettle-gooseneck-1l

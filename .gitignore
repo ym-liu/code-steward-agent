@@ -3,7 +3,8 @@ venv
 artifacts.sqlite3
 artifacts.sqlite3-*
 ai-results/
-ai_lab/*.local.json
+ai_lab/settings/*.local.json
+ai_lab/settings/*.local.json.tmp
 
 # Local runtime files and macOS folder metadata.
 .DS_Store

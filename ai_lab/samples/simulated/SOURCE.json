@@ -1,0 +1,227 @@
+{
+  "note": "Synthetic files written by Claude Code on 2026-10-12 to imitate personal script folders (research project, office automation, data pipeline, developer tools, messy leftovers). Names, paths, hosts and addresses are fictional; credentials are read from environment variables. Never executed. Some files are deliberate duplicates or variants for grouping tests. Non-code files added 2026-10-12 for file-type tests: an .env with placeholder values, result files, a sample input/expected-output pair and a compiled binary.",
+  "files": [
+    {
+      "file": "simulated/data_pipeline/prices_to_csv.py",
+      "sha256": "9572d93419e2c80dab92f7e08e74dcecabbe088b7b928fbffddd438b2a087f2f",
+      "lines": 14
+    },
+    {
+      "file": "simulated/data_pipeline/report.R",
+      "sha256": "2b41a38860ca944f3b09f32122d0f4af6ea996eb681dff7077ae09d1ef967a4d",
+      "lines": 21
+    },
+    {
+      "file": "simulated/data_pipeline/run_pipeline.sh",
+      "sha256": "1e8d894888e18502dbd2653d36c08dae1476ba66f663956663a043005bf13c49",
+      "lines": 13
+    },
+    {
+      "file": "simulated/data_pipeline/scrape_prices.js",
+      "sha256": "42a4f7c3278974dca5d7938f29976e55a75cdf11678d15a81376871109c67124",
+      "lines": 26
+    },
+    {
+      "file": "simulated/data_pipeline/sql/load_prices.sql",
+      "sha256": "46625926ec6d24b8f6ab5e023beb99c81319a1f86c5462810d8c640d146eee13",
+      "lines": 15
+    },
+    {
+      "file": "simulated/data_pipeline/sql/weekly_summary.sql",
+      "sha256": "dfbeaab6c5f0daf970bc0fa9584191474bc725e83f5df9b51a4941e4388b6abc",
+      "lines": 10
+    },
+    {
+      "file": "simulated/data_pipeline/urls.txt",
+      "sha256": "fb9403fb7aeef59d5d5cb1bfcde6bfac743fbe7e0c74f320f9c2f920e57e434c",
+      "lines": 4
+    },
+    {
+      "file": "simulated/dev_tools/FileStats.java",
+      "sha256": "b800df4ec13ed5b3596a0233e1b60bb3e00cbdc422ac5c0ab51aaf97bd787256",
+      "lines": 22
+    },
+    {
+      "file": "simulated/dev_tools/bulk_rename.rb",
+      "sha256": "801c87e4ca8dc1564cdb8a9c95f237bbceeb187a353ce4c03b7ede9da57e81d3",
+      "lines": 18
+    },
+    {
+      "file": "simulated/dev_tools/count_lines.go",
+      "sha256": "2aae2ecc8858194df3d756fba4a6cb96982642d6ca13efe049bef1bb76466130",
+      "lines": 55
+    },
+    {
+      "file": "simulated/dev_tools/deploy.ps1",
+      "sha256": "947600c18e5fd35a206f3b4d4d7051cbdfdcd1d8eaf7eb9567cadc9e04ec91fe",
+      "lines": 21
+    },
+    {
+      "file": "simulated/dev_tools/env_check.py",
+      "sha256": "1953e1b762aecd22a00f87a4ce38d56767942be7a665e30487d6f51518cbd443",
+      "lines": 24
+    },
+    {
+      "file": "simulated/dev_tools/pre-commit.sh",
+      "sha256": "964994d50bdce14f342d12a8aa0b85f2ca38ed308906c98908cccf57e541f25b",
+      "lines": 11
+    },
+    {
+      "file": "simulated/lab_project/.env",
+      "sha256": "65666fb7a3401b13ddd339d3c6ce30a7f1f49d83b0ce2c27a80871f1d8325570",
+      "bytes": 149
+    },
+    {
+      "file": "simulated/lab_project/analysis_colab.py",
+      "sha256": "6a576d5a8a3ad3fb45e2e215b7584b3491b4eee34fc757d341ad5720a73d4b19",
+      "lines": 28
+    },
+    {
+      "file": "simulated/lab_project/backup/train.py",
+      "sha256": "319907ec721401897beca6a5e52d8efd50b0323d172259aea419a50e5b48c5e7",
+      "lines": 86
+    },
+    {
+      "file": "simulated/lab_project/configs/base.yaml",
+      "sha256": "499bc5d05d96250ca31f51018836f2200a9a359224081e999618f059d889b4be",
+      "lines": 5
+    },
+    {
+      "file": "simulated/lab_project/evaluate.py",
+      "sha256": "32f37f52863fe2f6de384b1209e089664099a0c034336f904a294271550042ba",
+      "lines": 40
+    },
+    {
+      "file": "simulated/lab_project/plot_results.py",
+      "sha256": "e1ac986ca31364bbe46081c6853db52900828d0a9551d5e8b6e18aa211225e0d",
+      "lines": 18
+    },
+    {
+      "file": "simulated/lab_project/results/accuracy.png",
+      "sha256": "e3c74070144b741e24d874514a1ed127867bca387308125d4c35d2a6de49212e",
+      "bytes": 85,
+      "note": "16x8 grayscale PNG written by a short script, to test image/data detection."
+    },
+    {
+      "file": "simulated/lab_project/results/metrics.json",
+      "sha256": "648a3c7cc0dd4cdc0267ff1a14c5b64e9e30ac4c855702ae561167366bf64eb3",
+      "bytes": 207
+    },
+    {
+      "file": "simulated/lab_project/run_all.sh",
+      "sha256": "c049dcd2fbcceda701725ad7a5ea4fb7a3f2b123833a23a657ac0d4b2b5e55af",
+      "lines": 9
+    },
+    {
+      "file": "simulated/lab_project/run_all_windows.bat",
+      "sha256": "cfe885d6fbc4e1963136c7fcd33280b30cec7d94ba96bc3a325c812cd389e916",
+      "lines": 7
+    },
+    {
+      "file": "simulated/lab_project/train.py",
+      "sha256": "319907ec721401897beca6a5e52d8efd50b0323d172259aea419a50e5b48c5e7",
+      "lines": 86
+    },
+    {
+      "file": "simulated/lab_project/train_v1_old.py",
+      "sha256": "63841da293a177adc347857669d6bc4ac5029243e3970ee3717bfd865ef39cae",
+      "lines": 32
+    },
+    {
+      "file": "simulated/lab_project/utils/metrics.py",
+      "sha256": "d154eec008967105548a52c9ee3957f91f0434337f9c771cc104039fc66d7667",
+      "lines": 16
+    },
+    {
+      "file": "simulated/misc_messy/csv_to_json.js",
+      "sha256": "46aed670da937b686fe7d8c62be7eff81b1baef4895de6a16ec5930f1cee4c47",
+      "lines": 11
+    },
+    {
+      "file": "simulated/misc_messy/examples/people.csv",
+      "sha256": "853ca7cb87284f4a5f7e497c668dae04cb98de66a84de7a745afc322b468d4a3",
+      "bytes": 81
+    },
+    {
+      "file": "simulated/misc_messy/examples/people_expected.json",
+      "sha256": "56bb3705ea93f72e96c20f4e29b78c7bc380248c1d34be721cabc3c465067eda",
+      "bytes": 226
+    },
+    {
+      "file": "simulated/misc_messy/final_FINAL_v3.py",
+      "sha256": "099232cbd947f8053a6865ba5db300d1746fefdd2c8aea695d097cca433d1bd8",
+      "lines": 10
+    },
+    {
+      "file": "simulated/misc_messy/hello",
+      "sha256": "8198b7adb8bc787f8af27dcaa3627fa179dd7a605ef0213fe4151de5c2a7d980",
+      "bytes": 36856,
+      "note": "Compiled (never run) from hello_world.cpp with Apple clang -O2 on arm64, to test binary detection."
+    },
+    {
+      "file": "simulated/misc_messy/hello_world.cpp",
+      "sha256": "4ee93c60f01b35dda8cbb181d7b7ce3f3db0f44dfc2f0c9ed458cf4b601e775e",
+      "lines": 11
+    },
+    {
+      "file": "simulated/misc_messy/helper.py",
+      "sha256": "45b9ef1f90ddb514fdc44e783e16c2bf3934ebc79ca77b2dba78046769fb0d79",
+      "lines": 14
+    },
+    {
+      "file": "simulated/misc_messy/notes_snippets.txt",
+      "sha256": "ddb4e4befb3801a3442692f6572f22060088db3b7d26b53c25b3acd83444a1dd",
+      "lines": 10
+    },
+    {
+      "file": "simulated/misc_messy/old_backup.sh",
+      "sha256": "8481709b33f10641c066d400663c9010d43069ccce0c583cb99cb22f926d838e",
+      "lines": 13
+    },
+    {
+      "file": "simulated/misc_messy/process_logs (copy).py",
+      "sha256": "45b9ef1f90ddb514fdc44e783e16c2bf3934ebc79ca77b2dba78046769fb0d79",
+      "lines": 14
+    },
+    {
+      "file": "simulated/misc_messy/untitled1.py",
+      "sha256": "16da2246ef5a07647bf32c948bf233c33fa13b5decf4fa22497468089074e964",
+      "lines": 12
+    },
+    {
+      "file": "simulated/office_automation/backup_documents.ps1",
+      "sha256": "dff9b58d03ce28af424116bedf9bf8fb09d702f58f65d6906f90c5e87339e2c2",
+      "lines": 25
+    },
+    {
+      "file": "simulated/office_automation/cleanup_downloads.ps1",
+      "sha256": "211d1a0ac4c469bf12678ca94bf79f85513f9f847190fbca35ad6255d1867ce4",
+      "lines": 12
+    },
+    {
+      "file": "simulated/office_automation/daily_report.bat",
+      "sha256": "c079b47d1c6f4d7171ebaa4abb558fe519ce3dc176a5077c39c861498fb29e42",
+      "lines": 11
+    },
+    {
+      "file": "simulated/office_automation/merge_monthly_excel.py",
+      "sha256": "9da5fecd99d6d5df4a4db60ec649fb444ada60657bde6b8ac3e1a308ae04351c",
+      "lines": 34
+    },
+    {
+      "file": "simulated/office_automation/rename_photos.py",
+      "sha256": "38981dcca2eaa184ed01550fdbfca995a3c24bb644f1688ba94ef6933c3a9f76",
+      "lines": 34
+    },
+    {
+      "file": "simulated/office_automation/rename_photos_final2.py",
+      "sha256": "5b118fe70cb4248624a8eef0b3c94b01b306c72c08e821a215433e826d88f254",
+      "lines": 36
+    },
+    {
+      "file": "simulated/office_automation/send_report.py",
+      "sha256": "61dfb9417dd0f2c674e6b2a20259fab0cd7ba0f9d070308b1643b955c07e0112",
+      "lines": 29
+    }
+  ]
+}

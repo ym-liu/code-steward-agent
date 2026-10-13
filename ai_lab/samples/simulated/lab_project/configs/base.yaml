@@ -1,0 +1,5 @@
+data_dir: data/cleaned
+checkpoint_dir: checkpoints
+epochs: 20
+batch_size: 32
+lr: 0.001

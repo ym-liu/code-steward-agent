@@ -1,5 +1,5 @@
 """Meaningful offline regression tests; never starts the production scanner."""
-from contextlib import redirect_stdout, redirect_stderr
+from contextlib import ExitStack, redirect_stdout, redirect_stderr
 import csv
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import io
@@ -13,11 +13,24 @@ import unittest
 from unittest.mock import patch
 
 from ai_lab.cli import main
-from ai_lab.core import (ROOT, LabError, collect_cases, load_config, messages_for,
-                         snapshot, validate_analysis)
-from ai_lab.ollama_client import OllamaClient
-from ai_lab.reporting import regenerate, save_json
-from ai_lab.runner import DemoClient, result_for, run_experiment
+from ai_lab.common import ROOT, SETTINGS, LabError, save_json
+from ai_lab.explain.answer import validate_analysis
+from ai_lab.explain.config import load_config
+from ai_lab.explain.files import collect_cases, snapshot
+from ai_lab.explain.ollama_client import OllamaClient
+from ai_lab.explain.request import messages_for
+from ai_lab.testing.report_records import regenerate
+from ai_lab.testing.runner import DemoClient, result_for, run_experiment, run_label
+
+
+def lab_folders(root):
+    """Use ROOT/settings, samples, answer_keys and ai-results instead of the real lab folders."""
+    stack = ExitStack()
+    for target, folder in (("ai_lab.cli.SETTINGS", "settings"), ("ai_lab.cli.SAMPLES", "samples"),
+                           ("ai_lab.cli.RESULTS", "ai-results"), ("ai_lab.explain.files.SAMPLES", "samples"),
+                           ("ai_lab.explain.files.ANSWER_KEYS", "answer_keys")):
+        stack.enter_context(patch(target, root / folder))
+    return stack
 
 
 def answer():
@@ -145,10 +158,11 @@ class CoreTests(unittest.TestCase):
         self.write("samples/node_modules/ignored.js", "secret")
         self.write("samples/ignored.bin", "ignored")
         rubric = {"purpose": "REFERENCE_ONLY"}
-        manifest = self.root / "samples" / "manifest.json"
+        manifest = self.root / "answer_keys" / "explanation_checklists.json"
+        manifest.parent.mkdir()
         save_json(manifest, [{"file": "original.py", "rubric": rubric},
                              {"file": "removed.py", "rubric": rubric}])
-        with patch("ai_lab.core.LAB", self.root):
+        with lab_folders(self.root):
             cases = collect_cases(None, self.config)
             self.assertEqual([c["name"] for c in cases], ["nested/another.sh", "new.py", "original.py"])
             self.assertEqual(cases[-1]["rubric"], rubric)
@@ -162,9 +176,9 @@ class CoreTests(unittest.TestCase):
     def test_default_samples_enforces_folder_limit(self):
         self.write("samples/a.py", "print(1)\n")
         self.write("samples/b.py", "print(2)\n")
-        save_json(self.root / "samples" / "manifest.json", [{"file": "a.py", "rubric": {}}])
+        self.write("answer_keys/explanation_checklists.json", json.dumps([{"file": "a.py", "rubric": {}}]))
         self.config["max_files"] = 1
-        with patch("ai_lab.core.LAB", self.root), self.assertRaisesRegex(LabError, "Too many"):
+        with lab_folders(self.root), self.assertRaisesRegex(LabError, "Too many"):
             collect_cases(None, self.config)
 
     def test_reference_answers_never_enter_model_messages(self):
@@ -209,6 +223,16 @@ class CoreTests(unittest.TestCase):
         with self.assertRaises(LabError):
             load_config(config_path)
 
+    def test_thread_count_can_be_left_to_ollama(self):
+        config_path = self.root / "config.json"
+        save_json(config_path, dict(self.config, num_thread="auto"))
+        self.assertEqual(load_config(config_path)["num_thread"], "auto")
+        self.assertEqual(load_config(SETTINGS / "default.json")["num_thread"], "auto")
+        for value in ("fast", "6", 0):
+            save_json(config_path, dict(self.config, num_thread=value))
+            with self.subTest(value=value), self.assertRaises(LabError):
+                load_config(config_path)
+
     def test_missing_config_key_returns_an_actionable_error(self):
         del self.config["base_url"]
         path = self.root / "config.json"
@@ -220,6 +244,15 @@ class CoreTests(unittest.TestCase):
         for address in ("https://example.com", "http://127.0.0.1.evil:11434", "http://user:pass@localhost", "http://localhost/path", "http://localhost?target=x"):
             with self.subTest(address=address), self.assertRaises(LabError):
                 OllamaClient(dict(self.config, base_url=address))
+
+    def test_result_folder_names_say_model_device_and_file_count(self):
+        self.assertEqual(run_label(["qwen3.5:4b-q4_K_M"], "cpu", ["smoke"], 118), "qwen3.5-4b_cpu_118files")
+        self.assertEqual(run_label(["qwen2.5-coder:7b-instruct-q4_K_M"], "auto", ["holdout"], 12),
+                         "qwen2.5-coder-7b_gpu_holdout-12files")
+        self.assertEqual(run_label(["a:1b", "b"], "cpu", ["dev"], 1), "a-1b+b_cpu_dev-1file")
+        self.assertEqual(run_label(["hf.co/user/My Model:latest"], "cpu", ["custom"], 3),
+                         "hf.co-user-My-Model-latest_cpu_3files")
+        self.assertEqual(run_label([], "cpu", ["smoke"], 2), "2files")
 
 
 class HttpWorkflowTests(unittest.TestCase):
@@ -254,6 +287,7 @@ class HttpWorkflowTests(unittest.TestCase):
         self.cases[0]["rubric"] = {"secret": "REFERENCE_ONLY"}
         folder, code = self.run_lab()
         self.assertEqual(code, 0)
+        self.assertTrue(folder.name.endswith("_fixture-latest_cpu_1file"), folder.name)
         body = next(body for path, body in self.server.state["requests"] if path == "/api/chat")
         self.assertEqual(body["options"]["num_gpu"], 0)
         self.assertEqual(body["options"]["num_thread"], 2)
@@ -270,6 +304,15 @@ class HttpWorkflowTests(unittest.TestCase):
         self.assertEqual(result["requested_schema"], body["format"])
         self.assertEqual(self.server.state["running"], [])
         self.assertEqual(json.loads((folder / "run.json").read_text())["ollama_version"], "fixture-1")
+
+    def test_auto_thread_count_is_not_sent_so_ollama_uses_performance_cores(self):
+        self.config["num_thread"] = "auto"
+        folder, code = self.run_lab()
+        self.assertEqual(code, 0)
+        body = next(body for path, body in self.server.state["requests"] if path == "/api/chat")
+        self.assertNotIn("num_thread", body["options"])
+        self.assertEqual(body["options"]["num_gpu"], 0)
+        self.assertEqual(json.loads((folder / "run.json").read_text())["config"]["num_thread"], "auto")
 
     def test_comparison_keeps_same_inputs_parameters_and_saves_distinct_model_digests(self):
         folder, code = self.run_lab(models=["fixture:latest", "fixture2:latest"], allow_pull=True, repeat=2)
@@ -371,6 +414,7 @@ class HttpWorkflowTests(unittest.TestCase):
             folder, code = run_experiment(DemoClient(), self.config, ["DEMO-NOT-A-REAL-MODEL"],
                                           self.cases, self.root, demo=True)
         self.assertEqual(code, 0)
+        self.assertTrue(folder.name.startswith("demo-") and folder.name.endswith("_1file"), folder.name)
         self.assertEqual(self.server.state["requests"], [])
         row = json.loads((folder / "results.jsonl").read_text())
         self.assertIsNone(row["wall_ms"])
@@ -392,15 +436,17 @@ class HttpWorkflowTests(unittest.TestCase):
         samples.mkdir()
         (samples / "a.py").write_text("print(1)\n", encoding="utf-8")
         (samples / "new.py").write_text("print(2)\n", encoding="utf-8")
-        save_json(samples / "manifest.json", [{"file": "a.py", "rubric": {"purpose": "REFERENCE_ONLY"}}])
+        (self.root / "answer_keys").mkdir()
+        save_json(self.root / "answer_keys" / "explanation_checklists.json",
+                  [{"file": "a.py", "rubric": {"purpose": "REFERENCE_ONLY"}}])
         config_path = self.root / "config.json"
         save_json(config_path, self.config)
         output = self.root / "cli-output"
-        with patch("ai_lab.core.LAB", self.root), redirect_stdout(io.StringIO()):
+        with lab_folders(self.root), redirect_stdout(io.StringIO()):
             code = main(["run", "--config", str(config_path), "--output", str(output)])
         self.assertEqual(code, 0)
         requests = [body for path, body in self.server.state["requests"] if path == "/api/chat"]
-        self.assertEqual([json.loads(r["messages"][1]["content"])["file"] for r in requests], ["a.py", "new.py"])
+        self.assertEqual([r["messages"][-1]["content"].split("\n")[0] for r in requests], ["FILE: a.py", "FILE: new.py"])
         self.assertNotIn("REFERENCE_ONLY", json.dumps(requests))
         folder = next(output.iterdir())
         with (folder / "results.csv").open(encoding="utf-8-sig", newline="") as stream:

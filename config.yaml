@@ -1,19 +1,23 @@
 # Code Steward Agent - Configuration File
+# Change values here, then call POST /config/reload (or restart the API).
+# Invalid values are rejected with a message and the previous settings stay in use.
+# Settings that are left out use the defaults written in Services/ConfigService.py.
+
+service:
+  # Start the background service together with the API
+  auto_start: true
+  # Seconds between steps of the background loop
+  tick_seconds: 5
 
 scanning:
   # Directories the scanner will walk through
   root_paths:
     - 'C:\CAPSTONE CODE\TEST DIRECTORY'
-   
-  # File extensions to include (leave empty to include everything)
-  include_extensions:
-    - ".py"
-    - ".sh"
-    - ".bat"
-    - ".js"
-    - ".ts"
-    - ".rb"
-    - ".pl"
+
+  # File extensions to include (leave empty to include everything;
+  # empty is needed to find data files, documents and compiled programs)
+  # Example: [".py", ".sh", ".bat", ".js", ".ts", ".rb", ".pl"]
+  include_extensions: []
 
   # Folder names to always skip
   exclude_folders:
@@ -25,8 +29,42 @@ scanning:
     - "dist"
     - "build"
 
-  # Maximum file size in bytes to scan (10MB default)
+  # Extra folders that must never be read. System folders such as C:\Windows
+  # and C:\Program Files are always protected.
+  deny_paths: []
+
+  # Larger files are still listed, but their contents are not hashed (10MB default)
   max_file_size_bytes: 10485760
 
-  # How often the periodic scan runs (in seconds)
-  scan_interval_seconds: 60
+  # How often the full scan runs (in seconds). The file watcher reports most changes
+  # within seconds; this scan catches anything it missed.
+  scan_interval_seconds: 300
+
+  # How changes are noticed: auto (system change events, polling if they fail), events or polling
+  watch_mode: auto
+  # Seconds between checks when polling
+  polling_interval_seconds: 30
+
+events:
+  # Wait until a file has been quiet this long before checking it
+  quiet_seconds: 2
+  # ...but never wait longer than this for a file that keeps changing
+  max_wait_seconds: 30
+  # When more files are waiting than this, run one full scan instead
+  max_pending_files: 10000
+
+logging:
+  # DEBUG, INFO, WARNING, ERROR or CRITICAL
+  level: INFO
+  # Start a new service.log at this size and keep this many older files (0 = never)
+  max_bytes: 5242880
+  backup_count: 3
+
+storage:
+  # Relative paths are inside the program folder. database_path changes after a restart.
+  database_path: artifacts.sqlite3
+  log_path: service.log
+
+testing:
+  # Allow POST /events/inject to simulate file changes (keep false outside tests)
+  allow_event_injection: false

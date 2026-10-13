@@ -1,0 +1,17 @@
+[
+  {
+    "name": "Mara Quint",
+    "city": "Lisbon",
+    "age": "34"
+  },
+  {
+    "name": "Tomas Velde",
+    "city": "Rotterdam",
+    "age": "41"
+  },
+  {
+    "name": "Ines Okafor",
+    "city": "Lagos",
+    "age": "29"
+  }
+]

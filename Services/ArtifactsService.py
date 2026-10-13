@@ -8,6 +8,13 @@ from datetime import datetime, timezone
 
 DATABASE_FILE = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "artifacts.sqlite3")
 
+# Version 2 adds searchable columns next to the full JSON record. Older databases are upgraded on start.
+SCHEMA_VERSION = 2
+COLUMNS = {"hash": "TEXT", "size": "INTEGER", "mtime": "REAL", "artifact_type": "TEXT", "language": "TEXT",
+           "sensitive": "INTEGER", "classifier_version": "INTEGER", "discovered_by": "TEXT"}
+CLASSIFICATION_FIELDS = ("artifact_type", "language", "is_binary", "sensitive", "sensitive_reason", "confidence",
+                         "classifier_version")
+
 
 class ArtifactsService:
     """Classifies files and keeps their latest metadata in a local SQLite file."""
@@ -37,6 +44,24 @@ class ArtifactsService:
                     metadata TEXT NOT NULL
                 )
             """)
+            self._upgrade(connection)
+
+    @staticmethod
+    def _upgrade(connection):
+        """Add the version 2 columns and fill them from the saved JSON records."""
+        if connection.execute("PRAGMA user_version").fetchone()[0] >= SCHEMA_VERSION:
+            return
+        existing = {row[1] for row in connection.execute("PRAGMA table_info(artifacts)")}
+        for name, kind in COLUMNS.items():
+            if name not in existing:
+                connection.execute(f"ALTER TABLE artifacts ADD COLUMN {name} {kind}")
+        for artifact_id, metadata in connection.execute("SELECT id, metadata FROM artifacts").fetchall():
+            artifact = json.loads(metadata)
+            connection.execute("UPDATE artifacts SET hash = ?, size = ? WHERE id = ?",
+                               (artifact.get("hash"), artifact.get("size_bytes"), artifact_id))
+        connection.execute("CREATE INDEX IF NOT EXISTS artifacts_hash ON artifacts (hash)")
+        connection.execute("CREATE INDEX IF NOT EXISTS artifacts_type ON artifacts (artifact_type)")
+        connection.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
 
     @contextmanager
     def _connect(self):
@@ -63,6 +88,7 @@ class ArtifactsService:
         path = os.path.abspath(file_record["path"])
         extension = os.path.splitext(path)[1].lower()
         mime_type, _ = mimetypes.guess_type(path)
+        classification = file_record.get("classification") or {}
 
         artifact = {
             "name": os.path.basename(path),
@@ -77,6 +103,9 @@ class ArtifactsService:
             "change_type": change_type,
             "previous_path": previous_path,
             "classified_at": datetime.now(timezone.utc).isoformat(),
+            **{field: classification.get(field) for field in CLASSIFICATION_FIELDS},
+            "classification_reasons": classification.get("reasons", []),
+            "discovered_by": file_record.get("discovered_by"),
         }
 
         with self._connect() as connection:
@@ -100,14 +129,59 @@ class ArtifactsService:
                 (self._path_key(path), artifact["id"]),
             )
             connection.execute("""
-                INSERT INTO artifacts (id, path, metadata) VALUES (?, ?, ?)
-                ON CONFLICT(id) DO UPDATE SET path = excluded.path, metadata = excluded.metadata
-            """, (artifact["id"], self._path_key(path), json.dumps(artifact)))
+                INSERT INTO artifacts (id, path, metadata, hash, size, mtime, artifact_type, language, sensitive,
+                                       classifier_version, discovered_by)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(id) DO UPDATE SET path = excluded.path, metadata = excluded.metadata,
+                    hash = excluded.hash, size = excluded.size, mtime = excluded.mtime,
+                    artifact_type = excluded.artifact_type, language = excluded.language,
+                    sensitive = excluded.sensitive, classifier_version = excluded.classifier_version,
+                    discovered_by = excluded.discovered_by
+            """, (artifact["id"], self._path_key(path), json.dumps(artifact), artifact["hash"], artifact["size_bytes"],
+                  file_record.get("mtime"), artifact["artifact_type"], artifact["language"],
+                  None if artifact["sensitive"] is None else int(artifact["sensitive"]),
+                  artifact["classifier_version"], artifact["discovered_by"]))
         return artifact
+
+    def known_state(self, path):
+        """What the scanner needs to decide whether a file changed, or None for an unknown path."""
+        with self._connect() as connection:
+            row = connection.execute(
+                "SELECT id, hash, size, mtime, classifier_version FROM artifacts WHERE path = ?",
+                (self._path_key(path),),
+            ).fetchone()
+        if row is None:
+            return None
+        return dict(zip(("id", "hash", "size", "mtime", "classifier_version"), row))
+
+    def touch(self, path, mtime, modified, classification=None):
+        """Record a new modification time (and type) for a file whose contents did not change."""
+        with self._connect() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            row = connection.execute("SELECT metadata FROM artifacts WHERE path = ?", (self._path_key(path),)).fetchone()
+            if row is None:
+                return
+            artifact = json.loads(row[0])
+            artifact["modified"] = modified
+            if classification:
+                artifact.update({field: classification.get(field) for field in CLASSIFICATION_FIELDS})
+                artifact["classification_reasons"] = classification.get("reasons", [])
+            connection.execute("""
+                UPDATE artifacts SET metadata = ?, mtime = ?, artifact_type = ?, language = ?, sensitive = ?,
+                    classifier_version = ? WHERE path = ?
+            """, (json.dumps(artifact), mtime, artifact.get("artifact_type"), artifact.get("language"),
+                  None if artifact.get("sensitive") is None else int(artifact["sensitive"]),
+                  artifact.get("classifier_version"), self._path_key(path)))
 
     def remove(self, path):
         with self._connect() as connection:
             connection.execute("DELETE FROM artifacts WHERE path = ?", (self._path_key(path),))
+
+    def known_paths(self):
+        """Every saved path (in the stored spelling), for finding files that disappeared."""
+        with self._connect() as connection:
+            rows = connection.execute("SELECT metadata FROM artifacts").fetchall()
+        return [json.loads(row[0])["path"] for row in rows]
 
     def list_artifacts(self):
         with self._connect() as connection:
@@ -115,14 +189,50 @@ class ArtifactsService:
         items = [json.loads(row[0]) for row in rows]
         return {"items": items, "count": len(items)}
 
-    def get_artifact(self, artifact_id: str):
+    def search_artifacts(self, limit=100, offset=0, artifact_type=None, language=None, sensitive=None,
+                         path_contains=None):
+        """One page of artifacts with optional filters; total is the number of all matches."""
+        conditions, values = [], []
+        for column, value in (("artifact_type", artifact_type), ("language", language)):
+            if value is not None:
+                conditions.append(f"{column} = ?")
+                values.append(value)
+        if sensitive is not None:
+            conditions.append("sensitive = ?")
+            values.append(int(sensitive))
+        if path_contains:
+            conditions.append("instr(path, ?) > 0")
+            values.append(os.path.normcase(path_contains))
+        where = " WHERE " + " AND ".join(conditions) if conditions else ""
+        with self._connect() as connection:
+            total = connection.execute(f"SELECT COUNT(*) FROM artifacts{where}", values).fetchone()[0]
+            rows = connection.execute(f"SELECT metadata FROM artifacts{where} ORDER BY rowid LIMIT ? OFFSET ?",
+                                      values + [limit, offset]).fetchall()
+        items = [json.loads(row[0]) for row in rows]
+        return {"items": items, "count": len(items), "total": total, "limit": limit, "offset": offset}
+
+    def find_artifact(self, artifact_id: str):
+        """The saved record, or None when the ID is unknown."""
         with self._connect() as connection:
             row = connection.execute(
                 "SELECT metadata FROM artifacts WHERE id = ?", (artifact_id,)
             ).fetchone()
-        if row is not None:
-            return json.loads(row[0])
+        return json.loads(row[0]) if row is not None else None
+
+    def get_artifact(self, artifact_id: str):
+        artifact = self.find_artifact(artifact_id)
+        if artifact is not None:
+            return artifact
         return {"id": artifact_id, "message": "Artifact not found."}
+
+    def same_content(self, artifact):
+        """Paths of other files with exactly the same contents (exact duplicates)."""
+        if not artifact.get("hash") or not artifact.get("size_bytes"):
+            return []
+        with self._connect() as connection:
+            rows = connection.execute("SELECT metadata FROM artifacts WHERE hash = ? AND id != ?",
+                                      (artifact["hash"], artifact["id"])).fetchall()
+        return sorted(json.loads(row[0])["path"] for row in rows)
 
     @staticmethod
     def _format_size(size_bytes):

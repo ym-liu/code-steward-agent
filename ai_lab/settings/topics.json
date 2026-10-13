@@ -1,0 +1,30 @@
+{
+  "version": "1",
+  "note": "Topic folders for the organization plan. Edit ids, descriptions or hints; keep 'other' last. Hints are lowercase words or import names used only by the no-AI fallback and the agreement check.",
+  "topics": [
+    {"id": "machine-learning",
+     "description": "Training, evaluating or using machine-learning models, including their data loaders and result plots.",
+     "hints": ["torch", "tensorflow", "keras", "sklearn", "xgboost", "transformers", "neural", "model", "train", "training", "epoch", "classifier", "dataset", "checkpoint"]},
+    {"id": "data-processing",
+     "description": "Reading, converting, cleaning, analyzing or reporting data such as CSV, JSON, spreadsheets, logs, SQL databases or survey results.",
+     "hints": ["pandas", "csv", "json", "openpyxl", "excel", "spreadsheet", "sql", "log", "logs", "report", "statistics", "seaborn", "rows", "columns"]},
+    {"id": "web-and-network",
+     "description": "Web apps, web servers, HTTP APIs, network clients and servers, sockets and web scraping.",
+     "hints": ["flask", "django", "express", "http", "server", "route", "routes", "api", "socket", "requests", "url", "browser", "web"]},
+    {"id": "file-automation",
+     "description": "Everyday task automation: renaming, copying, backing up or cleaning up files and folders, sending e-mails or scheduled office reports.",
+     "hints": ["rename", "renames", "backup", "backs", "copy", "copies", "cleanup", "delete", "email", "smtp", "photos", "folder", "folders", "schedule", "shutil", "rsync"]},
+    {"id": "setup-and-deployment",
+     "description": "Installing software, setting up environments, bootstrapping builds, container entry points and deploying applications.",
+     "hints": ["install", "installs", "installer", "setup", "bootstrap", "deploy", "deployment", "docker", "container", "environment", "package", "download", "version"]},
+    {"id": "developer-tools",
+     "description": "Tools that help write or check code: git hooks, linters, code statistics, test helpers, editor extensions and build tasks.",
+     "hints": ["git", "hook", "lint", "linter", "vscode", "extension", "editor", "tests", "pytest", "coverage", "lines", "build", "task", "tasks"]},
+    {"id": "algorithms-and-exercises",
+     "description": "Coding exercises, algorithm and data-structure implementations, course examples and small demos such as hello world.",
+     "hints": ["solution", "algorithm", "leetcode", "tree", "graph", "sort", "search", "cipher", "queue", "stack", "binary", "array", "string", "palindrome", "hello"]},
+    {"id": "other",
+     "description": "None of the topics above fits, or the purpose is unclear.",
+     "hints": []}
+  ]
+}

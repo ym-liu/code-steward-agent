@@ -11,9 +11,11 @@ import unittest
 from unittest.mock import patch
 
 from ai_lab.cli import guided_args, main
-from ai_lab.core import LabError, load_config, messages_for, read_json
-from ai_lab.reporting import regenerate, save_json
-from ai_lab.suites import DATASETS, check_inputs, load_suite
+from ai_lab.common import BENCHMARKS, LabError, read_json, save_json
+from ai_lab.explain.config import load_config
+from ai_lab.explain.request import messages_for
+from ai_lab.testing.report_records import regenerate
+from ai_lab.testing.suites import check_inputs, load_suite
 from tests import test_ai_lab as fixtures
 
 
@@ -33,13 +35,13 @@ class DatasetTests(unittest.TestCase):
         self.assertTrue(all(c["rubric"]["must_not_claim"] and c["evidence_lines"] for c in cases))
 
     def test_case_index_and_manifests_account_for_every_fixture(self):
-        index = (DATASETS / "CASE_INDEX.md").read_text(encoding="utf-8")
+        index = (BENCHMARKS / "CASE_INDEX.md").read_text(encoding="utf-8")
         identifiers = []
         for suite, count in (("dev", 24), ("holdout", 12), ("robustness", 6)):
-            manifest = read_json(DATASETS / suite / "manifest.json")
+            manifest = read_json(BENCHMARKS / suite / "manifest.json")
             self.assertEqual(len(manifest["cases"]), count)
             listed = {str(Path(c["file"])) for c in manifest["cases"]}
-            actual = {str(p.relative_to(DATASETS / suite)) for p in (DATASETS / suite / "cases").iterdir() if p.is_file()}
+            actual = {str(p.relative_to(BENCHMARKS / suite)) for p in (BENCHMARKS / suite / "cases").iterdir() if p.is_file()}
             self.assertEqual(listed, actual)
             for case in manifest["cases"]:
                 identifiers.append(case["id"])
@@ -70,8 +72,11 @@ class DatasetTests(unittest.TestCase):
             case["category"] = "PRIVATE_CATEGORY_SENTINEL"
             messages = messages_for(case)
             self.assertNotIn("PRIVATE_", json.dumps(messages))
-            payload = json.loads(messages[1]["content"])
-            self.assertEqual(set(payload), {"file", "facts", "numbered_source"})
+            header, facts_line = messages[-1]["content"].split("\n")[0], messages[-1]["content"].split("\n")[3]
+            self.assertEqual(header, "FILE: " + case["name"])
+            self.assertEqual(json.loads(facts_line),
+                             {k: v for k, v in case["facts"].items() if k not in ("extension", "line_count")})
+            self.assertIn("----- BEGIN SOURCE -----\n1: ", messages[-1]["content"])
 
     def test_robustness_checks_all_match_expected_reasons_without_any_ollama(self):
         with patch("ai_lab.cli.OllamaClient", side_effect=AssertionError("No model client allowed")), redirect_stdout(io.StringIO()):
@@ -94,13 +99,13 @@ class DatasetTests(unittest.TestCase):
         self.assertEqual(next(r for r in rows if r["case_id"] == "R03")["actual"], "accepted")
 
     def test_manifest_cannot_escape_suite_or_repeat_an_identifier(self):
-        manifest = read_json(DATASETS / "dev" / "manifest.json")
+        manifest = read_json(BENCHMARKS / "dev" / "manifest.json")
         for change, message in ((lambda m: m["cases"][0].update(file="../outside.py"), "inside"),
                                 (lambda m: m["cases"][1].update(id=m["cases"][0]["id"]), "Duplicate"),
                                 (lambda m: m["cases"][0].update(evidence_lines=[10000]), "outside")):
             broken = copy.deepcopy(manifest)
             change(broken)
-            with patch("ai_lab.suites.read_json", return_value=broken), self.assertRaisesRegex(LabError, message):
+            with patch("ai_lab.testing.suites.read_json", return_value=broken), self.assertRaisesRegex(LabError, message):
                 load_suite("dev", self.config)
 
     def test_custom_input_and_named_suite_cannot_be_accidentally_mixed(self):
@@ -138,6 +143,8 @@ class SuiteHttpTests(unittest.TestCase):
         fixtures.HttpWorkflowTests.setUp(self)
 
     def test_cli_compares_same_dev_cases_and_retains_human_scores_by_category(self):
+        # Compare first requests only; repair requests are covered by test_ai_claim_checks.
+        self.config["repair_attempts"] = 0
         config_path = self.root / "config.json"
         save_json(config_path, self.config)
         output = self.root / "comparison"
