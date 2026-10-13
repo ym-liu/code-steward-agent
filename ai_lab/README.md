@@ -46,6 +46,10 @@ the checks makes new results not directly comparable with older ones: raise `INP
 
 `config.py` loads and checks a settings file.
 
+The product (`Services/AnalysisService.py`) explains files with `files.snapshot` and
+`testing/runner.result_for`, using `settings/default.json` by default. Keep their inputs and results the same,
+or update the product with them; the product tests (`tests/test_analysis.py`) check this connection.
+
 ## Testing many files (`testing/`)
 
 | File | Job |
@@ -61,7 +65,7 @@ the checks makes new results not directly comparable with older ones: raise `INP
 | File | Job |
 |---|---|
 | `cli.py` | Menu and commands: `python3 ai_test.py --help` |
-| `organize.py` | Labels the files of a finished run and proposes folders (dry run: nothing is moved) |
+| `organize.py` | Labels the files of a finished run and proposes folders (dry run: nothing is moved). `plan_for` (groups, topics, folders) is shared with the product's `Services/OrganizationService.py` |
 | `common.py` | Folder locations, the error type and JSON helpers shared by everything above |
 
 ## Tests

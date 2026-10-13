@@ -68,3 +68,25 @@ storage:
 testing:
   # Allow POST /events/inject to simulate file changes (keep false outside tests)
   allow_event_injection: false
+
+ai:
+  # Explain new and changed code files with a local model through Ollama
+  # (Ollama must be installed and open; the model is not downloaded automatically)
+  enabled: true
+  # A model name from settings_file (qwen-4b, qwen-9b, qwen-coder-7b, qwen-coder-3b) or an installed Ollama tag
+  model: qwen-4b
+  # cpu (default) or auto (use the GPU when available; answers can differ slightly)
+  device: cpu
+  # CPU threads for the model: auto (all performance cores, fastest) or a number (lighter on the computer)
+  num_thread: auto
+  # The AI test lab's settings (context size, limits); product answers match the lab's
+  settings_file: ai_lab/settings/default.json
+  # File types that get an explanation
+  analyze_types: ["script", "wrapper"]
+  # Tries per file before it is marked failed (waiting for Ollama does not count)
+  max_attempts: 3
+
+organization:
+  # The topic folders for the organization plan (POST /organization/plan): ids, descriptions
+  # and keyword hints. Edit this file to use your own topics.
+  topics_file: ai_lab/settings/topics.json

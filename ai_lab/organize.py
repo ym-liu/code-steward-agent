@@ -17,7 +17,7 @@ import ast
 from collections import Counter, defaultdict
 from pathlib import Path
 
-from .common import ANSWER_KEYS, SAMPLES, SETTINGS, LabError, read_json, save_json
+from .common import ANSWER_KEYS, SAMPLES, SETTINGS, LabError, digest, read_json, save_json
 from .explain.facts import comment_lines, parse_python, static_facts
 from .explain.files import EXCLUDED, EXTENSIONS
 from .explain.ollama_client import OllamaClient
@@ -547,7 +547,11 @@ def keyword_topic(unit, by_path, topics):
 
 def ask_topic(client, tag, unit, by_path, topics):
     started = time.monotonic()
-    response = client.ask(tag, topic_messages(unit, by_path, topics), topic_schema(topics))
+    try:
+        response = client.ask(tag, topic_messages(unit, by_path, topics), topic_schema(topics))
+    except LabError as error:
+        return {"error": f"No answer from the model ({error}).", "request_failed": True,
+                "seconds": round(time.monotonic() - started, 1)}
     seconds = round(time.monotonic() - started, 1)
     try:
         answer = json.loads(response["message"]["content"])
@@ -622,30 +626,52 @@ def loose_target(record):
     return {"sample": "samples", "documentation": "docs", "data": "data"}.get(record["type"], "needs-review"), context
 
 
-def build_plan(units, loose, by_path, topics):
-    actions, used = [], set()
+def unused(target, used):
+    """target, or target with -2, -3 ... before its extension, so that no two actions share a target.
+
+    Names are compared without case: on macOS and Windows README.md and readme.md are the same file.
+    """
+    folder, name = posixpath.split(target)
+    stem, dot, ext = name.rpartition(".")
+    if not stem:  # no extension, or a name like .env
+        stem, dot, ext = name, "", ""
+    candidate, n = target, 2
+    while candidate.lower() in used:
+        candidate, n = posixpath.join(folder, f"{stem}-{n}{dot}{ext}"), n + 1
+    used.add(candidate.lower())
+    return candidate
+
+
+def build_plan(units, loose, by_path, topics, taken=None):
+    """Copy, skip, keep-out-of-git and README actions. taken: target names already used by other roots.
+
+    Every folder and file target is reserved in taken, so no two actions write the same place.
+    """
+    actions, used = [], taken if taken is not None else set()
     kept = {}
     for unit in units:
         if unit["duplicate_of"]:
             continue
         base = f"{unit['topic']}/{unit['name']}" if unit["topic_confidence"] >= 0.5 else f"needs-review/{unit['name']}"
         folder, n = base, 2
-        while folder in used:
+        while folder.lower() in used:
             folder, n = f"{base}-{n}", n + 1
-        used.add(folder)
+        used.add(folder.lower())
         unit["folder"] = folder
         root = unit["root"]
         for member in unit["members"]:
             target = f"{folder}/{inside(unit, member)}"
             kept[member] = target
+            used.add(target.lower())
             actions.append({"action": "copy", "from": member, "to": target, "unit": unit["id"]})
             if by_path[member]["sensitive"]:
                 actions.append({"action": "keep-out-of-git", "path": target, "reason": by_path[member]["sensitive_reason"]})
+        # The group's own README stays as it is; the program's notes then get another name.
         readme = "CODE_STEWARD_NOTES.md" if any(DOC_NAME.match(posixpath.basename(m)) and parent(m) == root for m in unit["members"]) else "README.md"
         description = next(t["description"] for t in topics["topics"] if t["id"] == unit["topic"])
         topic_line = f"Topic: {unit['topic']} ({description})" + (f" {unit['ai_reason']}" if unit.get("ai_reason") else "")
         original = root if unit["kind"] != "single" else unit["members"][0]
-        actions.append({"action": "write", "to": f"{folder}/{readme}", "unit": unit["id"],
+        actions.append({"action": "write", "to": unused(f"{folder}/{readme}", used), "unit": unit["id"],
                         "content": readme_for(unit, by_path, topic_line, original)})
     for unit in units:
         if unit["duplicate_of"]:
@@ -660,10 +686,7 @@ def build_plan(units, loose, by_path, topics):
                             "reason": "Exact duplicate; one copy is kept and this one is recorded as the same file."})
             continue
         area, relative = loose_target(record)
-        target, n = f"{area}/{relative}", 2
-        while target in kept.values():
-            stem, dot, ext = relative.rpartition(".")
-            target, n = f"{area}/{stem or ext}-{n}{dot + ext if stem else ''}", n + 1
+        target = unused(f"{area}/{relative}", used)
         kept[path] = target
         actions.append({"action": "copy", "from": path, "to": target, "unit": None})
         if record["sensitive"]:
@@ -672,7 +695,7 @@ def build_plan(units, loose, by_path, topics):
 
 
 def organize(root, cases, rows, client=None, tag=None, topics=None, limit=1000, progress=say):
-    topics = topics or load_topics()
+    """Plan for the folder of a finished AI lab run (files, explanations and facts from the run)."""
     by_case = {case["name"]: case for case in cases}
     paths = scan(root, limit) if len(cases) > 1 else [cases[0]["name"]]
     records, sources = [], {}
@@ -686,11 +709,29 @@ def organize(root, cases, rows, client=None, tag=None, topics=None, limit=1000, 
         if source is not None:
             sources[rel] = source
     mark_duplicates(records)
+    facts = {rel: (by_case.get(rel) or {}).get("facts") or {} for rel in sources}
+    return plan_for(records, sources, facts, client, tag, topics, progress)
+
+
+def topic_key(unit, by_path, topics, tag):
+    """Same model, instructions and group description give the same answer, so it can be reused."""
+    return digest(json.dumps([tag, topic_messages(unit, by_path, topics)], sort_keys=True))
+
+
+def plan_for(records, sources, facts, client=None, tag=None, topics=None, progress=say, topic_cache=None, taken=None):
+    """Group the files, choose a topic per group and propose folders. Shared by the lab and the product.
+
+    records: one dict per file with a path relative to the scanned folder (type, role, summary,
+    dependencies, usage, unknowns, sensitive, duplicate_of, ...); sources and facts: text and program
+    facts of the code files. topic_cache (get/put) keeps AI topics of unchanged groups; taken keeps
+    target names unique across several folders. Nothing is copied or moved.
+    """
+    topics = topics or load_topics()
     by_path = {r["path"]: r for r in records}
     files = set(by_path)
     links, packages = {}, set()
     for rel, source in sources.items():
-        found, package = links_for(rel, source, Path(rel).suffix.lower(), (by_case.get(rel) or {}).get("facts") or {}, files)
+        found, package = links_for(rel, source, Path(rel).suffix.lower(), facts.get(rel) or {}, files)
         links[rel] = sorted(found)
         if package:
             packages.add(rel)
@@ -701,9 +742,21 @@ def organize(root, cases, rows, client=None, tag=None, topics=None, limit=1000, 
     work = [u for u in units if not u["duplicate_of"]]
     if client is not None:
         progress(f"Choosing a topic for {len(work)} group{'s' if len(work) != 1 else ''} of files with {tag}...")
+    asking = client is not None
     for number, unit in enumerate(work, 1):
         rule, scores = keyword_topic(unit, by_path, topics)
-        ai = ask_topic(client, tag, unit, by_path, topics) if client is not None else None
+        ai = None
+        if asking:
+            key = topic_key(unit, by_path, topics, tag) if topic_cache is not None else None
+            ai = topic_cache.get(key) if key else None
+            if ai is None:
+                ai = ask_topic(client, tag, unit, by_path, topics)
+                if ai.get("request_failed"):
+                    # Ollama stopped answering: one failed request does not stop the plan, and no more are sent.
+                    asking = False
+                    progress(f"  {ai['error']} Keyword hints choose the remaining topics.")
+                elif key and ai.get("topic"):
+                    topic_cache.put(key, ai)
         topic, confidence, note = choose_topic(ai, rule)
         unit.update(topic=topic, topic_confidence=confidence, topic_note=note, rule_topic=rule, rule_scores=scores,
                     ai_topic=(ai or {}).get("topic"), ai_reason=(ai or {}).get("reason"), ai_error=(ai or {}).get("error"),
@@ -711,7 +764,7 @@ def organize(root, cases, rows, client=None, tag=None, topics=None, limit=1000, 
         unit["name"] = unit_name(unit, by_path, ai)
         if client is not None:
             progress(f"  {number}/{len(work)}  {topic:<24} {unit['name']}  ({unit['ai_seconds']} s)")
-    actions = build_plan(units, loose, by_path, topics)
+    actions = build_plan(units, loose, by_path, topics, taken)
     folders = {u["id"]: u.get("folder") for u in units}
     for record in records:
         record.pop("usage", None)
@@ -825,6 +878,11 @@ def score_lines(result):
 
 
 def write_page(path, plan, topics):
+    Path(path).write_text(page_html(plan, topics), encoding="utf-8")
+
+
+def page_html(plan, topics):
+    """The readable plan page; all model text is escaped."""
     e = lambda value: html.escape(str(value), quote=True)
     summary, units = plan["summary"], [u for u in plan["units"] if u.get("folder")]
     copies = defaultdict(list)
@@ -890,7 +948,7 @@ def write_page(path, plan, topics):
                      f'<td>{e(record["language"] or "")}</td><td class="{"low" if record["confidence"] < 0.6 else ""}">{record["confidence"]:.2f}</td></tr>')
     parts.append('</table></details><p class="muted">Confidence is computed by the program from how many independent signals agree, '
                  'not reported by the model.</p></main></html>')
-    Path(path).write_text("\n".join(parts) + "\n", encoding="utf-8")
+    return "\n".join(parts) + "\n"
 
 
 def organize_run(folder, use_ai=True, device=None, check=False, progress=say):

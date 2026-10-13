@@ -2,11 +2,13 @@ import logging
 import os
 from pathlib import Path
 
+from Services.AnalysisService import AnalysisService
 from Services.ArtifactsService import ArtifactsService
 import Services.ConfigService as config_file
 from Services.ConfigService import ConfigService
 from Services.EventAggregator import EventAggregator
 from Services.LogsService import LogsService, configure_logging
+from Services.OrganizationService import OrganizationService
 from Services.ScanService import CHECKPOINT_FILE, ScanService
 from Services.SystemService import SystemService
 from Services.FileEventService import FileEventService
@@ -26,6 +28,8 @@ class ServiceContainer:
 
     FileEventService (watcher) -> EventAggregator (waits, merges) -> CodeStewardService loop
     -> ScanService (checks files) -> ArtifactsService (SQLite). Full scans start in the loop.
+    Every saved change also reaches AnalysisService, which explains code files with the local AI.
+    OrganizationService builds the organization plan (topics and proposed folders) on request.
     """
 
     def __init__(self):
@@ -45,6 +49,12 @@ class ServiceContainer:
         self._set_own_paths(log_path)
         self.scan_service.own_folder = str(PROGRAM_FOLDER)
 
+        self.analysis_service = AnalysisService(self.config_service, self.artifacts_service)
+        self.analysis_service.name_for = self._name_below_root
+        self.scan_service.listeners.append(self.analysis_service)
+        self.organization_service = OrganizationService(
+            self.config_service, self.artifacts_service, self.analysis_service, self.scan_service)
+
         self.file_event_service = FileEventService(
             aggregator=self.aggregator,
             scan_service=self.scan_service,
@@ -54,17 +64,24 @@ class ServiceContainer:
             file_event_service=self.file_event_service,
             scan_service=self.scan_service,
             aggregator=self.aggregator,
+            analysis_service=self.analysis_service,
         )
         # No signal handlers here: uvicorn handles Ctrl+C and shutdown, and the API's lifespan
         # (CodeSteward.py) then stops this service cleanly. Own handlers would block uvicorn's.
 
         self.scan_service.code_steward_service = self.code_steward_service
+        self.analysis_service.code_steward_service = self.code_steward_service
 
         self.system_service = SystemService(
             scan_service=self.scan_service,
             code_steward_service=self.code_steward_service,
         )
         self.config_service.on_reload(self._apply_settings)
+
+    def _name_below_root(self, path):
+        """The name the AI model sees: the path below its root folder, such as lab_project/train.py."""
+        root = self.scan_service.root_of(path)
+        return Path(os.path.relpath(path, root)).as_posix() if root else os.path.basename(path)
 
     def _set_own_paths(self, log_path):
         """The agent never registers its own log (and its older copies), settings or checkpoint files."""
@@ -90,9 +107,11 @@ class ServiceContainer:
         self.logs_service.log_file = log_path
         self._set_own_paths(log_path)
         self._configure_aggregator()
+        self.analysis_service.reload_settings()
         if self.code_steward_service.state.value != "stopped":
             self.file_event_service.restart()
             self.code_steward_service.request_full_scan("settings-scan")
+            self.analysis_service.queue_missing()  # a new model or prompt means new explanations
 
 
 services = ServiceContainer()

@@ -56,7 +56,9 @@ class FixtureHandler(BaseHTTPRequestHandler):
         if self.path == "/api/version":
             return self.respond({"version": "fixture-1"})
         if self.path == "/api/tags":
-            return self.respond({"models": [{"name": m, "digest": "sha256:" + m, "size": 400000000} for m in state["installed"]]})
+            digests = state.get("digests", {})  # a test can simulate a newer download of the same model
+            return self.respond({"models": [{"name": m, "digest": digests.get(m, "sha256:" + m), "size": 400000000}
+                                            for m in state["installed"]]})
         if self.path == "/api/ps":
             return self.respond({"models": [{"name": m, "size": 512 * 1024**2, "size_vram": state["vram"]} for m in state["running"]]})
         self.respond({"error": "not found"}, 404)

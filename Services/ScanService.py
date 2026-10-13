@@ -32,6 +32,11 @@ def _inside(path, folder):
     return path == folder or path.startswith(folder + os.sep)
 
 
+def _is_link(path):
+    """Symbolic links, and Windows junctions, which os.path.islink does not report."""
+    return os.path.islink(path) or getattr(os.path, "isjunction", lambda _: False)(path)
+
+
 class ScanService:
     """Keeps the saved artifacts in step with the files under the configured roots.
 
@@ -49,6 +54,9 @@ class ScanService:
         self.classifier = classifier or ClassificationService()
         self.own_paths = set()   # the agent's own files (log, config); set by ServiceContainer
         self.own_folder = None   # the program folder; skipped when a wider root contains it
+        # Told about every saved change: listener.artifact_changed(artifact) and listener.artifact_removed(path).
+        # AnalysisService uses this to queue AI explanations.
+        self.listeners = []
         self._lock = threading.Lock()
         self._is_scanning   = False
         self._last_scan_at  = None
@@ -56,6 +64,7 @@ class ScanService:
         self._last_results  = []
         self._last_summary = None
         self._checkpoint = {}
+        self._denied_folders = ((), [])  # (deny settings, the same folders with links resolved)
 
     def get_status(self):
         return {
@@ -100,9 +109,33 @@ class ScanService:
                 return root + path[len(real.rstrip(os.sep)):]
         return path
 
-    def _denied(self, path):
-        return any(_inside(os.path.abspath(path), os.path.abspath(os.path.expanduser(folder)))
-                   for folder in SYSTEM_FOLDERS + list(self.setting("deny_paths", [])))
+    def is_denied(self, path):
+        """True inside a system folder or a deny_paths folder, also when a link leads there."""
+        folders = tuple(os.path.abspath(os.path.expanduser(folder))
+                        for folder in SYSTEM_FOLDERS + list(self.setting("deny_paths", [])))
+        if self._denied_folders[0] != folders:
+            # Resolved once per setting: /etc is /private/etc on macOS, and a deny folder can be a link.
+            self._denied_folders = (folders, sorted(set(folders) | {os.path.realpath(folder) for folder in folders}))
+        path = os.path.abspath(path)
+        return any(_inside(spelling, folder) for spelling in {path, os.path.realpath(path)}
+                   for folder in self._denied_folders[1])
+
+    @staticmethod
+    def _behind_link(folder, root):
+        """True when folder, or a folder between it and root, is a link: links are never followed."""
+        while _inside(folder, root) and os.path.normcase(folder) != os.path.normcase(root):
+            if _is_link(folder):
+                return True
+            parent = os.path.dirname(folder)
+            if parent == folder:
+                break
+            folder = parent
+        return False
+
+    def _root_unavailable(self, path):
+        """True when the root folder of path is missing (for example an unplugged drive): its records are kept."""
+        root = self.root_of(path)
+        return root is not None and not os.path.isdir(root)
 
     def _own_folder_inside(self, path, root):
         """True for the agent's own folder (code, database, logs) when a wider root contains it."""
@@ -113,10 +146,13 @@ class ScanService:
         return not extensions or any(name.lower().endswith(extension.lower()) for extension in extensions)
 
     def in_scope(self, path, folder=False):
-        """True when a path may be registered: inside a root and not excluded, protected or temporary."""
+        """True when a path may be registered: inside a root, not excluded, protected or temporary,
+        and not reached through a linked folder (a link could lead outside the root or into a denied folder)."""
         path = os.path.abspath(path)
         root = self.root_of(path)
-        if root is None or self._denied(path) or self._own_folder_inside(path, root):
+        if root is None or self.is_denied(path) or self._own_folder_inside(path, root):
+            return False
+        if self._behind_link(path if folder else os.path.dirname(path), root):
             return False
         relative = os.path.relpath(path, root)
         parts = [] if relative == "." else relative.split(os.sep)
@@ -208,22 +244,23 @@ class ScanService:
                        run["summary"]["seconds"])
             return run
 
-    def _check_file(self, path, moved_from, source, run, trust_stat=False):
+    def _check_file(self, path, moved_from, source, run, walked=False):
         """Compare one path with its saved record and save what changed.
 
-        With trust_stat (full scans) a file whose size and modification time are unchanged is not
-        read. Event checks always compare contents, because some file systems keep the same time.
+        walked: found by a full scan's walk, which already checked in_scope. Such a file whose size and
+        modification time are unchanged is not read. Event checks always compare contents, because
+        some file systems keep the same time.
         """
         path = self.canonical(path)
         known = self._known(path)
-        if not self.in_scope(path):
+        if not walked and not self.in_scope(path):
             if known is not None:
                 self._remove(path, run, "no longer included by the settings")
             else:
                 run["counts"]["skipped"] += 1
             return
         if os.path.islink(path) or not os.path.isfile(path):
-            if known is not None:
+            if known is not None and not self._root_unavailable(path):
                 self._remove(path, run, "replaced by a link" if os.path.islink(path) else "deleted")
             return
         try:
@@ -239,7 +276,7 @@ class ScanService:
             run["counts"]["errors"] += 1
             return
         version = self.classifier.VERSION
-        if (trust_stat and known is not None and known.get("size") == size and known.get("mtime") == mtime
+        if (walked and known is not None and known.get("size") == size and known.get("mtime") == mtime
                 and known.get("classifier_version") == version):
             run["counts"]["unchanged"] += 1
             return
@@ -255,18 +292,20 @@ class ScanService:
             classification["reasons"] = classification["reasons"] + [
                 "Larger than max_file_size_bytes, so its contents were not hashed."]
         modified = datetime.fromtimestamp(mtime, timezone.utc).isoformat()
+        # Identity rule: a renamed file keeps its record at the new path. When the new path already has a
+        # record (an editor saving through a renamed copy, or a file renamed over another), that path keeps
+        # its record and the renamed file's old record goes.
+        previous_path = self._renamed_from(path, moved_from)
+        if previous_path is not None and known is not None:
+            self._remove(previous_path, run, f"renamed onto {os.path.basename(path)}")
+            previous_path = None
         if known is not None and (known.get("hash") == file_hash if not too_large
                                   else known.get("size") == size and known.get("mtime") == mtime):
             if known.get("mtime") != mtime or known.get("classifier_version") != version:
                 self._touch(path, mtime, modified, classification)  # same contents: refresh quietly
             run["counts"]["unchanged"] += 1
             return
-        change_type, previous_path = ("created" if known is None else "modified"), None
-        if known is None and moved_from:
-            moved_from = self.canonical(moved_from)
-            if (os.path.normcase(moved_from) != os.path.normcase(path) and not os.path.lexists(moved_from)
-                    and self._known(moved_from) is not None):
-                change_type, previous_path = "moved", moved_from
+        change_type = "moved" if previous_path else "created" if known is None else "modified"
         record = {"path": path, "size": size, "hash": file_hash, "modified": modified, "mtime": mtime,
                   "discovered_by": source, "classification": classification}
         stored = self._store(record, change_type, previous_path)
@@ -275,25 +314,42 @@ class ScanService:
         logger.info("Artifact %s: %s%s", change_type, path,
                     " (previous path: " + previous_path + ")" if previous_path else "")
 
+    def _renamed_from(self, path, moved_from):
+        """The earlier path of a known file renamed to path, or None.
+
+        Editors that save through a temporary file are not renames: temporary names are never registered.
+        """
+        if not moved_from:
+            return None
+        moved_from = self.canonical(moved_from)
+        if (os.path.normcase(moved_from) != os.path.normcase(path) and not os.path.lexists(moved_from)
+                and self._known(moved_from) is not None):
+            return moved_from
+        return None
+
     def _check_folder(self, folder, source, run):
-        """A folder was created, deleted or moved: drop records for files that are gone, register new ones."""
+        """A folder was created, deleted or moved: drop records for files that are gone, register new ones.
+
+        A missing root folder (an unplugged drive) is not a deletion: its records are kept.
+        """
         folder = self.canonical(folder)
         for known_path in self._known_paths():
             if _inside(known_path, folder) and os.path.normcase(known_path) != os.path.normcase(folder) \
-                    and not os.path.isfile(known_path):
+                    and not os.path.isfile(known_path) and not self._root_unavailable(known_path):
                 self._remove(known_path, run, "folder deleted or moved away")
         if os.path.isdir(folder) and self.in_scope(folder, folder=True):
             self._walk(folder, source, run, set(), set())
 
     def _full_scan(self, source, run):
         """Walk every root; then remove records of files that are gone or no longer included."""
-        seen, failed, walked = set(), set(), []
+        seen, failed, walked, denied = set(), set(), [], []
         for root in self.roots():
             if not os.path.isdir(root):
                 logger.warning("Root path does not exist, skipping: %s", root)
                 continue
-            if self._denied(root):
-                logger.warning("Root path is a protected system folder, skipping: %s", root)
+            if self.is_denied(root):
+                logger.warning("Root path is a system folder or in deny_paths, skipping: %s", root)
+                denied.append(root)
                 continue
             logger.info("Scanning: %s", root)
             self._walk(root, source, run, seen, failed)
@@ -304,6 +360,8 @@ class ScanService:
             root = self.root_of(known_path)
             if root is None:
                 self._remove(known_path, run, "outside the configured folders")
+            elif root in denied:
+                self._remove(known_path, run, "no longer included by the settings")
             elif root in walked and not any(_inside(known_path, folder) for folder in failed):
                 # Records under a missing root (for example an unplugged drive) are kept.
                 if not os.path.lexists(known_path):
@@ -326,7 +384,7 @@ class ScanService:
                 folder = os.path.join(dirpath, name)
                 if name in excluded:
                     logger.log(skipped_level, "Directory skipped by exclude_folders: %s", folder)
-                elif os.path.islink(folder) or self._denied(folder) or self._own_folder_inside(folder, root):
+                elif _is_link(folder) or self.is_denied(folder) or self._own_folder_inside(folder, root):
                     logger.debug("Directory skipped: %s", folder)
                 else:
                     kept.append(name)
@@ -338,7 +396,7 @@ class ScanService:
                         run["extension_skips"] += 1
                     continue
                 seen.add(os.path.normcase(path))
-                self._check_file(path, None, source, run, trust_stat=True)
+                self._check_file(path, None, source, run, walked=True)
 
     # Storage: the artifacts database, or the JSON checkpoint when used on its own
 
@@ -358,10 +416,19 @@ class ScanService:
 
     def _store(self, record, change_type, previous_path):
         if self.artifacts_service is not None:
-            return self.artifacts_service.classify(record, change_type=change_type, previous_path=previous_path)
+            stored = self.artifacts_service.classify(record, change_type=change_type, previous_path=previous_path)
+            self._tell_listeners("artifact_changed", stored)
+            return stored
         self._checkpoint.pop(previous_path, None)
         self._checkpoint[record["path"]] = record["hash"]
         return {**record, "change_type": change_type, "previous_path": previous_path}
+
+    def _tell_listeners(self, method, value):
+        for listener in self.listeners:
+            try:
+                getattr(listener, method)(value)
+            except Exception:
+                logger.exception("A change listener failed; the scan continues.")
 
     def _touch(self, path, mtime, modified, classification):
         if self.artifacts_service is not None:
@@ -370,6 +437,7 @@ class ScanService:
     def _remove(self, path, run, reason):
         if self.artifacts_service is not None:
             self.artifacts_service.remove(path)
+            self._tell_listeners("artifact_removed", path)
         else:
             self._checkpoint.pop(path, None)
         run["removed"].append(path)

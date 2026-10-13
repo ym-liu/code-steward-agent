@@ -12,6 +12,7 @@ import re
 
 CLASSIFIER_VERSION = 1
 HEAD_BYTES = 65536  # only the start of a file is read for classification
+TYPES = ("wrapper", "script", "binary", "sample", "data", "documentation", "unknown")
 
 LANGUAGES = {
     ".py": "Python", ".pyw": "Python", ".sh": "Shell script", ".bash": "Shell script", ".zsh": "Shell script",

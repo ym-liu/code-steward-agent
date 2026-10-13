@@ -4,6 +4,7 @@ Each test guards one requirement or one problem found in the review of the earli
 The last class uses the real operating-system watcher and takes a few seconds.
 """
 import copy
+import hashlib
 import logging
 import os
 from pathlib import Path
@@ -197,6 +198,63 @@ class ScannerTests(Workspace):
         moved = self.flush()["results"]
         self.assertEqual([(item["id"], item["path"], item["change_type"]) for item in moved],
                          [(first["id"], str(self.root / "c.py"), "moved")])
+
+    def test_a_file_renamed_over_another_leaves_one_record_for_that_path(self):
+        self.write("a.py", "print('a')\n")
+        self.write("b.py", "print('b')\n")
+        ids = {Path(item["path"]).name: item["id"] for item in self.scanner.process(full_scan="startup-scan")["results"]}
+        os.replace(self.root / "a.py", self.root / "b.py")
+        self.handler.handle("moved", str(self.root / "a.py"), str(self.root / "b.py"))
+        run = self.flush()
+        self.assertEqual(run["removed"], [str(self.root / "a.py")])
+        kept = self.stored()
+        self.assertEqual(list(kept), [str(self.root / "b.py")])
+        self.assertEqual((kept[str(self.root / "b.py")]["id"], kept[str(self.root / "b.py")]["hash"]),
+                         (ids["b.py"], hashlib.sha256(b"print('a')\n").hexdigest()))
+
+    def test_an_unplugged_drive_keeps_its_records_until_it_is_back(self):
+        drive = self.base / "usb-drive"
+        self.settings.config["scanning"]["root_paths"] = [str(self.root), str(drive)]
+        (drive / "tools").mkdir(parents=True)
+        (drive / "tools" / "backup.py").write_text("print('backup')\n", encoding="utf-8")
+        self.scanner.process(full_scan="startup-scan")
+        shutil.move(str(drive), str(self.base / "unplugged"))
+        # Watchers report a drive that goes away as deleted folders and files.
+        self.handler.handle("deleted", str(drive), is_directory=True)
+        self.handler.handle("deleted", str(drive / "tools" / "backup.py"))
+        self.flush()
+        with self.assertLogs("code-steward.scanner", level="WARNING"):
+            self.scanner.process(full_scan="periodic-scan")
+        self.assertIn(str(drive / "tools" / "backup.py"), self.stored())
+        shutil.move(str(self.base / "unplugged"), str(drive))
+        self.assertEqual(self.scanner.process(full_scan="periodic-scan")["removed"], [])
+
+    @unittest.skipIf(os.name == "nt", "creating links needs developer mode on Windows")
+    def test_links_never_lead_into_denied_or_outside_folders(self):
+        private, elsewhere, alias = self.base / "private", self.base / "elsewhere", self.base / "alias-root"
+        for folder in (private, elsewhere):
+            folder.mkdir()
+            (folder / "keys.py").write_text("API_KEY = 'abc123456'\n", encoding="utf-8")
+        os.symlink(private, alias, target_is_directory=True)  # a root that is a link to a denied folder
+        os.symlink(elsewhere, self.root / "linked", target_is_directory=True)  # a linked folder inside a root
+        self.settings.config["scanning"]["root_paths"] = [str(self.root), str(alias)]
+        self.settings.config["scanning"]["deny_paths"] = [str(private)]
+        self.write("real.py")
+        with self.assertLogs("code-steward.scanner", level="WARNING"):
+            self.scanner.process(full_scan="startup-scan")
+        self.assertEqual(list(self.stored()), [str(self.root / "real.py")])
+        self.assertFalse(self.handler.handle("created", str(self.root / "linked" / "keys.py")))
+        self.assertFalse(self.handler.handle("created", str(self.root / "linked"), is_directory=True))
+        self.assertFalse(self.handler.handle("created", str(alias / "keys.py")))
+        self.assertNotIn(str(alias), self.watcher._allowed_roots())
+
+    def test_records_of_a_root_added_to_deny_paths_are_removed(self):
+        self.write("tool.py")
+        self.scanner.process(full_scan="startup-scan")
+        self.settings.config["scanning"]["deny_paths"] = [str(self.root)]
+        with self.assertLogs("code-steward.scanner", level="WARNING"):
+            self.scanner.process(full_scan="periodic-scan")
+        self.assertEqual(self.stored(), {})
 
     def test_own_files_temporary_files_git_folders_links_and_system_folders_are_skipped(self):
         self.write("real.py")
@@ -467,6 +525,22 @@ class RealWatcherTests(Workspace):
         self.assertTrue(wait_until(lambda: str(self.root / "pkg" / "lib.py") in self.stored()))
         shutil.move(str(self.root / "pkg"), str(self.base / "pkg"))
         self.assertTrue(wait_until(lambda: str(self.root / "pkg" / "lib.py") not in self.stored()))
+
+    def test_a_root_that_disappears_and_comes_back_is_watched_again(self):
+        self.settings.config["scanning"].update(watch_mode="polling", polling_interval_seconds=1)
+        self.assertTrue(self.watcher.start())
+        self.addCleanup(self.watcher.stop)
+        shutil.move(str(self.root), str(self.base / "away"))
+        with self.assertLogs("code-steward.file-events", level="WARNING"):
+            self.assertTrue(self.watcher.refresh())
+        self.assertEqual(self.watcher.status()["missing"], [str(self.root)])
+        self.assertFalse(self.watcher.refresh())  # nothing changed since
+        shutil.move(str(self.base / "away"), str(self.root))
+        self.assertTrue(self.watcher.refresh())
+        self.assertEqual(self.watcher.status()["watched"], [str(self.root)])
+        self.aggregator.clear()
+        self.write("new.py")
+        self.assertTrue(wait_until(lambda: self.aggregator.status()["waiting_files"] == 1, timeout=10))
 
 
 if __name__ == "__main__":

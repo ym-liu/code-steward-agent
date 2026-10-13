@@ -34,13 +34,14 @@ class CodeStewardService:
     TICK_INTERVAL_SECONDS = 5
     MAX_BACKOFF_SECONDS = 300
 
-    def __init__(self, file_event_service=None, scan_service=None, aggregator=None):
+    def __init__(self, file_event_service=None, scan_service=None, aggregator=None, analysis_service=None):
         self.state = ServiceState.STOPPED
         self.started_at = None
         self.tick_count = 0
         self.file_event_service = file_event_service
         self.scan_service = scan_service
         self.aggregator = aggregator
+        self.analysis_service = analysis_service  # AI explanations run in their own thread while this service runs
         self.last_error = None
         self._failures = 0
         self._next_full_scan = 0.0
@@ -61,6 +62,8 @@ class CodeStewardService:
         if self.file_event_service is not None:
             self.file_event_service.start()  # logs problems; periodic scans still run without it
         self.request_full_scan("startup-scan")
+        if self.analysis_service is not None:
+            self.analysis_service.start()
         self._thread = threading.Thread(target=self.run_loop, name="code-steward-loop", daemon=True)
         self._thread.start()
         return True
@@ -99,6 +102,8 @@ class CodeStewardService:
             logger.info("Service resumed")
             self.state = ServiceState.RUNNING
         self._wake.set()
+        if self.analysis_service is not None:
+            self.analysis_service.wake()
         return True
 
     def request_full_scan(self, reason="manual-scan"):
@@ -162,13 +167,13 @@ class CodeStewardService:
         logger.debug("Tick #%d - service running.", self.tick_count)
         if self.scan_service is None or self.aggregator is None:
             return
+        if self.file_event_service is not None and self.file_event_service.refresh():
+            self.aggregator.request_full_scan("watch-scan")  # a root folder came back or went away
         now = time.monotonic()
         files, folders, reason = self.aggregator.take_due()
         if reason is None and now >= self._next_full_scan and self._next_full_scan:
             reason = "periodic-scan"
         if reason is not None:
-            if self.file_event_service is not None:
-                self.file_event_service.refresh()
             interval = self.scan_service.config_service.get("scanning", "scan_interval_seconds", default=300) \
                 if self.scan_service.config_service is not None else 300
             self._next_full_scan = now + interval
@@ -184,6 +189,8 @@ class CodeStewardService:
         )
         if self.file_event_service is not None:
             self.file_event_service.stop()
+        if self.analysis_service is not None:
+            self.analysis_service.stop(timeout=5)  # a file still being explained is explained again next start
         if self.aggregator is not None:
             self.aggregator.clear()  # the start-up scan finds these changes next time
         self._next_full_scan = 0.0

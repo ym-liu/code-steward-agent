@@ -135,6 +135,14 @@ Current endpoints (details and examples at `/docs`). Errors are JSON: `{"detail"
 | `POST /scan/trigger` | Queue a full scan (202); 409 while the service is stopped or paused |
 | `GET /artifacts` | One page of saved files: `limit`, `offset`; filters `artifact_type`, `language`, `sensitive`, `path_contains` |
 | `GET /artifacts/{artifact_id}` | One file with its classification and exact duplicates (`same_content_as`); 404 when unknown |
+| `GET /analysis/status` | AI explanations: on or off, model, the file being explained, files waiting, time left |
+| `GET /analysis/{artifact_id}` | The AI explanation of one file, or its place in the queue; 404 when unknown |
+| `POST /analysis/{artifact_id}` | Explain one file again (202); 409 when AI is off or the file type is not explained |
+| `POST /organization/plan` | Build a new organization plan in the background (202; `use_ai=false` for keyword hints only) |
+| `GET /organization/status` | building, ready, failed or no plan yet; the current step; the last plan's summary |
+| `GET /organization/plan` | The latest plan as JSON: files, groups with topic and proposed folder, actions; 404 before the first |
+| `GET /organization/plan/page` | The same plan as a readable page for a browser |
+| `GET /organization/topics` | The topic folders the plan chooses from |
 | `GET /events/status` | File changes waiting to be checked, and how folders are watched |
 | `POST /events/inject` | Simulate a file event for tests; 403 unless `testing.allow_event_injection: true` |
 | `GET /logs?limit=100` | Recent log entries (see Runtime logs) |
@@ -152,11 +160,13 @@ Current endpoints (details and examples at `/docs`). Errors are JSON: `{"detail"
    - `language` (or format), `is_binary`, `sensitive` with `sensitive_reason`
    - `confidence` with `classification_reasons` (computed from the evidence, not by AI)
    - `discovered_by`: watcher, injected, or the scan that found it (startup-scan, periodic-scan,
-     manual-scan, settings-scan, overflow-scan, retry-scan)
+     manual-scan, settings-scan, overflow-scan, retry-scan, watch-scan, plan-check)
 
 The artifact ID stays the same when a known file is edited (also by editors that save through a
 temporary file) or moved, even through several renames. Its hash changes when its contents change.
-Files larger than `max_file_size_bytes` are listed without a hash. Files are read, never run.
+A file renamed onto a path that already has a record (replacing that file) takes over that record;
+its own old record is removed. Files larger than `max_file_size_bytes` are listed without a hash.
+Files are read, never run.
 
 ## How file changes are handled
 
@@ -166,7 +176,8 @@ FileEventService ──> EventAggregator ──> CodeStewardService loop ──>
 ```
 
 - **Watcher**: the operating system's change events, or polling when they cannot start
-  (`watch_mode`). A root that does not exist yet (an unplugged drive) is watched when it appears.
+  (`watch_mode`). Each tick checks the roots: a root that disappears (an unplugged drive) or appears
+  again is watched again, followed by a full scan. Records of a missing root are kept until it is back.
 - **Event aggregator**: one waiting item per file. It waits `quiet_seconds` after the last change,
   at most `max_wait_seconds`; above `max_pending_files` it asks for one full scan instead.
   Nothing is lost while a scan runs or the service is paused.
@@ -175,7 +186,9 @@ FileEventService ──> EventAggregator ──> CodeStewardService loop ──>
   A failed step is logged and retried with growing pauses, followed by a full scan.
 - **Scanner**: a changed file is compared by contents; a full scan reads only files whose size or time
   changed and removes records of files that are gone. It skips `exclude_folders`, system folders and
-  `deny_paths`, links, temporary files, and the agent's own folder, database and log.
+  `deny_paths`, temporary files, and the agent's own folder, database and log. Links (and Windows
+  junctions) are never followed, also when an event names a path through a linked folder; a root that
+  is a link into a system or `deny_paths` folder is skipped.
 
 | To change | Look in |
 |---|---|
@@ -186,7 +199,68 @@ FileEventService ──> EventAggregator ──> CodeStewardService loop ──>
 | File types, languages, sensitive rules | `Services/ClassificationService.py` (raise `CLASSIFIER_VERSION`) |
 | Database columns and upgrades | `Services/ArtifactsService.py` (raise `SCHEMA_VERSION`) |
 | Loop timing, start, stop, pause | `service.py` |
+| AI explanations: queue, saved results, waiting for Ollama | `Services/AnalysisService.py` |
+| Organization plan: product data in, plan out | `Services/OrganizationService.py` |
+| Grouping, topics, folder names, README text of the plan | `ai_lab/organize.py` (`plan_for`, shared with the AI test lab) |
+| The topic list | `ai_lab/settings/topics.json` (`organization.topics_file`) |
 | How the services are connected | `Services/ServiceContainer.py` |
+
+## AI explanations of code files
+
+Every new or changed code file (types in `ai.analyze_types`: script and wrapper) gets a short AI
+explanation: purpose, inputs, outputs, how to use it, dependencies, related files, unknowns and code
+evidence. A local model does this through [Ollama](https://ollama.com/download); nothing leaves the computer.
+
+1. Install Ollama, open it, and install the model once: `ollama pull qwen3.5:4b-q4_K_M`
+   (the `ai.model` in `config.yaml`; the agent never downloads models by itself).
+2. Start the API. Files are explained one at a time in the background while the service runs.
+3. `GET /analysis/status` shows progress; `GET /analysis/{artifact_id}` shows one file's explanation.
+
+- **One at a time, in the background**: the waiting files are kept in the database, so the queue survives
+  a restart. Pause and stop let a file in progress finish first; a start right after a stop continues.
+- **No repeated work**: answers are saved by file contents, extension and a profile: model and its
+  downloaded version (digest), prompt, format and answer settings. Unchanged files and exact duplicates
+  are not sent again. After a model, prompt or settings change, or a newer download of the model, the
+  files are explained again (also files that failed before), and `previous` shows the older answer
+  meanwhile. A settings change during a request saves that answer for the old settings only.
+- **When Ollama is unavailable** (not running, model missing, another model loaded) the files wait and the
+  agent tries again with growing pauses; the reason is in `state` and in one log entry.
+- **Privacy**: passwords, keys and tokens written in the code are replaced with `<hidden>` before sending.
+- **Same answers as the AI test lab**: the agent uses its pipeline (`ai_lab/explain/` and
+  `ai_lab/testing/runner.result_for`): program facts, the model's answer, checks and at most one correction.
+  Model settings (context size, limits) come from `ai.settings_file`, by default the lab's
+  `ai_lab/settings/default.json`. The `ai` section of `config.yaml` chooses the model, CPU or GPU and threads.
+- On CPU each file takes roughly 10 to 60 seconds with Qwen3.5 4B, depending on its length.
+
+## Organization plan (dry run)
+
+`POST /organization/plan` proposes how the files could be organized. **Nothing is copied, moved or deleted**;
+the plan is for people to review (a later step will carry out approved plans safely).
+
+- **Groups**: files that use each other (imports, started scripts, paths written in code) stay together, and
+  so do folders with a README, LICENSE or package file. Exact duplicates are recorded once (`skip`).
+- **Topics**: the local model picks one topic per group from the editable list in `ai_lab/settings/topics.json`
+  (machine-learning, data-processing, web-and-network, file-automation, setup-and-deployment, developer-tools,
+  algorithms-and-exercises, other) and suggests a folder name. Program keyword hints check each choice;
+  disagreements get a lower confidence and are listed under "Check these first". Without Ollama, or with
+  `use_ai=false`, the keyword hints choose the topics.
+- **Proposed folders**: `<topic>/<group name>/` with the group's own layout, a `README.md` written from the
+  AI explanations (an existing README is never replaced), and `docs/`, `data/`, `samples/`, `bin/`, `private/`
+  and `needs-review/` for files outside every group. Sensitive files are marked to stay out of Git.
+- Topic answers are saved by the exact group description and model version, so a new plan only asks the
+  model about groups that changed. A plan uses the AI explanations that exist so far; the summary counts
+  code files not explained yet.
+- **Current files**: every file is read again for a plan; files changed since the last scan are scanned
+  again first, so hashes and duplicates describe the files as they are now. Roots that are missing (an
+  unplugged drive) are listed in `unavailable_roots`. Every action has its own target: names are compared
+  without case, and the program's notes get another name (`CODE_STEWARD_NOTES.md`, then `-2`) when the
+  group has its own README or notes file.
+- **The model** gets the same checks as for explanations (installed, local, no other model loaded). If a
+  topic request fails, the remaining groups use keyword hints and `topics_from` says so.
+- A root folder itself is not treated as one project, even with a README in it: choose its parent as the
+  root to keep such a project together.
+- The plan is built with the AI test lab's organizer (`ai_lab/organize.plan_for`), so the product and
+  `python3 ai_test.py organize` follow the same grouping, topic and folder rules.
 
 ## Saved artifact records
 

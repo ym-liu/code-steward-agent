@@ -1,5 +1,6 @@
 import logging
 import os
+import threading
 
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
@@ -61,8 +62,9 @@ class FileEventService:
     """Watches the configured roots and passes changes to the event aggregator.
 
     watch_mode auto uses the operating system's change notifications and falls back to polling
-    when they cannot start; "events" and "polling" force one way. Roots that do not exist yet
-    (for example an unplugged drive) are skipped and watched as soon as they appear.
+    when they cannot start; "events" and "polling" force one way. Roots that do not exist (for
+    example an unplugged drive) are skipped and watched again as soon as they appear; refresh()
+    checks this at every step of the background service.
     """
 
     def __init__(self, aggregator, scan_service):
@@ -73,13 +75,18 @@ class FileEventService:
         self.watched = []
         self.missing = []
         self._is_running = False
+        self._lock = threading.RLock()  # the service loop (refresh) and a settings reload (restart) can overlap
 
     def start(self):
         """Starts monitoring in the background. Never raises: problems are logged."""
+        with self._lock:
+            return self._start()
+
+    def _start(self):
         if self._is_running:
             logger.warning("File event service is already running.")
             return True
-        roots = self.scan_service.roots()
+        roots = self._allowed_roots()
         self.watched = [root for root in roots if os.path.isdir(root)]
         self.missing = [root for root in roots if root not in self.watched]
         for root in self.missing:
@@ -109,27 +116,44 @@ class FileEventService:
 
     def stop(self):
         """Stops monitoring."""
-        if not self._is_running:
-            return
-        if self.observer:
-            self.observer.stop()
-            self.observer.join()
-        self._is_running = False
-        logger.info("File event service stopped.")
+        with self._lock:
+            if not self._is_running:
+                return
+            if self.observer:
+                self.observer.stop()
+                self.observer.join()
+            self._is_running = False
+            logger.info("File event service stopped.")
 
     def restart(self):
         """Watch the current roots again (after a settings change or when a folder appears)."""
-        self.stop()
-        return self.start()
+        with self._lock:
+            self.stop()
+            return self.start()
 
     def refresh(self):
-        """Start watching folders that were missing before, such as a drive plugged in later."""
-        appeared = [root for root in self.missing if os.path.isdir(root)]
-        if appeared:
-            for root in appeared:
-                logger.info("Folder is available again: %s", root)
+        """Watch again when a root folder appeared or disappeared, or when watching it stopped.
+
+        For example a drive plugged in or out, or a root folder deleted and created again (a polling
+        watcher stops for a folder that disappears). Returns True when watching was restarted.
+        """
+        with self._lock:
+            available = [root for root in self._allowed_roots() if os.path.isdir(root)]
+            stopped = self._is_running and any(not emitter.is_alive() for emitter in list(self.observer.emitters))
+            if available == self.watched and not stopped:
+                return False
+            for root in available:
+                if root not in self.watched:
+                    logger.info("Folder is available again: %s", root)
+            for root in self.watched:
+                if root not in available:
+                    logger.warning("Watched folder is gone; it is watched again when it comes back: %s", root)
             self.restart()
-        return bool(appeared)
+            return True
+
+    def _allowed_roots(self):
+        """Configured roots, without system folders and deny_paths (also when a root is a link to one)."""
+        return [root for root in self.scan_service.roots() if not self.scan_service.is_denied(root)]
 
     def status(self):
         return {"running": self._is_running, "mode": self.mode, "watched": self.watched, "missing": self.missing}

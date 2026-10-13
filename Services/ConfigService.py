@@ -5,6 +5,8 @@ from pathlib import Path
 
 import yaml
 
+from Services.ClassificationService import TYPES
+
 logger = logging.getLogger("code-steward.config")
 
 # The file next to the program is used no matter which folder the server is started from.
@@ -28,6 +30,16 @@ DEFAULTS = {
     "logging": {"level": "INFO", "max_bytes": 5242880, "backup_count": 3},
     "storage": {"database_path": "artifacts.sqlite3", "log_path": "service.log"},
     "testing": {"allow_event_injection": False},
+    "ai": {
+        "enabled": True,
+        "model": "qwen-4b",
+        "device": "cpu",
+        "num_thread": "auto",
+        "settings_file": "ai_lab/settings/default.json",
+        "analyze_types": ["script", "wrapper"],
+        "max_attempts": 3,
+    },
+    "organization": {"topics_file": "ai_lab/settings/topics.json"},
 }
 LOG_LEVELS = ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
 SECRET_WORDS = ("password", "passwd", "secret", "token", "api_key", "apikey", "credential", "private_key")
@@ -93,6 +105,19 @@ def validate(loaded):
         if not isinstance(config["storage"][key], str) or not config["storage"][key].strip():
             problems.append(f"storage.{key} must be a file name or path")
     flag("testing", "allow_event_injection")
+    flag("ai", "enabled")
+    for key in ("model", "settings_file"):
+        if not isinstance(config["ai"][key], str) or not config["ai"][key].strip():
+            problems.append(f"ai.{key} must be a name or path")
+    choice("ai", "device", ("cpu", "auto"))
+    if config["ai"]["num_thread"] != "auto":
+        number("ai", "num_thread", 1, 128, whole=True)
+    text_list("ai", "analyze_types")
+    if isinstance(config["ai"]["analyze_types"], list) and set(config["ai"]["analyze_types"]) - set(TYPES):
+        problems.append("ai.analyze_types must use these types: " + ", ".join(TYPES))
+    number("ai", "max_attempts", 1, 10, whole=True)
+    if not isinstance(config["organization"]["topics_file"], str) or not config["organization"]["topics_file"].strip():
+        problems.append("organization.topics_file must be a file name or path")
     if problems:
         raise ValueError("Invalid configuration: " + "; ".join(problems) + ".")
     return config
