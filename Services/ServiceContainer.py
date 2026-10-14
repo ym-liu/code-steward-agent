@@ -7,6 +7,8 @@ from Services.ArtifactsService import ArtifactsService
 import Services.ConfigService as config_file
 from Services.ConfigService import ConfigService
 from Services.EventAggregator import EventAggregator
+from Services.ExecutionService import ExecutionService
+from Services.VersionService import VersionService, ai_subject
 from Services.LogsService import LogsService, configure_logging
 from Services.OrganizationService import OrganizationService
 from Services.ScanService import CHECKPOINT_FILE, ScanService
@@ -48,12 +50,20 @@ class ServiceContainer:
         )
         self._set_own_paths(log_path)
         self.scan_service.own_folder = str(PROGRAM_FOLDER)
+        self._create_watched_folders()
 
         self.analysis_service = AnalysisService(self.config_service, self.artifacts_service)
         self.analysis_service.name_for = self._name_below_root
         self.scan_service.listeners.append(self.analysis_service)
         self.organization_service = OrganizationService(
             self.config_service, self.artifacts_service, self.analysis_service, self.scan_service)
+        # The library's Git history; the local model writes each commit's subject line.
+        self.version_service = VersionService(self.config_service,
+                                              subject_writer=lambda facts: ai_subject(self.analysis_service, facts))
+        self.execution_service = ExecutionService(
+            self.config_service, self.artifacts_service, self.organization_service, self.scan_service,
+            self.version_service)
+        self.organization_service.placements = self.execution_service.placements  # plans keep library folders
 
         self.file_event_service = FileEventService(
             aggregator=self.aggregator,
@@ -83,6 +93,14 @@ class ServiceContainer:
         root = self.scan_service.root_of(path)
         return Path(os.path.relpath(path, root)).as_posix() if root else os.path.basename(path)
 
+    def _create_watched_folders(self):
+        """Create missing watched folders inside the program folder (watched/ by default); others are left alone."""
+        for root in self.scan_service.roots():
+            path = Path(root)
+            if not os.path.lexists(path) and path.resolve().is_relative_to(PROGRAM_FOLDER):
+                path.mkdir(parents=True, exist_ok=True)
+                logging.getLogger("code-steward.config").info("Created the watched folder %s", path)
+
     def _set_own_paths(self, log_path):
         """The agent never registers its own log (and its older copies), settings or checkpoint files."""
         own = [log_path, Path(config_file.CONFIG_PATH), Path(CHECKPOINT_FILE)]
@@ -108,6 +126,7 @@ class ServiceContainer:
         self._set_own_paths(log_path)
         self._configure_aggregator()
         self.analysis_service.reload_settings()
+        self._create_watched_folders()
         if self.code_steward_service.state.value != "stopped":
             self.file_event_service.restart()
             self.code_steward_service.request_full_scan("settings-scan")

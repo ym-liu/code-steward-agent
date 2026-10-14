@@ -10,9 +10,11 @@ service:
   tick_seconds: 5
 
 scanning:
-  # Directories the scanner will walk through
+  # Folders to watch. A relative path is a folder inside the program folder, the same on Windows and
+  # Mac: put copies of code into code-steward-agent/watched (created at start). Absolute paths and
+  # ~ (your home folder) work too. Choose a project's parent folder to keep the whole project together.
   root_paths:
-    - 'C:\CAPSTONE CODE\TEST DIRECTORY'
+    - watched
 
   # File extensions to include (leave empty to include everything;
   # empty is needed to find data files, documents and compiled programs)
@@ -66,7 +68,7 @@ storage:
   log_path: service.log
 
 testing:
-  # Allow POST /events/inject to simulate file changes (keep false outside tests)
+  # Allow POST /events/inject to simulate file changes for validation (keep false in normal use)
   allow_event_injection: false
 
 ai:
@@ -79,14 +81,19 @@ ai:
   device: cpu
   # CPU threads for the model: auto (all performance cores, fastest) or a number (lighter on the computer)
   num_thread: auto
-  # The AI test lab's settings (context size, limits); product answers match the lab's
-  settings_file: ai_lab/settings/default.json
+  # Model list and limits (context size, answer length, file size); the prompts are in the same folder
+  settings_file: ai/settings/default.json
   # File types that get an explanation
   analyze_types: ["script", "wrapper"]
   # Tries per file before it is marked failed (waiting for Ollama does not count)
   max_attempts: 3
 
 organization:
+  # Organized copies go here: a folder inside the program folder (code-steward-agent/library),
+  # the same on Windows and Mac. It must not be inside a watched folder.
+  library_path: library
+  # Keep the library's version history in a private local Git repository (one commit per run and undo)
+  git: true
   # The topic folders for the organization plan (POST /organization/plan): ids, descriptions
   # and keyword hints. Edit this file to use your own topics.
-  topics_file: ai_lab/settings/topics.json
+  topics_file: ai/settings/topics.json

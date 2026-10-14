@@ -24,6 +24,8 @@ async def lifespan(app):
     if services.config_service.get("service", "auto_start", default=True):
         services.code_steward_service.start()
     yield
+    if not await run_in_threadpool(services.execution_service.wait, 30):
+        logger.warning("An organization operation is still running; its journal will be checked at next start.")
     if services.code_steward_service.state.value != "stopped":
         services.code_steward_service.stop()
         await run_in_threadpool(services.code_steward_service.wait_stopped, 30)

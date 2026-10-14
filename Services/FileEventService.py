@@ -153,7 +153,8 @@ class FileEventService:
 
     def _allowed_roots(self):
         """Configured roots, without system folders and deny_paths (also when a root is a link to one)."""
-        return [root for root in self.scan_service.roots() if not self.scan_service.is_denied(root)]
+        return [root for root in self.scan_service.roots()
+                if not self.scan_service.is_denied(root) and not self.scan_service.in_library(root)]
 
     def status(self):
         return {"running": self._is_running, "mode": self.mode, "watched": self.watched, "missing": self.missing}

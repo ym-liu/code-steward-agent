@@ -3,7 +3,6 @@
 Every file gets one of the requirement types (wrapper, script, binary, sample, data, documentation,
 unknown), a language or format, binary and sensitive flags, and a confidence with its reasons.
 The confidence comes from how clear the evidence is; it is computed here, never reported by a model.
-The rules match the AI lab prototype (ai_lab/organize.py) without its AI parts.
 
 When a rule changes, raise CLASSIFIER_VERSION: saved files are classified again on the next scan.
 """

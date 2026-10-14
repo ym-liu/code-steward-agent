@@ -7,6 +7,7 @@ import time
 from datetime import datetime, timezone
 
 from Services.ClassificationService import HEAD_BYTES, ClassificationService
+from Services.ConfigService import select_system_path, select_system_paths
 
 logger = logging.getLogger("code-steward.scanner")
 CHECKPOINT_FILE = "scan_checkpoint.json"
@@ -87,6 +88,8 @@ class ScanService:
         if self.config_service is None:
             return default
         value = self.config_service.get("scanning", key, default=default)
+        if key in ("root_paths", "deny_paths"):
+            return select_system_paths(value if value is not None else default, setting=f"scanning.{key}")
         return default if value is None else value
 
     def roots(self):
@@ -141,6 +144,12 @@ class ScanService:
         """True for the agent's own folder (code, database, logs) when a wider root contains it."""
         return bool(self.own_folder) and not _inside(root, self.own_folder) and _inside(path, self.own_folder)
 
+    def in_library(self, path):
+        settings = self.config_service.get("organization", default={}) if self.config_service else {}
+        value = settings.get("library_path", "library")
+        library = select_system_path(value, setting="organization.library_path")
+        return _inside(os.path.abspath(path), library) or _inside(os.path.realpath(path), os.path.realpath(library))
+
     def _extension_allowed(self, name):
         extensions = self.setting("include_extensions", [])
         return not extensions or any(name.lower().endswith(extension.lower()) for extension in extensions)
@@ -150,7 +159,7 @@ class ScanService:
         and not reached through a linked folder (a link could lead outside the root or into a denied folder)."""
         path = os.path.abspath(path)
         root = self.root_of(path)
-        if root is None or self.is_denied(path) or self._own_folder_inside(path, root):
+        if root is None or self.is_denied(path) or self._own_folder_inside(path, root) or self.in_library(path):
             return False
         if self._behind_link(path if folder else os.path.dirname(path), root):
             return False
@@ -174,7 +183,7 @@ class ScanService:
     # Scanning
 
     def enqueue_manual_scan(self, events=None):
-        """Scan now and return the result (tests and direct calls). The API queues scans instead."""
+        """Scan now and return the result (direct calls). The API queues scans instead."""
         if not self._is_service_running():
             logger.warning("Scan blocked: service is %s; start or resume it before scanning.",
                            self.code_steward_service.state.value)
@@ -347,8 +356,9 @@ class ScanService:
             if not os.path.isdir(root):
                 logger.warning("Root path does not exist, skipping: %s", root)
                 continue
-            if self.is_denied(root):
-                logger.warning("Root path is a system folder or in deny_paths, skipping: %s", root)
+            if self.is_denied(root) or self.in_library(root):
+                logger.warning("Root path is %s, skipping: %s", "inside the organization library"
+                               if self.in_library(root) else "a system folder or in deny_paths", root)
                 denied.append(root)
                 continue
             logger.info("Scanning: %s", root)
@@ -384,7 +394,7 @@ class ScanService:
                 folder = os.path.join(dirpath, name)
                 if name in excluded:
                     logger.log(skipped_level, "Directory skipped by exclude_folders: %s", folder)
-                elif _is_link(folder) or self.is_denied(folder) or self._own_folder_inside(folder, root):
+                elif _is_link(folder) or self.is_denied(folder) or self._own_folder_inside(folder, root) or self.in_library(folder):
                     logger.debug("Directory skipped: %s", folder)
                 else:
                     kept.append(name)

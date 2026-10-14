@@ -1,7 +1,11 @@
 import copy
 import logging
+import ntpath
 import os
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
+import posixpath
+import re
+import sys
 
 import yaml
 
@@ -10,14 +14,15 @@ from Services.ClassificationService import TYPES
 logger = logging.getLogger("code-steward.config")
 
 # The file next to the program is used no matter which folder the server is started from.
-# Set CODE_STEWARD_CONFIG to use another file (for example in tests).
-CONFIG_PATH = os.environ.get("CODE_STEWARD_CONFIG") or str(Path(__file__).resolve().parents[1] / "config.yaml")
+# Set CODE_STEWARD_CONFIG to use another file (for example personal settings).
+PROGRAM_FOLDER = Path(__file__).resolve().parents[1]
+CONFIG_PATH = os.environ.get("CODE_STEWARD_CONFIG") or str(PROGRAM_FOLDER / "config.yaml")
 
 # Every setting and its default. A value missing from config.yaml uses the default below.
 DEFAULTS = {
     "service": {"auto_start": True, "tick_seconds": 5},
     "scanning": {
-        "root_paths": [],
+        "root_paths": ["watched"],
         "include_extensions": [],
         "exclude_folders": [],
         "deny_paths": [],
@@ -35,17 +40,96 @@ DEFAULTS = {
         "model": "qwen-4b",
         "device": "cpu",
         "num_thread": "auto",
-        "settings_file": "ai_lab/settings/default.json",
+        "settings_file": "ai/settings/default.json",
         "analyze_types": ["script", "wrapper"],
         "max_attempts": 3,
     },
-    "organization": {"topics_file": "ai_lab/settings/topics.json"},
+    "organization": {"topics_file": "ai/settings/topics.json", "library_path": "library", "git": True},
 }
 LOG_LEVELS = ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
 SECRET_WORDS = ("password", "passwd", "secret", "token", "api_key", "apikey", "credential", "private_key")
+SYSTEM_KEYS = ("windows", "mac", "linux")
 
 
-def validate(loaded):
+def system_key(platform=None):
+    """The config branch for this operating system (platform: check another system's settings)."""
+    platform = sys.platform if platform is None else platform
+    return "windows" if platform == "win32" else "mac" if platform == "darwin" else "linux"
+
+
+def _path_branch(value, setting, multiple):
+    if multiple:
+        values = [value] if isinstance(value, str) else value
+        if not isinstance(values, list) or not all(isinstance(item, str) and item.strip() for item in values):
+            raise ValueError(f"{setting} must be a path or a list of nonempty paths")
+        return values
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError(f"{setting} must be a nonempty path")
+    return [value]
+
+
+def _select_paths(value, platform, setting, multiple):
+    system = system_key(platform)
+    if isinstance(value, dict):
+        unknown = [str(key) for key in value if key not in SYSTEM_KEYS]
+        if unknown:
+            raise ValueError(f"{setting} has unknown system keys: {', '.join(unknown)}; use windows, mac or linux")
+        # Check every branch's structure, but a foreign system's paths are not interpreted here.
+        for key, branch in value.items():
+            _path_branch(branch, f"{setting}.{key}", multiple)
+        if system not in value:
+            if multiple:
+                return []
+            raise ValueError(f"{setting} needs a {system} path for this operating system")
+        value = value[system]
+    paths = _path_branch(value, setting, multiple)
+    path_module = ntpath if system == "windows" else posixpath
+    selected = []
+    for path in paths:
+        expanded = path_module.expanduser(path)
+        if "\0" in expanded or _foreign(expanded, system):
+            raise ValueError(f"{setting} path {path!r} is not a {system} path; write a folder inside the program "
+                             f"folder (for example watched) or an absolute {system} path")
+        absolute = PureWindowsPath(expanded).is_absolute() if system == "windows" else posixpath.isabs(expanded)
+        if not absolute:
+            # A relative path is a folder inside the program folder: the same folder on every system.
+            expanded = path_module.join(str(PROGRAM_FOLDER), expanded)
+        selected.append(path_module.normpath(expanded))
+    return selected
+
+
+def _foreign(path, system):
+    """True for a path written for another system: a drive or network path off Windows; on Windows a path
+    that starts with a slash but has no drive, or a drive without a slash (C:tools)."""
+    if system == "windows":
+        windows = PureWindowsPath(path)
+        return not windows.is_absolute() and bool(windows.drive or windows.root)
+    return bool(re.match(r"^[A-Za-z]:", path)) or path.startswith("\\\\")
+
+
+def select_system_paths(value, *, platform=None, setting="paths"):
+    """Select and expand a list/string or per-system mapping without changing the raw settings.
+
+    Relative paths are folders inside the program folder; absolute paths are used as written."""
+    return _select_paths(value, platform, setting, multiple=True)
+
+
+def select_system_path(value, *, platform=None, setting="path"):
+    """Select and expand a single path, optionally written as a per-system mapping."""
+    return _select_paths(value, platform, setting, multiple=False)[0]
+
+
+def _contains(folder, path, platform=None):
+    """True when path is folder or inside it; Windows and macOS compare without case."""
+    system = system_key(platform)
+    module = ntpath if system == "windows" else posixpath
+    folder, path = module.normpath(folder), module.normpath(path)
+    if system in ("windows", "mac"):
+        folder, path = folder.casefold(), path.casefold()
+    return path == folder or path.startswith(folder.rstrip(module.sep) + module.sep)
+
+
+def validate(loaded, platform=None):
     """Return the settings with defaults filled in, or raise ValueError listing every problem."""
     config = copy.deepcopy(loaded)
     problems = []
@@ -82,7 +166,15 @@ def validate(loaded):
 
     flag("service", "auto_start")
     number("service", "tick_seconds", 0.5, 3600)
-    for key in ("root_paths", "include_extensions", "exclude_folders", "deny_paths"):
+    for key in ("root_paths", "deny_paths"):
+        value = config["scanning"][key]
+        try:
+            select_system_paths(value, platform=platform, setting=f"scanning.{key}")
+        except ValueError as error:
+            problems.append(str(error))
+        if isinstance(value, str):
+            config["scanning"][key] = [value]  # retain the legacy single-folder form
+    for key in ("include_extensions", "exclude_folders"):
         text_list("scanning", key)
     extensions = config["scanning"]["include_extensions"]
     if isinstance(extensions, list) and all(isinstance(item, str) for item in extensions):
@@ -118,6 +210,18 @@ def validate(loaded):
     number("ai", "max_attempts", 1, 10, whole=True)
     if not isinstance(config["organization"]["topics_file"], str) or not config["organization"]["topics_file"].strip():
         problems.append("organization.topics_file must be a file name or path")
+    try:
+        library = select_system_path(config["organization"]["library_path"], platform=platform,
+                                     setting="organization.library_path")
+        roots = select_system_paths(config["scanning"]["root_paths"], platform=platform, setting="scanning.root_paths")
+    except ValueError as error:
+        problems.append(str(error))
+    else:
+        for root in roots:
+            if _contains(library, root, platform):
+                problems.append(f"scanning.root_paths {root!r} is inside organization.library_path; "
+                                "the library is never scanned, so choose folders that do not contain each other")
+    flag("organization", "git")
     if problems:
         raise ValueError("Invalid configuration: " + "; ".join(problems) + ".")
     return config

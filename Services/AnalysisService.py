@@ -9,15 +9,15 @@ from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
 
-from ai_lab.common import LabError, digest
-from ai_lab.explain.answer import SCHEMA_VERSION
-from ai_lab.explain.checks import CHECKS_VERSION
-from ai_lab.explain.config import load_config, resolve_model
-from ai_lab.explain.facts import static_facts
-from ai_lab.explain.files import snapshot
-from ai_lab.explain.ollama_client import OllamaClient
-from ai_lab.explain.request import INPUT_VERSION, PROMPT
-from ai_lab.testing.runner import result_for
+from ai.common import AIError, digest
+from ai.explain.answer import SCHEMA_VERSION
+from ai.explain.checks import CHECKS_VERSION
+from ai.explain.config import load_config, resolve_model
+from ai.explain.facts import static_facts
+from ai.explain.files import snapshot
+from ai.explain.ollama_client import OllamaClient
+from ai.explain.pipeline import result_for
+from ai.explain.request import INPUT_VERSION, PROMPT
 from Services.ClassificationService import PLACEHOLDER, SECRET
 
 logger = logging.getLogger("code-steward.analysis")
@@ -48,7 +48,7 @@ def hide_secrets(source):
     return SECRET.sub(hide, source), hidden
 
 
-def profile_for(lab, tag, model_digest):
+def profile_for(ai_settings, tag, model_digest):
     """Answers depend on these; a change means files are explained again. Device and threads only change speed.
 
     model_digest identifies the downloaded model version: downloading a newer version of the same model counts.
@@ -56,27 +56,27 @@ def profile_for(lab, tag, model_digest):
     return digest(json.dumps({
         "model": tag, "model_digest": model_digest, "prompt": digest(PROMPT), "schema": SCHEMA_VERSION,
         "input": INPUT_VERSION, "checks": CHECKS_VERSION,
-        **{key: lab[key] for key in ("num_ctx", "num_predict", "temperature", "seed", "repair_attempts",
+        **{key: ai_settings[key] for key in ("num_ctx", "num_predict", "temperature", "seed", "repair_attempts",
                                      "long_file_tokens", "long_file_keep_tokens", "max_source_chars")},
     }, sort_keys=True))[:16]
 
 
 def check_local_model(client, tag, own_models=()):
-    """Raise LabError unless Ollama answers, the model is installed and runs locally, and no other model is loaded.
+    """Raise AIError unless Ollama answers, the model is installed and runs locally, and no other model is loaded.
 
-    Used before AI explanations and AI topics. Unlike the AI test lab, nothing is unloaded: another
-    program may be using the same model. Returns the installed model entry (with its digest).
+    Used before AI explanations and AI topics. Nothing is unloaded: another program may be using the
+    same model. Returns the installed model entry (with its digest).
     """
     installed = client.match(client.installed(), tag)
     if installed is None:
-        raise LabError(f"Model is not installed: {tag}", "missing_model")
+        raise AIError(f"Model is not installed: {tag}", "missing_model")
     info = client.request("/api/show", {"model": tag}, timeout=15)
     if info.get("remote_host") or info.get("remote_model"):
-        raise LabError("Cloud-backed models are not used.", "cloud_model")
+        raise AIError("Cloud-backed models are not used.", "cloud_model")
     others = [m.get("name", m.get("model", "unknown")) for m in client.running()
               if not any(client.match([m], own) for own in {*own_models, tag})]
     if others:
-        raise LabError("Other models are loaded: " + ", ".join(others), "busy")
+        raise AIError("Other models are loaded: " + ", ".join(others), "busy")
     return installed
 
 
@@ -95,9 +95,8 @@ class AnalysisService:
 
     The scanner reports every saved change. Files of the types in ai.analyze_types wait in a queue
     kept in the database, so the queue survives a restart. One worker thread explains one file at a
-    time while the service runs, with the AI lab's pipeline (ai_lab/explain and
-    ai_lab/testing/runner.result_for): program facts, the model's answer, checks and at most one
-    correction, so answers match the AI test lab. Results are saved by file contents, extension and
+    time while the service runs, with the pipeline in ai/explain (pipeline.result_for): program facts,
+    the model's answer, checks and at most one correction. Results are saved by file contents, extension and
     a "profile" (model version, prompt and format versions): unchanged or duplicate files are not sent
     again. When Ollama is unavailable the worker waits, with growing pauses, and tries again.
     """
@@ -133,28 +132,28 @@ class AnalysisService:
     # Settings
 
     def reload_settings(self):
-        """Read the ai section and the AI lab settings file it names; called again after a config reload.
+        """Read the ai section and the AI settings file it names; called again after a config reload.
 
         A file being explained meanwhile keeps the settings it started with: its answer is saved for
         those settings, and the file waits again for the new ones.
         """
         ai = self.config_service.get_config()["ai"]
-        problem, lab, tag = None, None, None
+        problem, ai_settings, tag = None, None, None
         try:
             path = Path(os.path.expanduser(ai["settings_file"]))
-            lab = load_config(path if path.is_absolute() else PROGRAM_FOLDER / path)
-            lab["device"] = ai["device"]
-            if ai["num_thread"] != "auto" or lab["num_thread"] != "auto":
-                lab["num_thread"] = ai["num_thread"]
-            tag = resolve_model(lab, ai["model"])
-        except LabError as error:
-            problem, lab, tag = error, None, None
+            ai_settings = load_config(path if path.is_absolute() else PROGRAM_FOLDER / path)
+            ai_settings["device"] = ai["device"]
+            if ai["num_thread"] != "auto" or ai_settings["num_thread"] != "auto":
+                ai_settings["num_thread"] = ai["num_thread"]
+            tag = resolve_model(ai_settings, ai["model"])
+        except AIError as error:
+            problem, ai_settings, tag = error, None, None
         model_digest = self._remembered_digest(tag) if tag else None
         with self._lock:
             self.enabled = ai["enabled"] and problem is None
             self.types, self.max_attempts = set(ai["analyze_types"]), ai["max_attempts"]
-            self.lab, self.tag, self._model_digest = lab, tag, model_digest
-            self.profile = profile_for(lab, tag, model_digest) if lab else None
+            self.ai_settings, self.tag, self._model_digest = ai_settings, tag, model_digest
+            self.profile = profile_for(ai_settings, tag, model_digest) if ai_settings else None
             self._client = None  # connect again with the new settings
             self.state = (f"off: AI settings problem: {problem}" if problem
                           else "ready to start" if self.enabled else "off")
@@ -194,7 +193,7 @@ class AnalysisService:
             if "profile" not in {row["name"] for row in connection.execute("PRAGMA table_info(analysis_jobs)")}:
                 connection.execute("ALTER TABLE analysis_jobs ADD COLUMN profile TEXT")
             if "extension" not in {row["name"] for row in connection.execute("PRAGMA table_info(analyses)")}:
-                # Explanations saved by an earlier test version, without the extension; they are made again.
+                # Explanations saved by an earlier version, without the extension; they are made again.
                 connection.execute("DROP TABLE IF EXISTS analyses")
             connection.execute("""
                 CREATE TABLE IF NOT EXISTS analyses (
@@ -399,25 +398,25 @@ class AnalysisService:
         with self._lock:
             if self._client is not None:
                 return self._request()
-            lab, tag, own_models = self.lab, self.tag, set(self._own_models)
-        client = self._client_factory(lab)
+            ai_settings, tag, own_models = self.ai_settings, self.tag, set(self._own_models)
+        client = self._client_factory(ai_settings)
         try:
             installed = check_local_model(client, tag, own_models)
-        except LabError as error:
+        except AIError as error:
             self._wait_for_ollama(error)
             return None
         model_digest = installed.get("digest")
         with self._lock:
-            if self.lab is not lab:
+            if self.ai_settings is not ai_settings:
                 return None  # the settings changed during the checks; the next step checks the new ones
             self._client = client
             self._own_models.add(tag)
             self._waiting_streak, self.state = 0, "ready"
             previous, updated = self._model_digest, model_digest != self._model_digest
             if updated:
-                self._model_digest, self.profile = model_digest, profile_for(lab, tag, model_digest)
+                self._model_digest, self.profile = model_digest, profile_for(ai_settings, tag, model_digest)
             request = self._request()
-        logger.info("AI analysis ready: %s on %s.", tag, "CPU" if lab["device"] == "cpu" else "GPU if available")
+        logger.info("AI analysis ready: %s on %s.", tag, "CPU" if ai_settings["device"] == "cpu" else "GPU if available")
         if updated and model_digest:
             self._remember_digest(tag, model_digest)
             if previous is not None:
@@ -427,20 +426,20 @@ class AnalysisService:
 
     def _request(self):
         """One consistent copy of the settings for a request (called with self._lock held)."""
-        return SimpleNamespace(client=self._client, lab=self.lab, tag=self.tag, profile=self.profile,
+        return SimpleNamespace(client=self._client, ai_settings=self.ai_settings, tag=self.tag, profile=self.profile,
                                model_digest=self._model_digest)
 
     def topic_model(self):
         """Client, model and model version for the organization plan's topic requests.
 
         The same settings and checks as for explanations (local model, installed, no other model
-        loaded). Raises LabError with the reason; the plan then uses keyword hints.
+        loaded). Raises AIError with the reason; the plan then uses keyword hints.
         """
         with self._lock:
-            enabled, lab, tag, own_models = self.enabled, self.lab, self.tag, set(self._own_models)
-        if not enabled or lab is None:
-            raise LabError("AI explanations are off (ai.enabled in config.yaml)", "off")
-        client = self._client_factory(lab)
+            enabled, ai_settings, tag, own_models = self.enabled, self.ai_settings, self.tag, set(self._own_models)
+        if not enabled or ai_settings is None:
+            raise AIError("AI explanations are off (ai.enabled in config.yaml)", "off")
+        client = self._client_factory(ai_settings)
         installed = check_local_model(client, tag, own_models)
         with self._lock:
             self._own_models.add(tag)
@@ -456,9 +455,9 @@ class AnalysisService:
             logger.warning("AI analysis is waiting: %s. Trying again in %d s.", reason, pause)
         self.state, self.last_error = f"waiting: {reason}", str(error)
 
-    def _case(self, artifact, lab):
-        """The AI lab's input for one file: text, hash and facts, with written secrets hidden."""
-        case = snapshot(Path(artifact["path"]), self.name_for(artifact["path"]), lab["max_source_chars"])
+    def _case(self, artifact, ai_settings):
+        """The model's input for one file: text, hash and facts, with written secrets hidden."""
+        case = snapshot(Path(artifact["path"]), self.name_for(artifact["path"]), ai_settings["max_source_chars"])
         if "source" in case:
             case["source"], case["hidden_secrets"] = hide_secrets(case["source"])
             if case["hidden_secrets"]:
@@ -466,7 +465,7 @@ class AnalysisService:
         return case
 
     def _explain(self, job, artifact, request):
-        case = self._case(artifact, request.lab)
+        case = self._case(artifact, request.ai_settings)
         if "input_error" not in case and case["source_hash"] != job["hash"]:
             self._finish(job)  # the file changed after the scan; the scanner queues the new version
             return
@@ -477,7 +476,7 @@ class AnalysisService:
         started = time.monotonic()
         self.current = artifact["path"]
         try:
-            row = result_for(request.client, request.tag, case, request.lab)
+            row = result_for(request.client, request.tag, case, request.ai_settings)
         finally:
             self.current = None
         seconds = round(time.monotonic() - started, 1)
@@ -487,7 +486,7 @@ class AnalysisService:
                 "model": request.tag,
                 "model_digest": request.model_digest,
                 "profile": request.profile,
-                "device": request.lab["device"],
+                "device": request.ai_settings["device"],
                 "analyzed_at": datetime.now(timezone.utc).isoformat(),
                 "seconds": seconds,
                 "tokens_per_second": row.get("tokens_per_second"),
@@ -507,7 +506,7 @@ class AnalysisService:
             with self._connect() as connection:
                 connection.execute("UPDATE analysis_jobs SET status = 'queued', attempts = attempts - 1 "
                                    "WHERE artifact_id = ? AND hash = ?", (job["artifact_id"], job["hash"]))
-            self._wait_for_ollama(LabError(row.get("error", ""), row["status"]))
+            self._wait_for_ollama(AIError(row.get("error", ""), row["status"]))
         else:
             error = row.get("error") or row["status"]
             if job["attempts"] + 1 >= self.max_attempts or row["status"] == "invalid_output":
@@ -587,7 +586,7 @@ class AnalysisService:
             "enabled": self.enabled,
             "state": self.state,
             "model": self.tag,
-            "device": self.lab["device"] if self.lab else None,
+            "device": self.ai_settings["device"] if self.ai_settings else None,
             "explaining_now": self.current,
             "waiting_files": waiting,
             "failed_files": counts.get("failed", 0),

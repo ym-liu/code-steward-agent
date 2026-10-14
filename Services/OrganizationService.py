@@ -11,9 +11,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
 
-from ai_lab.common import LabError
-from ai_lab.explain.facts import static_facts
-from ai_lab.organize import code_role, load_topics, mark_duplicates, page_html, plan_for, short_dependency
+from ai.common import AIError
+from ai.explain.facts import static_facts
+from ai.organize import code_role, load_topics, mark_duplicates, page_html, plan_for, short_dependency
 from Services.AnalysisService import waiting_reason
 
 logger = logging.getLogger("code-steward.organization")
@@ -22,10 +22,15 @@ CODE_TYPES = {"script", "wrapper"}
 SOURCE_LIMIT = 200000  # characters read from a code file to find the files it uses
 
 
+def plan_digest(plan):
+    data = {key: value for key, value in plan.items() if key != "plan_id"}
+    return hashlib.sha256(json.dumps(data, sort_keys=True, ensure_ascii=True, separators=(",", ":")).encode()).hexdigest()
+
+
 class OrganizationService:
     """The organization plan: one topic and one proposed folder for every group of files (a dry run).
 
-    The plan comes from the AI lab's organizer (ai_lab/organize.plan_for) fed with the product's data:
+    The plan comes from the organizer in ai/organize.py (plan_for) fed with the product's data:
     file types from ClassificationService, AI explanations from AnalysisService and program facts of
     each code file. Files that use each other (imports, started scripts, paths in code) and folders
     with a README or LICENSE stay together. The model picks one topic per group from the editable
@@ -44,6 +49,8 @@ class OrganizationService:
         self.progress = None
         self.last_error = None
         self._lock = threading.Lock()
+        self.operation_lock = threading.Lock()  # shared by plan building, execution and undo
+        self.placements = None  # callable set by ServiceContainer: where earlier runs copied files
         self._building = False
         self._thread = None
         with self._connect() as connection:
@@ -75,7 +82,7 @@ class OrganizationService:
 
     def topics(self):
         path = Path(os.path.expanduser(self.config_service.get("organization", "topics_file",
-                                                               default="ai_lab/settings/topics.json")))
+                                                               default="ai/settings/topics.json")))
         return load_topics(path if path.is_absolute() else PROGRAM_FOLDER / path)
 
     # Saved topic answers (plan_for's topic_cache, for one model version: see build)
@@ -95,7 +102,7 @@ class OrganizationService:
     def start(self, use_ai=True):
         """Build a new plan in the background. Returns False when one is already being built."""
         with self._lock:
-            if self._building:
+            if self._building or not self.operation_lock.acquire(blocking=False):
                 return False
             self._building = True
             self.state, self.progress, self.last_error = "building", None, None
@@ -113,16 +120,26 @@ class OrganizationService:
 
     def _build_in_background(self, use_ai):
         try:
-            self.build(use_ai)
+            self.build(use_ai, _claimed=True)
         except Exception as error:
             self.state, self.last_error = "failed", f"{type(error).__name__}: {error}"
             logger.exception("Building the organization plan failed.")
         finally:
             with self._lock:
                 self._building = False
+            self.operation_lock.release()
 
-    def build(self, use_ai=True):
-        """Build, save and return a plan for every root folder (also used directly by tests)."""
+    def build(self, use_ai=True, _claimed=False):
+        if not _claimed and not self.operation_lock.acquire(blocking=False):
+            raise ValueError("An organization operation is already in progress.")
+        try:
+            return self._build(use_ai)
+        finally:
+            if not _claimed:
+                self.operation_lock.release()
+
+    def _build(self, use_ai=True):
+        """Build, save and return a plan for every root folder."""
         started = time.monotonic()
         topics = self.topics()
         client, tag, model_digest, topics_from = self._client(use_ai)
@@ -131,8 +148,10 @@ class OrganizationService:
                                       put=lambda key, answer: self.put(f"{model_digest}:{key}", answer))
         plan = {"files": [], "units": [], "loose": [], "actions": [], "unavailable_roots": []}
         taken = set()  # proposed names stay unique across all roots
+        # Where earlier runs copied each file (absolute source path -> library target); groups keep those folders.
+        placed = self.placements() if self.placements else {}
         for number, root in enumerate(self.scan_service.roots(), 1):
-            if self.scan_service.is_denied(root):
+            if self.scan_service.is_denied(root) or self.scan_service.in_library(root):
                 continue
             if not os.path.isdir(root):
                 plan["unavailable_roots"].append(root)  # for example an unplugged drive; planned when it is back
@@ -140,8 +159,10 @@ class OrganizationService:
             records, sources, facts = self._records(root)
             if not records:
                 continue
+            here = {Path(os.path.relpath(path, root)).as_posix(): target for path, target in placed.items()
+                    if os.path.dirname(path) == root or os.path.dirname(path).startswith(root.rstrip(os.sep) + os.sep)}
             part = plan_for(records, sources, facts, client, tag, topics, progress=self._report,
-                            topic_cache=topic_cache, taken=taken)
+                            topic_cache=topic_cache, taken=taken, placed=here)
             self._merge(plan, part, root, f"r{number}-")
         work = [unit for unit in plan["units"] if not unit["duplicate_of"]]
         without_answer = sum(unit.get("ai_topic") is None for unit in work)  # failed, unreadable or not asked
@@ -161,6 +182,7 @@ class OrganizationService:
                      "needs_review": sum(action["action"] == "copy" and action["to"].startswith("needs-review/")
                                          for action in plan["actions"])})
         with self._connect() as connection:
+            plan["plan_id"] = plan_digest(plan)
             connection.execute("INSERT OR REPLACE INTO organization_plans (id, created_at, plan) VALUES (1, ?, ?)",
                                (plan["created_at"], json.dumps(plan)))
         self.state, self.progress = "ready", None
@@ -178,7 +200,7 @@ class OrganizationService:
             return None, None, None, "keyword hints only (AI not requested)"
         try:
             client, tag, model_digest = self.analysis_service.topic_model()
-        except LabError as error:
+        except AIError as error:
             if error.code == "off":
                 return None, None, None, "keyword hints only (AI explanations are off)"
             reason = waiting_reason(error, self.analysis_service.tag)
@@ -187,7 +209,7 @@ class OrganizationService:
         return client, tag, model_digest, "AI, checked by keyword hints"
 
     def _records(self, root):
-        """One record per saved file under root, in the form the AI lab's organizer expects.
+        """One record per saved file under root, in the form the organizer (ai/organize.py) expects.
 
         Every file is read again first. Files that changed since the last scan are scanned again, so
         hashes, types and explanations describe the files as they are now. A file that still differs
@@ -284,7 +306,10 @@ class OrganizationService:
     def latest(self):
         with self._connect() as connection:
             row = connection.execute("SELECT plan FROM organization_plans WHERE id = 1").fetchone()
-        return json.loads(row[0]) if row else None
+        plan = json.loads(row[0]) if row else None
+        if plan is not None:
+            plan.setdefault("plan_id", plan_digest(plan))
+        return plan
 
     def page(self):
         plan = self.latest()
@@ -293,6 +318,7 @@ class OrganizationService:
     def status(self):
         plan = self.latest()
         return {"state": self.state, "progress": self.progress, "last_error": self.last_error,
+                "plan_id": plan["plan_id"] if plan else None,  # send it to /organization/preflight and /execute
                 "last_plan_at": plan["created_at"] if plan else None,
                 "summary": plan["summary"] if plan else None,
                 "topics_from": plan["topics_from"] if plan else None}

@@ -1,388 +1,372 @@
-# code-steward-agent
+# Code Steward Agent
 
-## AI model testing
+Code Steward runs on your own computer and looks after the code files in folders you choose:
 
-This standalone lab tests how well local AI models explain code. Each request contains one file's
-source with line numbers and basic facts extracted from the code. The [prompt](ai_lab/settings/explain_prompt.txt)
-asks for brief English JSON: purpose, inputs, outputs, usage, dependencies, related files,
-important unknowns and code evidence. It tells the model to avoid guessing missing details.
-The lab is separate from the project's scanner and API.
+1. **Finds and records** every file in those folders and notices new, changed, renamed and deleted files.
+2. **Explains code files with a local AI model**: what each file does, its inputs and outputs, how to use
+   it, what it depends on and which files it works with.
+3. **Proposes an organization plan**: files that belong together stay together, the AI picks a topic for
+   each group (for example `machine-learning/` or `setup-and-deployment/`), and you review the plan first.
+4. **Copies the files into an organized library** (the `library` folder) when you approve the plan, with
+   an undo, and keeps the library's **version history in Git**.
 
-1. Install **[Python 3.10+](https://www.python.org/downloads/)** and **[Ollama](https://ollama.com/download)** once. Open Ollama.
-2. Put your code files in **`ai_lab/samples/`**. Subfolders work too.
-3. Double-click **`Run AI Test.command`** on Mac or **`Run AI Test.bat`** on Windows, then choose a model and CPU or GPU.
+Everything stays on your computer. Your original files are only read: Code Steward never changes, moves,
+deletes or runs them. You control it through a REST API; the easiest way is the browser page
+`http://localhost:8000/docs`.
 
-The menu offers **Qwen3.5 4B/9B** and **Qwen2.5-Coder 7B/3B**. Qwen3.5 4B remains the default.
-Choose **C** to use another model: paste an Ollama model name, run command or model-page link.
-You can keep it in the menu for next time without editing configuration files.
+**[How it works: every file and how data moves between them](docs/HOW_IT_WORKS.md)**
 
-The script tests every supported code file in that folder and opens **`report.html`** automatically.
-The report presents each explanation with expandable source-line evidence.
-Missing models download automatically. The lab reads code; it does not run your scripts.
-One status line shows live token speed and system CPU/RAM; each file shows its time and final speed,
-and the finished run shows total time. Live speed is marked `~` because it is an estimate.
+---
 
-The folder includes **118 code files** in 12 programming languages: the complete 791-line `a4.py`,
-LeetCode solutions, unchanged open-source examples and imitation personal script folders.
+## What you need
 
-**[Guide](docs/AI_TESTING.md)** · **[Test files](docs/AI_TEST_FILES.md)** · **[How the AI code is organized](ai_lab/README.md)**
+| | Why | Get it |
+|---|---|---|
+| **Python 3.10 or newer** (3.12 recommended) | Runs Code Steward | [python.org/downloads](https://www.python.org/downloads/) |
+| **Ollama** and the model **qwen3.5:4b-q4_K_M** (3.3 GB download) | The local AI model | [ollama.com/download](https://ollama.com/download) |
+| **Git** | Version history of the library | Mac: included with the command line tools · Windows: [git-scm.com](https://git-scm.com/download/win) |
 
-| AI files | What they are |
+It was tested on a Mac with 16 GB of memory. Computers with 8 GB have not been tested yet. The model runs
+on the CPU by default; on that Mac most code files took 10 to 60 seconds each (27 seconds on average), very
+long files a few minutes.
+
+---
+
+## 1. Install (once)
+
+### Mac
+
+Open **Terminal** and run these lines one at a time.
+
+1. Check Python and Git. Both should print a version; Python must be 3.10 or newer.
+   ```bash
+   python3 --version
+   git --version
+   ```
+   If `git` is missing, macOS offers to install the command line tools; accept, then run it again.
+2. Install **Ollama** from [ollama.com/download](https://ollama.com/download) and open it once. Then download
+   the model (only the first time; it takes a few minutes):
+   ```bash
+   ollama pull qwen3.5:4b-q4_K_M
+   ```
+3. Download Code Steward and go into its folder:
+   ```bash
+   git clone https://github.com/ym-liu/code-steward-agent.git
+   cd code-steward-agent
+   ```
+4. Create a private Python environment for it and install the libraries it needs:
+   ```bash
+   python3 -m venv venv
+   venv/bin/python -m pip install -r requirements.txt
+   ```
+
+### Windows
+
+Open **PowerShell** and run these lines one at a time.
+
+1. Install **Python** from [python.org](https://www.python.org/downloads/) (on the first installer screen,
+   tick **Add python.exe to PATH**) and **Git** from [git-scm.com](https://git-scm.com/download/win). Check both:
+   ```powershell
+   py --version
+   git --version
+   ```
+2. Install **Ollama** from [ollama.com/download](https://ollama.com/download) and open it once. Then download
+   the model (only the first time):
+   ```powershell
+   ollama pull qwen3.5:4b-q4_K_M
+   ```
+3. Download Code Steward and go into its folder:
+   ```powershell
+   git clone https://github.com/ym-liu/code-steward-agent.git
+   cd code-steward-agent
+   ```
+4. Create a private Python environment and install the libraries:
+   ```powershell
+   py -m venv venv
+   venv\Scripts\python -m pip install -r requirements.txt
+   ```
+
+---
+
+## 2. Start Code Steward
+
+1. Make sure **Ollama is open** (Mac: the llama icon in the menu bar; Windows: in the system tray).
+2. In Terminal/PowerShell, inside the `code-steward-agent` folder, start it:
+   ```bash
+   venv/bin/python -m uvicorn CodeSteward:app            # Mac
+   ```
+   ```powershell
+   venv\Scripts\python -m uvicorn CodeSteward:app        # Windows
+   ```
+3. Wait for `Uvicorn running on http://127.0.0.1:8000`. Leave this window open: closing it stops Code Steward.
+4. Open **[http://localhost:8000/docs](http://localhost:8000/docs)** in your browser.
+5. To stop, press **Ctrl+C** in that window. It finishes the current step first.
+
+Everything Code Steward learns is kept in `artifacts.sqlite3` in the program folder, so after a restart it
+continues instead of starting over.
+
+---
+
+## 3. The `watched` folder and its test files
+
+Code Steward watches one folder and copies the organized files into another. Both are inside the
+`code-steward-agent` folder, the same on Windows and Mac:
+
+```text
+code-steward-agent/
+├── watched/     <- the files Code Steward looks after; 146 test files come with the project
+└── library/     <- the organized copies and their Git history (created by the first organization)
+```
+
+`watched` already contains test material: 146 files, 118 of them code in 12 languages (Python, shell,
+JavaScript, TypeScript, Java, C++, Go, Ruby, PowerShell, batch, SQL, R).
+
+| Folder in `watched` | What it is |
 |---|---|
-| `Run AI Test.command`, `Run AI Test.bat`, `ai_test.py` | Start the test (double-click or command line) |
-| `ai_lab/settings/` | Models, limits and prompts |
-| `ai_lab/samples/` | The code to test |
-| `ai_lab/explain/`, `ai_lab/testing/` | The program: explain one file; test many files and write reports |
-| `ai-results/` | One folder per run (created locally, not in Git); open `report.html` |
+| `real_world/` | A complete course assignment (`a4.py`) and modules of a real project |
+| `leetcode/` | LeetCode solutions in several languages |
+| `open_source/` | Unchanged examples from 15 open-source projects; each keeps its `LICENSE`, and `SOURCE.json` records where it came from |
+| `simulated/` | Imitations of messy personal script folders: a machine-learning lab project, a data pipeline, office automation, developer tools and a "misc" folder with copies and old versions |
+| Top-level files | Small tricky cases: a misleading comment, a launcher, a script with a missing settings file, text that tries to give the AI instructions, a file of unknown type |
 
-<details>
-<summary>Command-line options for developers</summary>
+At the first start Code Steward explains all 118 code files in the background, one at a time: about **50
+minutes** on a CPU (27 seconds per file on average on a Mac M1 Pro). You can use everything else meanwhile;
+a plan uses the explanations that are ready so far. The answers are kept, so later starts only explain new
+or changed files.
 
-```sh
-# Same model settings as the double-click launcher
-python3 ai_test.py run --model qwen-4b --pull
+You can also put **copies** of your own code into `watched`. New files you add there stay on your
+computer: `.gitignore` keeps them out of this project's Git repository (the bundled test files were added
+on purpose). To undo your edits of the bundled files, run `git checkout -- watched`.
 
-# Compare Qwen3.5 4B and 9B on the same development cases
-python3 ai_test.py compare --config ai_lab/settings/default.json --models qwen-4b qwen-9b --suite dev --pull
+To watch other folders as well, add them under `scanning.root_paths` in `config.yaml`: an absolute path
+such as `C:\Code` or `/Users/you/Code`, or `~/Code` for a folder in your home folder. If a folder is itself
+one project, add its **parent** folder so the project stays together. The library and a watched folder
+must not contain each other.
 
-# Test another folder or a different local model
-python3 ai_test.py run --input /path/to/code --model MODEL_TAG --pull
-
-# Preview the result layout without a model
-python3 ai_test.py demo
+```yaml
+scanning:
+  root_paths:
+    - watched          # code-steward-agent/watched on every system
 ```
 
-The launcher uses `ai_lab/settings/default.json`: CPU by default (GPU only as a marked preview), thinking off, complete source text,
-up to 60,000 characters per file, 32K context and a 2,048-token generation ceiling.
-Actual explanations are kept short by the prompt and field limits. Long files can take several minutes.
-These settings have not been certified for an 8GB PC.
-The older `ai_lab/settings/legacy.json` remains available for the existing short-file benchmark and input checks.
-The input folder is fixed at `ai_lab/samples/`; change files there, no list needs updating.
-Personal models added through the menu are stored in the Git-ignored `ai_lab/settings/models.local.json`.
-They do not change the shared presets or inference settings.
+---
 
-`report.html` and `report.md` are readable results. `summary.md`, JSON files and CSV files retain technical
-records and optional manual scoring. A generated explanation is not an automatic correctness score.
-[Benchmark sets](ai_lab/benchmarks/README.md).
+## 4. Use it, step by step
 
-</details>
+In **http://localhost:8000/docs**, click an endpoint, then **Try it out**, fill in the values, and
+**Execute**. The answer appears under **Response body**. (Each step also shows the same request with
+`curl` for the Mac Terminal.)
 
-## Dependencies
+### Step 1: Is it running?
 
-- **Python**
-- **FastAPI**: API framework
-  - defines the API
-- **Uvicorn**: starts a server (`localhost:8000`), listens for requests, passes them to FastAPI, returns responses
-  - runs the API
+`GET /system/status` should show `"state": "running"`.
 
-## How to install and run
-
-### Create virtual env
-
-```
-python3 -m venv venv
-source venv/bin/activate    # Mac/Linux
-venv\Scripts\activate       # Windows
+```bash
+curl http://localhost:8000/system/status
 ```
 
-### Install dependencies
+### Step 2: See the files it found
 
-```
-pip install -r requirements.txt
-```
+`GET /artifacts` lists every file with its `id`, path, size, type (`script`, `wrapper` = launcher,
+`binary`, `sample`, `data`, `documentation`, `unknown`), language, and whether it looks `sensitive`
+(passwords, keys). Add, edit, rename or delete a file in `watched`: a few seconds later the list
+shows the change.
 
-### Run the server
-
-```
-uvicorn CodeSteward:app
-```
-
-- CodeSteward = filename
-- app = FastAPI instance
-- The background service starts together with the API (`service.auto_start` in `config.yaml`).
-  Press Ctrl+C to stop both; the service finishes its current step first.
-- Add `--reload` only while editing the code: it restarts the server whenever a project file changes.
-
-### Send requests with curl
-
-The default URL is `http://127.0.0.1:8000` or `http://localhost:8000`.
-
-E.g.,
-
-```
-curl http://localhost:8000
+```bash
+curl "http://localhost:8000/artifacts?limit=20"
 ```
 
+### Step 3: Read the AI explanations
+
+`GET /analysis/status` shows the progress: `explaining_now`, `waiting_files`, `explained_contents` and
+`estimated_minutes_left`. `GET /analysis/{artifact_id}` (use an `id` from step 2) shows one file's
+explanation: purpose, inputs, outputs, how to use it, dependencies, related files, what is unclear, and
+line numbers as evidence.
+
+```bash
+curl http://localhost:8000/analysis/status
+curl http://localhost:8000/analysis/PASTE_ARTIFACT_ID
 ```
-curl http://127.0.0.1:8000/system/health
+
+### Step 4: Build an organization plan and read it
+
+1. `POST /organization/plan` starts building a plan (the AI chooses a topic per group).
+2. `GET /organization/status` until `"state": "ready"`. It also shows the plan's `plan_id`.
+3. Open **[http://localhost:8000/organization/plan/page](http://localhost:8000/organization/plan/page)**:
+   the groups, their topics and proposed folders, and a "Check these first" list. Nothing is copied yet.
+
+Build the plan after most files are explained (step 3); files that are not explained yet are planned
+with less information. The first plan asks the AI about every group (a few seconds each); later plans
+only ask about groups that changed.
+
+```bash
+curl -X POST http://localhost:8000/organization/plan
+curl http://localhost:8000/organization/status
 ```
 
-## Generated docs
+### Step 5: Check the plan before copying (preflight)
 
-http://localhost:8000/docs
+`POST /organization/preflight` with the body `{"plan_id": "<plan_id from step 4>"}`. It reports what would
+happen now (`would-copy`, `would-update`, `already-done`, `conflict`, `skipped`), the space needed and
+the free space. It writes nothing.
 
-## MVP API Skeleton
+```bash
+curl -X POST http://localhost:8000/organization/preflight -H "Content-Type: application/json" -d '{"plan_id": "PASTE_PLAN_ID"}'
+```
 
-Current endpoints (details and examples at `/docs`). Errors are JSON: `{"detail": "..."}`.
+### Step 6: Copy the files into the library
+
+`POST /organization/execute` with the same body. The answer contains a `run_id`. Then
+`GET /organization/runs/{run_id}` until `"state": "complete"`; `summary` counts the results. Open the
+`library` folder to see the topic folders. Each group gets a `README.md` written
+from the AI explanations (`CODE_STEWARD_NOTES.md` when the group already has its own README), and sensitive
+files are listed in a `.gitignore`.
+
+If the plan changed since you read it, execute answers `409`: read the new plan and use its `plan_id`.
+
+```bash
+curl -X POST http://localhost:8000/organization/execute -H "Content-Type: application/json" -d '{"plan_id": "PASTE_PLAN_ID"}'
+curl http://localhost:8000/organization/runs/PASTE_RUN_ID
+```
+
+### Step 7: Look at the library's version history
+
+`GET /organization/repository` shows the Git branch, the last commits and any problems. Every execution
+and undo is one commit by "Code Steward". The subject starts with what happened ("Organize", "Update",
+"Undo"), and the AI adds which kinds of code it was about. You can also look with Git directly:
+
+```bash
+git -C library log --stat
+```
+
+### Step 8: Change a file and organize again
+
+Edit a code file in `watched`. Its explanation is updated (step 3). Build a new plan (step 4),
+preflight and execute it (steps 5 and 6): the library copy becomes `updated`, and the old version stays in
+the Git history. Files that are already in the library keep their folder, even if the AI would now name the
+group differently; new files of that group join the same folder. If **you** edited a copy inside the
+library, Code Steward never overwrites it; it reports a `conflict` instead. To organize a group again from
+scratch, undo the run that copied it (step 9) and build a new plan.
+
+### Step 9: Undo
+
+`POST /organization/undo` with `{"run_id": "<run_id from step 6>"}` removes the copies that run made (or puts
+back the previous version of updated files) and records a commit. Copies you edited are kept.
+
+```bash
+curl -X POST http://localhost:8000/organization/undo -H "Content-Type: application/json" -d '{"run_id": "PASTE_RUN_ID"}'
+```
+
+### Step 10: Read the log
+
+`GET /logs` shows what Code Steward did, newest first. Filter with `level=WARNING` or `search=...`.
+
+```bash
+curl "http://localhost:8000/logs?limit=50"
+```
+
+---
+
+## 5. What to test and how to report it
+
+- **Finding files**: create, edit, rename and delete files (also whole folders). Does `GET /artifacts`
+  follow within a few seconds? Is each file's type sensible?
+- **AI explanations**: is the purpose right? Does it invent usage, inputs or dependencies?
+- **Plan**: are the groups and topics sensible? Which files end up in `needs-review/`?
+- **Library**: are the copies complete and identical? Are your originals untouched?
+- **Updates and safety**: change a source file and organize again (the copy should be `updated`); edit a
+  copy in the library first (it should be a `conflict` and stay as you edited it); try undo.
+
+When something looks wrong, note: your system (Windows/Mac) and Python version, what you did, what you
+expected and what happened, and the related lines from `GET /logs`.
+
+---
+
+## Settings (`config.yaml`)
+
+Change values in `config.yaml`, then call `POST /config/reload` (or restart). Invalid values are
+rejected with the reason, and the previous settings stay in use.
+
+| Setting | What it does |
+|---|---|
+| `scanning.root_paths` | Folders to watch (`watched`); a relative path is inside the program folder |
+| `scanning.deny_paths` | Folders that must never be read (system folders are always protected) |
+| `scanning.exclude_folders` | Folder names to skip, such as `.git`, `node_modules`, `venv` |
+| `scanning.include_extensions` | Only these file types (empty = all files) |
+| `scanning.max_file_size_bytes` | Bigger files are listed but not read or hashed (10 MB) |
+| `scanning.scan_interval_seconds` | How often a full check runs besides the file watcher (300 s) |
+| `ai.enabled`, `ai.model` | AI explanations on/off, and the model (`qwen-4b`, `qwen-9b`, `qwen-coder-7b`, `qwen-coder-3b` or any installed Ollama model) |
+| `ai.device`, `ai.num_thread` | `cpu` (default) or `auto` (GPU when available); CPU threads |
+| `ai.analyze_types` | Which file types get an explanation (`script`, `wrapper`) |
+| `organization.library_path` | Where the organized copies go (`library`, inside the program folder) |
+| `organization.git` | Keep the library's version history in Git (`true`) |
+| `organization.topics_file` | The list of topic folders the AI chooses from (`ai/settings/topics.json`) |
+| `storage.database_path`, `storage.log_path` | The database and log file (in the program folder) |
+| `logging.level` | How much the log records (`INFO`) |
+| `testing.allow_event_injection` | Allows `POST /events/inject` to simulate file changes for validation (`false`) |
+
+The AI's limits and prompts are in `ai/settings/`. To use another settings file for yourself, start with
+`CODE_STEWARD_CONFIG=/path/to/my-config.yaml` set in the environment.
+
+---
+
+## API reference
+
+All answers are JSON; errors look like `{"detail": "..."}`. Details and examples are in `/docs`.
 
 | Endpoint | What it does |
 |---|---|
 | `GET /system/health` | Health check |
-| `GET /system/status` | Service state, waiting file changes, file watcher state, last background error |
-| `GET /system/metrics` | CPU time, CPU share since the previous call, peak memory and threads of the agent |
-| `POST /system/start`, `/stop`, `/pause`, `/resume` | Control the background service; 409 when not possible (for example pause while stopped) |
-| `GET /scan/status` | Running scan, counts of the last scan, last full scan time, root folder availability |
-| `POST /scan/trigger` | Queue a full scan (202); 409 while the service is stopped or paused |
-| `GET /artifacts` | One page of saved files: `limit`, `offset`; filters `artifact_type`, `language`, `sensitive`, `path_contains` |
-| `GET /artifacts/{artifact_id}` | One file with its classification and exact duplicates (`same_content_as`); 404 when unknown |
-| `GET /analysis/status` | AI explanations: on or off, model, the file being explained, files waiting, time left |
-| `GET /analysis/{artifact_id}` | The AI explanation of one file, or its place in the queue; 404 when unknown |
-| `POST /analysis/{artifact_id}` | Explain one file again (202); 409 when AI is off or the file type is not explained |
-| `POST /organization/plan` | Build a new organization plan in the background (202; `use_ai=false` for keyword hints only) |
-| `GET /organization/status` | building, ready, failed or no plan yet; the current step; the last plan's summary |
-| `GET /organization/plan` | The latest plan as JSON: files, groups with topic and proposed folder, actions; 404 before the first |
-| `GET /organization/plan/page` | The same plan as a readable page for a browser |
+| `GET /system/status` | Service state, waiting file changes, file watcher, last background error |
+| `GET /system/metrics` | CPU time, CPU share, peak memory and threads of Code Steward |
+| `POST /system/start`, `/stop`, `/pause`, `/resume` | Control the background service (409 when not possible) |
+| `GET /scan/status` | Running scan, last scan counts, root folder availability |
+| `POST /scan/trigger` | Ask for a full scan now (202) |
+| `GET /artifacts` | Saved files, a page at a time: `limit`, `offset`; filters `artifact_type`, `language`, `sensitive`, `path_contains` |
+| `GET /artifacts/{artifact_id}` | One file with its classification and exact duplicates |
+| `GET /analysis/status` | AI explanations: model, the file being explained, files waiting, time left |
+| `GET /analysis/{artifact_id}` | One file's AI explanation, or its place in the queue |
+| `POST /analysis/{artifact_id}` | Explain one file again (202) |
+| `POST /organization/plan` | Build a new plan in the background (202) |
+| `GET /organization/status` | Plan state (building, ready, failed), its `plan_id` and summary |
+| `GET /organization/plan` | The latest plan as JSON |
+| `GET /organization/plan/page` | The latest plan as a readable page |
 | `GET /organization/topics` | The topic folders the plan chooses from |
+| `POST /organization/preflight` | What executing a plan would do now; writes nothing |
+| `POST /organization/execute` | Copy a reviewed plan into the library (202) |
+| `GET /organization/execution/status` | The running operation and the last run |
+| `GET /organization/runs/{run_id}` | One run: the plan used and every action's result |
+| `POST /organization/undo` | Undo the newest run that still has copies (202) |
+| `GET /organization/repository` | The library's Git history and problems |
+| `POST /organization/repository/repair` | Fix what interrupted Git commands left behind |
 | `GET /events/status` | File changes waiting to be checked, and how folders are watched |
-| `POST /events/inject` | Simulate a file event for tests; 403 unless `testing.allow_event_injection: true` |
-| `GET /logs?limit=100` | Recent log entries (see Runtime logs) |
-| `GET /config` | Current settings with defaults; passwords, tokens and keys shown as `***` |
-| `POST /config/reload` | Read `config.yaml` again; 422 with the reason when invalid (the old settings stay) |
+| `POST /events/inject` | Simulate a file change (only with `testing.allow_event_injection: true`) |
+| `GET /logs` | Recent log entries: `limit`, `level`, `search` |
+| `GET /config` | Current settings (passwords and tokens shown as `***`) |
+| `POST /config/reload` | Read `config.yaml` again |
 
-## Verify artifact classification
+---
 
-1. Set `scanning.root_paths` in `config.yaml` to a test folder and start the API.
-   The service starts by itself and scans the folder once.
-2. Create, edit, rename or delete a file inside that folder: code, documents, data or programs.
-3. After a few seconds call `GET /artifacts`. Each file shows its name, path, size, hash,
-   change type and classification:
-   - `artifact_type`: wrapper, script, binary, sample, data, documentation or unknown
-   - `language` (or format), `is_binary`, `sensitive` with `sensitive_reason`
-   - `confidence` with `classification_reasons` (computed from the evidence, not by AI)
-   - `discovered_by`: watcher, injected, or the scan that found it (startup-scan, periodic-scan,
-     manual-scan, settings-scan, overflow-scan, retry-scan, watch-scan, plan-check)
+## Troubleshooting
 
-The artifact ID stays the same when a known file is edited (also by editors that save through a
-temporary file) or moved, even through several renames. Its hash changes when its contents change.
-A file renamed onto a path that already has a record (replacing that file) takes over that record;
-its own old record is removed. Files larger than `max_file_size_bytes` are listed without a hash.
-Files are read, never run.
-
-## How file changes are handled
-
-```
-FileEventService ──> EventAggregator ──> CodeStewardService loop ──> ScanService ──> ArtifactsService
-   (watcher)          (waits, merges)       (every tick_seconds)       (checks files)     (SQLite)
-```
-
-- **Watcher**: the operating system's change events, or polling when they cannot start
-  (`watch_mode`). Each tick checks the roots: a root that disappears (an unplugged drive) or appears
-  again is watched again, followed by a full scan. Records of a missing root are kept until it is back.
-- **Event aggregator**: one waiting item per file. It waits `quiet_seconds` after the last change,
-  at most `max_wait_seconds`; above `max_pending_files` it asks for one full scan instead.
-  Nothing is lost while a scan runs or the service is paused.
-- **Background loop**: checks settled changes each tick. A full scan runs at start, every
-  `scan_interval_seconds`, after too many changes, after a settings reload and on `POST /scan/trigger`.
-  A failed step is logged and retried with growing pauses, followed by a full scan.
-- **Scanner**: a changed file is compared by contents; a full scan reads only files whose size or time
-  changed and removes records of files that are gone. It skips `exclude_folders`, system folders and
-  `deny_paths`, temporary files, and the agent's own folder, database and log. Links (and Windows
-  junctions) are never followed, also when an event names a path through a linked folder; a root that
-  is a link into a system or `deny_paths` folder is skipped.
-
-| To change | Look in |
+| You see | Do this |
 |---|---|
-| Settings, their defaults and checks | `config.yaml`, `Services/ConfigService.py` |
-| Which events count, watcher modes | `Services/FileEventService.py` |
-| Waiting and merging rules | `Services/EventAggregator.py` |
-| What a scan checks, skipped folders and files | `Services/ScanService.py` |
-| File types, languages, sensitive rules | `Services/ClassificationService.py` (raise `CLASSIFIER_VERSION`) |
-| Database columns and upgrades | `Services/ArtifactsService.py` (raise `SCHEMA_VERSION`) |
-| Loop timing, start, stop, pause | `service.py` |
-| AI explanations: queue, saved results, waiting for Ollama | `Services/AnalysisService.py` |
-| Organization plan: product data in, plan out | `Services/OrganizationService.py` |
-| Grouping, topics, folder names, README text of the plan | `ai_lab/organize.py` (`plan_for`, shared with the AI test lab) |
-| The topic list | `ai_lab/settings/topics.json` (`organization.topics_file`) |
-| How the services are connected | `Services/ServiceContainer.py` |
+| `GET /analysis/status` says *waiting: Ollama is not running* | Open Ollama. Code Steward tries again by itself. |
+| *Model is not installed* | Run `ollama pull qwen3.5:4b-q4_K_M` (or the model named in `ai.model`). |
+| *Other models are loaded* | Another program is using a different model. Wait, or close it; Code Steward never stops another program's model. |
+| `address already in use` at start | Something else uses port 8000: add `--port 8001` and open `http://localhost:8001/docs`. |
+| `TypeError: unsupported operand type(s) for \|` at start | Python is older than 3.10; install a newer one and create `venv` again. |
+| Execute answers 409 *The plan changed* | Read the new plan and send its `plan_id`. |
+| Execute answers 409 *Start or resume the service* | `POST /system/resume` or `POST /system/start`, then try again. |
+| Many actions are `failed` on Windows | Put the library on a normal NTFS drive (USB sticks formatted as FAT/exFAT cannot be used for the library). |
+| Want to start from zero | Stop Code Steward, delete `artifacts.sqlite3` (records, explanations, plans and runs) and the `library` folder, and run `git checkout -- watched` to restore the bundled test files. |
 
-## AI explanations of code files
+---
 
-Every new or changed code file (types in `ai.analyze_types`: script and wrapper) gets a short AI
-explanation: purpose, inputs, outputs, how to use it, dependencies, related files, unknowns and code
-evidence. A local model does this through [Ollama](https://ollama.com/download); nothing leaves the computer.
+## Privacy and safety
 
-1. Install Ollama, open it, and install the model once: `ollama pull qwen3.5:4b-q4_K_M`
-   (the `ai.model` in `config.yaml`; the agent never downloads models by itself).
-2. Start the API. Files are explained one at a time in the background while the service runs.
-3. `GET /analysis/status` shows progress; `GET /analysis/{artifact_id}` shows one file's explanation.
-
-- **One at a time, in the background**: the waiting files are kept in the database, so the queue survives
-  a restart. Pause and stop let a file in progress finish first; a start right after a stop continues.
-- **No repeated work**: answers are saved by file contents, extension and a profile: model and its
-  downloaded version (digest), prompt, format and answer settings. Unchanged files and exact duplicates
-  are not sent again. After a model, prompt or settings change, or a newer download of the model, the
-  files are explained again (also files that failed before), and `previous` shows the older answer
-  meanwhile. A settings change during a request saves that answer for the old settings only.
-- **When Ollama is unavailable** (not running, model missing, another model loaded) the files wait and the
-  agent tries again with growing pauses; the reason is in `state` and in one log entry.
-- **Privacy**: passwords, keys and tokens written in the code are replaced with `<hidden>` before sending.
-- **Same answers as the AI test lab**: the agent uses its pipeline (`ai_lab/explain/` and
-  `ai_lab/testing/runner.result_for`): program facts, the model's answer, checks and at most one correction.
-  Model settings (context size, limits) come from `ai.settings_file`, by default the lab's
-  `ai_lab/settings/default.json`. The `ai` section of `config.yaml` chooses the model, CPU or GPU and threads.
-- On CPU each file takes roughly 10 to 60 seconds with Qwen3.5 4B, depending on its length.
-
-## Organization plan (dry run)
-
-`POST /organization/plan` proposes how the files could be organized. **Nothing is copied, moved or deleted**;
-the plan is for people to review (a later step will carry out approved plans safely).
-
-- **Groups**: files that use each other (imports, started scripts, paths written in code) stay together, and
-  so do folders with a README, LICENSE or package file. Exact duplicates are recorded once (`skip`).
-- **Topics**: the local model picks one topic per group from the editable list in `ai_lab/settings/topics.json`
-  (machine-learning, data-processing, web-and-network, file-automation, setup-and-deployment, developer-tools,
-  algorithms-and-exercises, other) and suggests a folder name. Program keyword hints check each choice;
-  disagreements get a lower confidence and are listed under "Check these first". Without Ollama, or with
-  `use_ai=false`, the keyword hints choose the topics.
-- **Proposed folders**: `<topic>/<group name>/` with the group's own layout, a `README.md` written from the
-  AI explanations (an existing README is never replaced), and `docs/`, `data/`, `samples/`, `bin/`, `private/`
-  and `needs-review/` for files outside every group. Sensitive files are marked to stay out of Git.
-- Topic answers are saved by the exact group description and model version, so a new plan only asks the
-  model about groups that changed. A plan uses the AI explanations that exist so far; the summary counts
-  code files not explained yet.
-- **Current files**: every file is read again for a plan; files changed since the last scan are scanned
-  again first, so hashes and duplicates describe the files as they are now. Roots that are missing (an
-  unplugged drive) are listed in `unavailable_roots`. Every action has its own target: names are compared
-  without case, and the program's notes get another name (`CODE_STEWARD_NOTES.md`, then `-2`) when the
-  group has its own README or notes file.
-- **The model** gets the same checks as for explanations (installed, local, no other model loaded). If a
-  topic request fails, the remaining groups use keyword hints and `topics_from` says so.
-- A root folder itself is not treated as one project, even with a README in it: choose its parent as the
-  root to keep such a project together.
-- The plan is built with the AI test lab's organizer (`ai_lab/organize.plan_for`), so the product and
-  `python3 ai_test.py organize` follow the same grouping, topic and folder rules.
-
-## Saved artifact records
-
-Artifact records are saved automatically in `artifacts.sqlite3` in the project
-directory (`storage.database_path`). Restarting the API keeps the records and their IDs.
-SQLite is included with Python, so the existing installation commands still work.
-
-The existing `ArtifactsService` handles saving and querying. `ScanService` uses
-these saved records to check which files have changed. Each record keeps the full
-JSON shown by the API plus searchable columns (hash, size, time, type, language,
-sensitive) with indexes. An older database is upgraded automatically at start
-(`PRAGMA user_version` 2); its records and IDs are kept and its files are classified
-at the first scan.
-
-The old `scan_checkpoint.json` does not contain complete artifact records or IDs,
-so it is ignored when the artifact service is connected. The scanner still supports
-that JSON file when used without an artifact service.
-
-To check persistence:
-
-1. Set `scanning.root_paths` in `config.yaml` to your test folder and start the API.
-2. Call `GET /artifacts` and note a file's ID.
-3. Stop the API, then edit one file and delete another.
-4. Start the API again. The start-up scan finds both changes; the edited file keeps its ID.
-
-The database contains the latest file information. File contents stay in their
-original locations. Keep the database to keep these records; Git ignores the
-database and its temporary files. The scanner skips its own database files.
-
-Run the regression tests from the project directory:
-
-```sh
-python -m unittest discover -s tests -v
-```
-
-`tests/test_file_events.py` covers the event aggregator, scanner and background loop, including
-a few seconds with the real file watcher. `tests/test_api.py` starts a real server with temporary
-settings, database and log, and checks every endpoint's answers and a clean shutdown.
-
-## Runtime logs
-
-`GET /logs` reads real application events from `service.log` in the project
-directory (`storage.log_path`). Entries survive server restarts and are returned newest first.
-The existing plain-text history is also readable. New entries include a UTC
-timestamp, severity, source module and message; old entries retain their original
-local timestamps and have `source: null` when no source was recorded.
-Multiline exception details stay with the event that produced them.
-
-Query parameters:
-
-- `limit`: maximum matching entries, from 1 to 1000; default 100.
-- `level`: optional exact level: DEBUG, INFO, WARNING, ERROR or CRITICAL.
-- `search`: optional case-insensitive message text, up to 200 characters.
-
-Filters apply before the limit. `count` is the number returned, not the total
-number of historical entries. No matches return an empty list with HTTP 200.
-Invalid parameters return HTTP 422. An unreadable log file returns HTTP 503
-with a short explanation; a missing log file is treated as an empty history.
-
-```sh
-curl "http://127.0.0.1:8000/logs?limit=20"
-curl "http://127.0.0.1:8000/logs?limit=20&level=WARNING&search=blocked"
-```
-
-The logger captures scanning requests and results, file changes, service
-controls, skipped paths, blocked scans and errors. File-type exclusions are
-summarized per scan. Idle ticks and raw watcher events are DEBUG messages and are
-not recorded at the default INFO level, so a burst of file events does not bury
-useful entries; each changed file and each scan result is an INFO entry.
-`logging.level` sets the detail. The file starts over at `logging.max_bytes` and keeps
-`logging.backup_count` older files (`service.log.1`, ...); `GET /logs` reads the current
-file. Filters with no matches may need to scan the full history.
-
-To verify in `/docs`, open `GET /logs`, choose **Try it out**, set `limit` to 20,
-then choose **Execute**. Look under **Server response / Response body**.
-Pause the service, request a scan, and query with `level=WARNING` and
-`search=blocked`: the rejected scan and its reason should appear. Resume the
-service after this check. Reading logs does not itself generate application
-log records. Execute the query again to refresh; the page does not auto-update.
-
-The automated suite includes temporary-file log tests and real HTTP tests of
-the logs controller. Run `python -m unittest discover -s tests -v` after installing
-the existing requirements; no additional test dependency is needed.
-
-## MVP: A Local-First Architecture
-
-```mermaid
-flowchart LR
-    subgraph UserMachine["Windows Host (Local Only)"]
-        API["FastAPI REST API"]
-        AgentLoop["Runtime Agent Loop\n(low priority background process)"]
-        EventSensors["File Event Sensors\n(create/modify/delete/rename)"]
-        EventAgg["Event Aggregator\n(merge, wait, never drop)"]
-        Scanner["Scanner\n(changed files + periodic full scan)"]
-        Classifier["Classification\n(type, language, sensitive)"]
-        ArtifactSvc["Artifacts Service"]
-        LogSvc["Logs Service"]
-        LogFile["Human-readable service.log"]
-        ConfigSvc["Config Service"]
-        Store["SQLite Database\n(artifacts, scans, logs, state)"]
-        ConfigFile["Config File (JSON/YAML)"]
-    end
-
-    API --> ArtifactSvc
-    API --> LogSvc
-    API --> ConfigSvc
-    API --> AgentLoop
-    ConfigFile --> ConfigSvc
-    ConfigSvc --> AgentLoop
-    AgentLoop --> EventSensors
-    EventSensors --> EventAgg
-    EventAgg --> AgentLoop
-    AgentLoop --> Scanner
-    Scanner --> Classifier
-    Scanner --> ArtifactSvc
-    ArtifactSvc --> Store
-    LogSvc --> LogFile
-    AgentLoop --> LogSvc
-```
-
-Database note:
-
-- SQLite is a good MVP default for local logs and metadata.
-- Single-file DB keeps install simple and works offline.
-- You can split into tables like: `artifacts`, `scan_runs`, `file_events`, `logs`, `agent_state`.
+- The AI model runs locally through Ollama; no code or file leaves the computer, and cloud models are refused.
+- Passwords, keys and tokens written in code are replaced with `<hidden>` before a file is sent to the model.
+- Original files are only read. Copies in the library are never overwritten when someone changed them.
+- Sensitive files are never committed to the library's Git history, and the history has no remote.
+- System folders and folders in `deny_paths` are never read; links are not followed.
