@@ -1,3 +1,0 @@
-# Keep the test files in watched/ byte-for-byte identical on Windows and Mac (no line-ending changes),
-# so they get the same hashes and AI answers on every computer.
-watched/** -text

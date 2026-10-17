@@ -1,18 +1,2 @@
 __pycache__
 venv
-artifacts.sqlite3
-artifacts.sqlite3-*
-
-# watched/ comes with shared test files (added on purpose with git add -f); anything else you put there,
-# and the generated library/, stays on your computer.
-/watched/
-/library/
-
-# Local runtime files and macOS folder metadata.
-.DS_Store
-/service.log
-/service.log.*
-/scan_checkpoint.json
-
-# Results of earlier AI experiments kept on some computers; not part of the program.
-ai-results/

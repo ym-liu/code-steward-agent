@@ -1,5 +1,0 @@
-{
-  "checkpoints/model_seed1.pt": {"accuracy": 0.712, "loss": 0.834},
-  "checkpoints/model_seed2.pt": {"accuracy": 0.705, "loss": 0.851},
-  "checkpoints/model_seed3.pt": {"accuracy": 0.719, "loss": 0.822}
-}
