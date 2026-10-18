@@ -1,2 +1,8 @@
-__pycache__
-venv
+# Python
+__pycache__/
+.venv/
+# legacy: the old setup created venv/ instead of .venv/
+venv/
+
+# OS
+.DS_Store

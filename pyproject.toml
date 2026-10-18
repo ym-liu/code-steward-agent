@@ -1,0 +1,53 @@
+[project]
+name = "code-kamaji"
+version = "0.1.0"
+description = "A local background agent that finds and organizes scripts and other code artifacts, controlled through a REST API."
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.143.3",
+    "uvicorn>=0.54.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx2>=2.13.1",
+    "pre-commit>=4.7.0",
+    "pytest>=9.1.1",
+    "ruff>=0.17.1",
+]
+
+[tool.pytest]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+# TODO: add PT (pytest) with tests, LOG (logging) with logging, S (security) once there's real code
+select = [
+    # bugs
+    "F",      # Pyflakes: undefined names, unused imports
+    "B",      # flake8-bugbear: likely bugs
+    "BLE",    # flake8-blind-except: silently swallowed exceptions
+    "DTZ",    # flake8-datetimez: timezone-naive datetimes
+    "FAST",   # FastAPI: route mistakes
+    "ASYNC",  # flake8-async: blocking calls in async functions
+    "RUF",    # Ruff: misc bug-prone patterns
+
+    # code hygiene
+    "E",      # pycodestyle: style errors
+    "W",      # pycodestyle: whitespace issues, invalid escape sequences
+    "T20",    # flake8-print: leftover print() calls
+    "SIM",    # flake8-simplify: needlessly complex code
+    "UP",     # pyupgrade: outdated syntax
+    "PTH",    # flake8-use-pathlib: os.path instead of pathlib
+    "I",      # isort: unsorted imports
+    "N",      # pep8-naming: non-PEP 8 names
+    "C4",     # flake8-comprehensions: clunky comprehensions
+    "PIE",    # flake8-pie: misc small cleanups
+]
+ignore = [
+    "SIM108", # flake8-simplify: ternary instead of if/else (often less readable)
+]
