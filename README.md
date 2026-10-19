@@ -11,6 +11,15 @@ A local background agent that finds and organizes scripts and other code artifac
 | FastAPI | Web framework that defines the REST API (maps URLs to Python functions)      |
 | Uvicorn | Web server that runs the API locally (receives requests at `localhost:8000`) |
 
+## Docs
+
+- **[System context](docs/architecture/context.md)**: who uses Code Kamaji and what it talks to
+- **[Data flow](docs/architecture/data-flow.md)**: how file changes become saved artifacts
+- **[State machines](docs/architecture/states.md)**: service, artifact and scan states
+- **[Domain model](docs/architecture/domain.md)**: the core concepts and their fields
+- **[Code layers](docs/architecture/layers.md)**: folders, imports and where code goes
+- **[File indexers](docs/research/file-indexers.md)**: how real indexers work, and what we borrow
+
 ## Setup
 
 **1. Install [uv](https://docs.astral.sh/uv/getting-started/installation/)**, then restart your terminal so `uv` is on your PATH:
