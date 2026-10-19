@@ -23,6 +23,5 @@ Small things to come back to later.
 
 ## Tooling
 
-- **CI**: GitHub Actions runs ruff and pytest on every PR. Protect `main` so failing PRs can't merge.
-- **Layer rules check**: add `import-linter` to CI, so a PR fails if e.g. `domain/` imports from `integrations/`.
+- **Protect `main`**: in the GitHub repo settings, require CI to pass before a PR can merge.
 - **`.gitignore`**: add `*.sqlite3`, `*.log` and `.env` as soon as those files exist.

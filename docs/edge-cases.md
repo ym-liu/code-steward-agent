@@ -26,11 +26,11 @@ Tricky situations to check new code against. Fixes for some of them are in the [
 
 ## Concurrency
 
-| Case                    | Watch out for                                                 |
-| ----------------------- | ------------------------------------------------------------- |
-| Startup scan vs watcher | The startup scan and new watcher events can hit the same file |
-| Scan during a scan      | A scan request arrives while a scan is running                |
-| File changing mid-hash  | A file still being written gives a wrong hash                 |
+| Case                   | Watch out for                                            |
+| ---------------------- | -------------------------------------------------------- |
+| Full scan vs watcher   | A full scan and new watcher events can hit the same file |
+| Scan during a scan     | A scan request arrives while a scan is running           |
+| File changing mid-hash | A file still being written gives a wrong hash            |
 
 ## Availability
 
@@ -43,5 +43,6 @@ Tricky situations to check new code against. Fixes for some of them are in the [
 
 | Case              | Watch out for                                                                                   |
 | ----------------- | ----------------------------------------------------------------------------------------------- |
+| Restart mid-scan  | A full scan can take weeks. A restart starts over                                               |
 | Shutdown mid-scan | Ctrl+C mid-scan must leave the DB consistent                                                    |
 | Config reload     | Watched folders change while running. Records under a removed one become untracked, not deleted |

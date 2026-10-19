@@ -47,16 +47,16 @@ uv run pre-commit install
 Start the server:
 
 ```bash
-uv run uvicorn main:app --reload
+uv run uvicorn app.main:app --reload
 ```
 
 - `uv run`: runs the command inside `.venv/`, no activation needed
-- `main:app`: the `app` object in `main.py`
+- `app.main:app`: the `app` object in `app/main.py`
 - `--reload`: restarts the server when code changes
 
 Then open:
 
-- http://localhost:8000: the API
+- http://localhost:8000/system/health: checks the API is up
 - http://localhost:8000/docs: interactive docs to try every endpoint
 
 ## Test
@@ -74,12 +74,14 @@ Check and format the code:
 ```bash
 uv run ruff check --fix .
 uv run ruff format .
+uv run lint-imports
 ```
 
 - `ruff check`: finds bugs, unused imports and style problems (`--fix` fixes the easy ones)
 - `ruff format`: rewrites the code in a consistent style
+- `lint-imports`: checks the [layer rules](docs/architecture/layers.md), e.g. `api/` never imports `db/`
 
-Both also run on every commit. To run all pre-commit hooks on the whole repo:
+Ruff also runs on every commit, and all three run in CI. To run all pre-commit hooks on the whole repo:
 
 ```bash
 uv run pre-commit run --all-files

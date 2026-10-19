@@ -19,7 +19,7 @@ flowchart TB
     inbox[["<b>Inbox</b><br/>batches changed paths"]]
 
     subgraph loopThread["Service loop thread"]
-        timer["Timer<br/>startup, then e.g. daily"] --> walk
+        timer["Timer<br/>startup, then e.g. monthly"] --> walk
         take["Take request"] --> walk["Walk<br/>all folders, or batch paths"]
         walk --> check["Check each file<br/>stat, hash if changed"]
         check --> compare["Compare with DB<br/>new, modified, moved, deleted"]
@@ -39,14 +39,15 @@ flowchart TB
 
 ## What starts a scan
 
-- **Timer**: a full scan at startup, then rarely, e.g. daily during downtime. Catches what the watcher missed.
+- **Timer**: a full scan at startup, then every `full_scan_interval_days`, e.g. 30. Catches what the watcher missed.
+- **First scan vs later**: same code. The first scan hashes every file, so it can take weeks. Later ones only hash files whose size or `modified_at` changed, but still walk everything: skipping the walk needs the OS change log, which needs admin.
 - **Watcher**: changed paths go to the inbox. It hands them over as a batch at N paths, after a few quiet seconds, or after a max wait, whichever comes first (all set in the config).
 - **API**: `POST /scans` puts a scan request in the inbox.
 - **New watched folder**: gets its own scan, since its existing files fire no events.
 
 ## Steps
 
-- **Scope rules**: one shared check (`domain/scope.py`) for excluded and protected folders, temp files and symlinks (never followed). Used by the watcher, the walk and the API.
+- **Scope rules**: `services/rules/scope.py` skips excluded and protected folders, temp files and symlinks. Used by the watcher (passed in by `main.py`), the walk and the API.
 - **Walk**: a full scan walks every watched folder. A batch only checks its own paths. A moved or deleted folder counts as every path under it.
 - **Check each file**: hash only if size or `modified_at` changed.
 - **Compare with DB**: sorts files into new, modified, moved and deleted. A batch only judges its own paths. A move is one path vanishing and another appearing in the same batch.
@@ -57,4 +58,4 @@ flowchart TB
 
 - **Service loop**: the only DB writer, and the only thing that scans. Runs at low CPU and disk priority.
 - **Watcher thread**: drops ignored events and queues the rest. Never scans, never touches the DB.
-- **API thread**: reads the DB, sends scan requests, starts and stops the loop.
+- **API thread**: reads the DB through services, sends scan requests, starts and stops the loop.

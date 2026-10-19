@@ -12,6 +12,7 @@ dependencies = [
 [dependency-groups]
 dev = [
     "httpx2>=2.13.1",
+    "import-linter>=2.15",
     "pre-commit>=4.7.0",
     "pytest>=9.1.1",
     "ruff>=0.17.1",
@@ -20,12 +21,33 @@ dev = [
 [tool.pytest]
 testpaths = ["tests"]
 pythonpath = ["."]
+addopts = ["--import-mode=importlib"]
+
+[tool.importlinter]
+root_package = "app"
+
+[[tool.importlinter.contracts]]
+name = "imports only go down"
+type = "layers"
+layers = ["app.api", "app.services", "app.db | app.integrations"]
+
+[[tool.importlinter.contracts]]
+name = "api doesn't import db or integrations"
+type = "forbidden"
+source_modules = ["app.api"]
+forbidden_modules = ["app.db", "app.integrations"]
+
+[[tool.importlinter.contracts]]
+name = "only main imports core"
+type = "forbidden"
+source_modules = ["app.api", "app.services", "app.db", "app.integrations"]
+forbidden_modules = ["app.core"]
 
 [tool.ruff]
 line-length = 120
 
 [tool.ruff.lint]
-# TODO: add PT (pytest) with tests, LOG (logging) with logging, S (security) once there's real code
+# TODO: add LOG (logging) with logging, S (security) once there's real code
 select = [
     # bugs
     "F",      # Pyflakes: undefined names, unused imports
@@ -47,6 +69,7 @@ select = [
     "N",      # pep8-naming: non-PEP 8 names
     "C4",     # flake8-comprehensions: clunky comprehensions
     "PIE",    # flake8-pie: misc small cleanups
+    "PT",     # flake8-pytest-style: pytest conventions
 ]
 ignore = [
     "SIM108", # flake8-simplify: ternary instead of if/else (often less readable)

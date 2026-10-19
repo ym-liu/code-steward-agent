@@ -16,6 +16,7 @@ How real tools keep track of millions of files, and what Code Kamaji borrows fro
 
 - **Watcher + snapshot + rescan**: watch for changes, keep a saved snapshot of every file, and rescan now and then to catch what the watcher missed.
 - **Diff, don't redo**: compare the snapshot with the disk, and only process what changed. Dropbox's sync engine is built around this.
+- **First run vs after**: the first run reads every file, which is slow. After that, git and Dropbox only reread files whose size or modified time changed. Windows Search and Spotlight skip even the walk by reading the OS change log.
 - **Versioned processing**: when the logic that understands files changes, only results from the old logic are redone.
 - **Plugins per file type**: each file type gets its own small extractor, so new types don't change the core.
 - **Low impact**: low CPU and disk priority, and backing off while the user is busy.
@@ -24,8 +25,9 @@ How real tools keep track of millions of files, and what Code Kamaji borrows fro
 
 | Pattern                     | Code Kamaji                                            |
 | --------------------------- | ------------------------------------------------------ |
-| Watcher + snapshot + rescan | ✅ Watcher, the DB, and full scans at startup and daily |
+| Watcher + snapshot + rescan | ✅ Watcher, the DB, and full scans at startup, monthly  |
 | Diff, don't redo            | ✅ "Compare with DB" step                               |
+| First run vs after          | ✅ Size + `modified_at` check. No OS change log (admin) |
 | Excluded folders            | ✅ `exclude_folders` in config                          |
 | Low process priority        | ✅ In the design (context, data flow)                   |
 | Versioned processing        | ✅ `classifier_version` per artifact                    |

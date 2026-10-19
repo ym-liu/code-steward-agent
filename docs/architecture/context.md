@@ -30,7 +30,8 @@ flowchart LR
 | Tester | Check the system behaves as specified  | Same API, plus test-only endpoints (later) |
 
 - **Watched folders**: read-only. Code Kamaji never runs, moves or changes the originals.
-- **Protected folders**: system folders (e.g. `C:\Windows`) and `deny_paths` from the config are never read.
+- **Protected folders**: system folders (e.g. `C:\Windows`, `/bin`, `/usr`, `/System`) and `deny_paths` from the config are never read.
+- **Permissions**: runs as the user who launched it. Never asks for admin.
 - **Local only**: nothing leaves the machine.
-- **Low impact**: runs at low CPU and disk priority.
+- **Low impact**: idle CPU and disk priority: uses spare capacity, yields to other apps.
 - **Logs**: kept out of SQLite so they still work when the DB fails.
