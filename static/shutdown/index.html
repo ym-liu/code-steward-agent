@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="referrer" content="no-referrer">
+  <title>See you soon · Code Steward Agent</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/shutdown/assets/shutdown.css">
+  <script src="/shutdown/assets/shutdown.js" defer></script>
+</head>
+<body>
+  <div id="shutdown" class="app" data-phase="idle">
+    <header><a class="wordmark" href="/startup">CODE STEWARD</a><span class="header-caption">Finish this session safely</span></header>
+    <main>
+      <div class="farewell-scene">
+        <picture>
+          <source media="(prefers-reduced-motion: reduce)" srcset="/shutdown/assets/clockoff-badge-poster.png">
+          <source type="image/webp" srcset="/shutdown/assets/clockoff-badge-turnstile.webp">
+          <img src="/shutdown/assets/clockoff-badge-turnstile.gif" alt="A cheerful office worker lifts a chest ID badge, taps the reader, and walks through a gate as both panels retract." width="480" height="300">
+        </picture>
+      </div>
+      <div class="eyebrow">GOOD WORK. SEE YOU NEXT TIME.</div>
+      <h1 id="heading">Great work today.</h1>
+      <p id="subtitle" class="subtitle">Let me take care of the finishing touches.</p>
+      <section class="progress-section" aria-label="Live shutdown progress">
+        <div class="progress" role="progressbar" aria-label="Completed shutdown steps" aria-valuemin="0" aria-valuemax="4" aria-valuenow="0"><div class="fill"></div></div>
+        <div class="progress-copy"><span id="summary" role="status" aria-live="polite">Reading application status…</span><span id="fraction">0 / 4</span></div>
+      </section>
+      <ol class="checks" aria-label="Shutdown steps">
+        <li data-check="operations" data-state="pending"><span class="mark" aria-hidden="true">·</span><div><span class="label">Finish current file operations</span><span class="detail">Wait for active organization or copying</span></div><span class="state">Waiting</span></li>
+        <li data-check="service" data-state="pending"><span class="mark" aria-hidden="true">·</span><div><span class="label">Stop scanning and monitoring</span><span class="detail">Wait for background work to finish</span></div><span class="state">Waiting</span></li>
+        <li data-check="ai" data-state="pending"><span class="mark" aria-hidden="true">·</span><div><span class="label">Finish this AI session</span><span class="detail">Wait for the current result; keep Ollama running</span></div><span class="state">Waiting</span></li>
+        <li data-check="server" data-state="pending"><span class="mark" aria-hidden="true">·</span><div><span class="label">Exit the local API</span><span class="detail">Exit after background work has finished</span></div><span class="state">Waiting</span></li>
+      </ol>
+      <div class="actions"><button id="shutdown-button" class="button primary" type="button" disabled>Connecting…</button><a id="back" class="button secondary" href="/startup">Back to startup</a></div>
+      <p id="note" class="note">Select Shut down to stop Code Steward. Files are kept and Ollama stays running.</p>
+      <noscript><p class="note">Enable JavaScript to use shutdown. Opening this page does not stop the application.</p></noscript>
+    </main>
+    <footer><span><b></b>LOCAL FIRST · ON DEVICE</span><span>Take a break. See you next time.</span></footer>
+  </div>
+  <dialog id="error-dialog" aria-labelledby="error-title" aria-describedby="error-description"><div class="dialog-top"><span aria-hidden="true" class="error-mark">!</span><button type="button" id="close-dialog" aria-label="Close message">×</button></div><h2 id="error-title">Shutdown is not complete</h2><p id="error-description"></p><p id="error-action"></p><div class="dialog-actions"><button id="retry" class="button primary" type="button">Retry shutdown</button><a class="logs" href="/logs?limit=30" target="_blank" rel="noopener">View runtime logs ↗</a></div></dialog>
+</body>
+</html>

@@ -13,6 +13,7 @@ from Controllers.LogsController import router as logs_router
 from Controllers.OrganizationController import router as organization_router
 from Controllers.ScanController import router as scan_router
 from Controllers.SystemController import router as system_router
+from Controllers.StartupController import router as startup_router
 from Services.ServiceContainer import services
 
 logger = logging.getLogger("code-steward.api")
@@ -50,6 +51,7 @@ app.include_router(organization_router)
 app.include_router(events_router)
 app.include_router(logs_router)
 app.include_router(config_router)
+app.include_router(startup_router)
 
 
 @app.exception_handler(Exception)

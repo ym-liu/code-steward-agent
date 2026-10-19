@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="referrer" content="no-referrer">
+  <title>Startup · Code Steward Agent</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/startup/assets/startup.css">
+  <script src="/startup/assets/startup.js" defer></script>
+</head>
+<body>
+  <div class="app" id="startup">
+    <header class="header">
+      <a class="wordmark" href="/startup" aria-label="Code Steward startup"><span class="layers" aria-hidden="true"><b></b><b></b><b></b></span>CODE STEWARD</a>
+      <nav class="header-links" aria-label="Application controls"><a class="docs-link" href="/docs">API docs <span aria-hidden="true">↗</span></a><a class="docs-link" href="/shutdown">Shut down</a></nav>
+    </header>
+    <main>
+      <div class="scene" aria-hidden="true">
+        <div class="orbit"></div><div class="orbit orbit-inner"></div>
+        <div class="document document-a"><strong>&lt;/&gt;</strong><span>script.py</span><b></b><b></b></div>
+        <div class="document document-b"><strong>{ }</strong><span>config.json</span><b></b><b></b></div>
+        <div class="document document-c"><strong>≡</strong><span>README.md</span><b></b><b></b></div>
+        <div class="folder-tile"><div class="folder"><span>&lt;/&gt;</span></div></div>
+        <div class="success-mark">✓</div>
+      </div>
+      <div class="eyebrow">A LITTLE ORDER. A CLEARER MIND.</div>
+      <h1>Code Steward Agent</h1>
+      <p class="subtitle">Every piece of code, in the right place.</p>
+      <section class="loading" aria-label="Live startup progress">
+        <div class="progress" role="progressbar" aria-label="Confirmed startup checks" aria-valuemin="0" aria-valuemax="6" aria-valuenow="0"><div class="fill"></div></div>
+        <div class="progress-copy"><span id="summary" role="status" aria-live="polite">Connecting to the local service…</span><span id="fraction">0 / 6</span></div>
+      </section>
+      <ol class="checks" aria-label="Startup check details">
+        <li data-check="api" data-state="pending"><span class="check-mark" aria-hidden="true">·</span><div><span class="check-label">API connection</span><span class="check-detail">Waiting for the service to respond</span></div><span class="check-state">Waiting</span></li>
+        <li data-check="service" data-state="pending"><span class="check-mark" aria-hidden="true">·</span><div><span class="check-label">Background service</span><span class="check-detail">Waiting for the service state</span></div><span class="check-state">Waiting</span></li>
+        <li data-check="storage" data-state="pending"><span class="check-mark" aria-hidden="true">·</span><div><span class="check-label">File index</span><span class="check-detail">Waiting to check database access</span></div><span class="check-state">Waiting</span></li>
+        <li data-check="watcher" data-state="pending"><span class="check-mark" aria-hidden="true">·</span><div><span class="check-label">File monitoring</span><span class="check-detail">Waiting to check folders and monitoring</span></div><span class="check-state">Waiting</span></li>
+        <li data-check="scan" data-state="pending"><span class="check-mark" aria-hidden="true">·</span><div><span class="check-label">Initial scan</span><span class="check-detail">Waiting for the initial scan</span></div><span class="check-state">Waiting</span></li>
+        <li data-check="ai" data-state="pending"><span class="check-mark" aria-hidden="true">·</span><div><span class="check-label">Local AI</span><span class="check-detail">Checking Ollama and model installation</span></div><span class="check-state">Waiting</span></li>
+      </ol>
+      <div class="actions"><a id="enter" class="button primary" href="/docs" aria-disabled="true">Checking startup…</a><button id="retry" class="button secondary" type="button">Check again</button><a class="button secondary" href="/shutdown">Shut down</a></div>
+      <p id="note" class="note">Live checks, shown one at a time. AI checks confirm connectivity and installation; the model loads on its first inference.</p>
+      <noscript><p class="noscript">Enable JavaScript to see startup status, or open the API documentation above.</p></noscript>
+    </main>
+    <footer><span><span class="local-dot"></span>LOCAL FIRST · ON DEVICE</span><span>Your code stays on your computer.</span></footer>
+  </div>
+  <dialog id="error-dialog" aria-labelledby="error-title" aria-describedby="error-description">
+    <div class="dialog-top"><span class="error-symbol" aria-hidden="true">!</span><button id="close-dialog" type="button" class="close-button" aria-label="Close message">×</button></div>
+    <h2 id="error-title">Some checks are not ready</h2>
+    <p id="error-description">Follow the suggestions below, then run the checks again.</p>
+    <ul id="error-list"></ul>
+    <div class="dialog-actions"><button id="retry-dialog" class="button primary" type="button">Check again</button><a id="continue-basic" class="button secondary" href="/docs" hidden>Continue with core features</a><a class="button secondary" href="/shutdown">Shut down</a><a class="logs-link" href="/logs?limit=30" target="_blank" rel="noopener">View runtime logs ↗</a></div>
+  </dialog>
+</body>
+</html>
