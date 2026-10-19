@@ -29,6 +29,7 @@ flowchart TB
 - **`services/`**: uses the DB and the watcher only through ports. Reading files directly is fine.
 - **`domain/`**: imports no other layer and does no I/O. E.g. `classify` gets a file's first bytes, it never opens the file.
 - **`integrations/`**: implements the ports, one folder per external system.
+- **Checked in CI**: `lint-imports` fails if code breaks these import rules. Contracts live in `pyproject.toml`.
 
 ## Ports
 
@@ -38,7 +39,7 @@ flowchart TB
 ## What lives where
 
 ```
-code_kamaji/
+app/
 ├── main.py              # loads config, builds everything, starts the loop and the API
 ├── config.py            # settings model, loads config.yaml
 ├── api/

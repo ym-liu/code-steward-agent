@@ -1,0 +1,1 @@
+"""ArtifactStore backed by SQLite."""
