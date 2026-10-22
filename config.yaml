@@ -49,9 +49,9 @@ scanning:
 
 events:
   # Wait until a file has been quiet this long before checking it
-  quiet_seconds: 2
+  quiet_seconds: 5
   # ...but never wait longer than this for a file that keeps changing
-  max_wait_seconds: 30
+  max_wait_seconds: 60
   # When more files are waiting than this, run one full scan instead
   max_pending_files: 10000
 

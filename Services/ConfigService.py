@@ -31,7 +31,7 @@ DEFAULTS = {
         "watch_mode": "auto",
         "polling_interval_seconds": 30,
     },
-    "events": {"quiet_seconds": 2, "max_wait_seconds": 30, "max_pending_files": 10000},
+    "events": {"quiet_seconds": 5, "max_wait_seconds": 60, "max_pending_files": 10000},
     "logging": {"level": "INFO", "max_bytes": 5242880, "backup_count": 3},
     "storage": {"database_path": "artifacts.sqlite3", "log_path": "service.log"},
     "testing": {"allow_event_injection": False},

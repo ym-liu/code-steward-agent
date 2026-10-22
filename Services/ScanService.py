@@ -320,8 +320,6 @@ class ScanService:
         stored = self._store(record, change_type, previous_path)
         run["results"].append(stored)
         run["counts"][change_type] += 1
-        logger.info("Artifact %s: %s%s", change_type, path,
-                    " (previous path: " + previous_path + ")" if previous_path else "")
 
     def _renamed_from(self, path, moved_from):
         """The earlier path of a known file renamed to path, or None.
@@ -452,7 +450,6 @@ class ScanService:
             self._checkpoint.pop(path, None)
         run["removed"].append(path)
         run["counts"]["deleted"] += 1
-        logger.info("Artifact removed (%s): %s", reason, path)
 
     #Hashing
 
