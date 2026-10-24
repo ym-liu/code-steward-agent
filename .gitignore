@@ -16,3 +16,4 @@ artifacts.sqlite3-*
 
 # Results of earlier AI experiments kept on some computers; not part of the program.
 ai-results/
+/.tmp/

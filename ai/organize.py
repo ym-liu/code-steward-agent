@@ -128,6 +128,12 @@ def file_hash(path):
 
 def executable_lines(source, suffix):
     skipped = comment_lines(source, suffix)
+    if suffix == ".py":
+        tree, _ = parse_python(source)
+        # Standalone strings document code; mentioning another filename is not a dependency.
+        for node in ast.walk(tree) if tree is not None else []:
+            if isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant) and isinstance(node.value.value, str):
+                skipped.update(range(node.lineno, node.end_lineno + 1))
     return [(n, line) for n, line in enumerate(source.splitlines(), 1)
             if line.strip() and n not in skipped and not line.startswith("#!")]
 
@@ -345,7 +351,12 @@ def topic_schema(topics):
     return {"type": "object", "additionalProperties": False, "required": ["reason", "topic", "folder_name"],
             "properties": {"reason": {"type": "string", "minLength": 1, "maxLength": 200},
                            "topic": {"type": "string", "enum": [t["id"] for t in topics["topics"]]},
-                           "folder_name": {"type": "string", "minLength": 1, "maxLength": 60}}}
+                           "folder_name": {"type": "string", "minLength": 1, "maxLength": 60},
+                           "additional_topics": {"type": "array", "maxItems": 2, "items": {
+                               "type": "object", "additionalProperties": False,
+                               "properties": {"topic": {"type": "string", "enum": [t["id"] for t in topics["topics"]]},
+                                              "reason": {"type": "string", "minLength": 1, "maxLength": 120}},
+                               "required": ["topic", "reason"]}}}}
 
 
 def keyword_topic(unit, by_path, topics):
@@ -367,7 +378,10 @@ def keyword_topic(unit, by_path, topics):
 def ask_topic(client, tag, unit, by_path, topics):
     started = time.monotonic()
     try:
-        response = client.ask(tag, topic_messages(unit, by_path, topics), topic_schema(topics))
+        messages = topic_messages(unit, by_path, topics)
+        messages[0]["content"] += ("\nIn the SAME answer optionally include additional_topics: at most two other topic IDs "
+                                   "with short reasons, only when clearly useful. Otherwise return an empty array.")
+        response = client.ask(tag, messages, topic_schema(topics), num_predict=384)
     except AIError as error:
         return {"error": f"No answer from the model ({error}).", "request_failed": True,
                 "seconds": round(time.monotonic() - started, 1)}
@@ -382,7 +396,18 @@ def ask_topic(client, tag, unit, by_path, topics):
     name = str(answer.get("folder_name", "")).strip().lower()
     if not FOLDER_NAME.match(name) or name in ids or VERSION_WORDS.search(name):
         name = None
-    return {"topic": answer["topic"], "reason": answer["reason"].strip()[:200], "folder_name": name, "seconds": seconds}
+    additional = answer.get("additional_topics", [])
+    if not isinstance(additional, list):
+        additional = []
+    seen = {answer["topic"]}
+    checked = []
+    for item in additional[:2]:
+        if (isinstance(item, dict) and isinstance(item.get("topic"), str) and item["topic"] in ids
+                and item["topic"] not in seen and isinstance(item.get("reason"), str) and item["reason"].strip()):
+            checked.append({"topic": item["topic"], "reason": item["reason"].strip()[:120]})
+            seen.add(item["topic"])
+    return {"topic": answer["topic"], "reason": answer["reason"].strip()[:200], "folder_name": name,
+            "additional_topics": checked, "seconds": seconds}
 
 
 def choose_topic(ai, rule):
@@ -537,7 +562,7 @@ def build_plan(units, loose, by_path, topics, taken=None, placed=None):
 
 
 def topic_key(unit, by_path, topics, tag):
-    """Same model, instructions and group description give the same answer, so it can be reused."""
+    """Keep the original primary-topic cache key; old answers need not be rerun for optional labels."""
     return digest(json.dumps([tag, topic_messages(unit, by_path, topics)], sort_keys=True))
 
 
@@ -561,6 +586,7 @@ def plan_for(records, sources, facts, client=None, tag=None, topics=None, progre
         if package:
             packages.add(rel)
     for rel, targets in links.items():
+        by_path[rel]["local_dependencies"] = sorted(targets)
         for target in targets:
             by_path[target].setdefault("used_by", []).append(rel)
     units, loose = build_units(records, links, packages)
@@ -570,10 +596,11 @@ def plan_for(records, sources, facts, client=None, tag=None, topics=None, progre
     asking = client is not None
     for number, unit in enumerate(work, 1):
         rule, scores = keyword_topic(unit, by_path, topics)
-        ai = None
+        ai, cached = None, False
         if asking:
             key = topic_key(unit, by_path, topics, tag) if topic_cache is not None else None
             ai = topic_cache.get(key) if key else None
+            cached = ai is not None
             if ai is None:
                 ai = ask_topic(client, tag, unit, by_path, topics)
                 if ai.get("request_failed"):
@@ -585,15 +612,15 @@ def plan_for(records, sources, facts, client=None, tag=None, topics=None, progre
         topic, confidence, note = choose_topic(ai, rule)
         unit.update(topic=topic, topic_confidence=confidence, topic_note=note, rule_topic=rule, rule_scores=scores,
                     ai_topic=(ai or {}).get("topic"), ai_reason=(ai or {}).get("reason"), ai_error=(ai or {}).get("error"),
+                    additional_topics=(ai or {}).get("additional_topics", []),
                     ai_seconds=(ai or {}).get("seconds"), ai_folder_name=(ai or {}).get("folder_name"))
         unit["name"] = unit_name(unit, by_path, ai)
         if client is not None:
-            progress(f"  {number}/{len(work)}  {topic:<24} {unit['name']}  ({unit['ai_seconds']} s)")
+            elapsed = "cached" if cached else f"{unit['ai_seconds']} s"
+            progress(f"  {number}/{len(work)}  {topic:<24} {unit['name']}  ({elapsed})")
     actions = build_plan(units, loose, by_path, topics, taken, placed)
     folders = {u["id"]: u.get("folder") for u in units}
-    for record in records:
-        record.pop("usage", None)
-        record.pop("unknowns", None)
+    # Keep explanation fields: cross-topic/project reuse assessment needs interface and I/O information.
     return {"version": ORGANIZE_VERSION, "mode": "dry-run", "topics_version": topics["version"],
             "files": records, "units": units, "loose": loose, "actions": actions,
             "summary": {"files": len(records), "types": dict(Counter(r["type"] for r in records)),
@@ -611,7 +638,7 @@ AREAS = {"docs": "Documents that belong to no group.", "data": "Data files that 
          "needs-review": "Files whose type or topic is unclear."}
 
 
-def page_html(plan, topics):
+def page_html(plan, topics, build_status=None):
     """The readable plan page; all model text is escaped."""
     e = lambda value: html.escape(str(value), quote=True)
     summary, units = plan["summary"], [u for u in plan["units"] if u.get("folder")]
@@ -639,6 +666,13 @@ def page_html(plan, topics):
              f'<p class="muted">Plan ID: <code>{e(plan.get("plan_id", ""))}</code></p>',
              f'<p>{summary["files"]} files: {e(counts)}. {summary["sensitive"]} sensitive, {summary["duplicates"]} exact '
              f'duplicate{"s" if summary["duplicates"] != 1 else ""}. {summary["folders"]} proposed folders.</p>']
+    if build_status and build_status.get("state") == "building":
+        parts.insert(1, '<meta http-equiv="refresh" content="10">')
+        banner = ('<article role="status"><h2>Building a new plan</h2><p>' +
+                  e(build_status.get("progress") or "Starting checks...") +
+                  '</p><p>The results below are the previous saved plan. This page refreshes automatically.</p></article>')
+        index = next(n for n, part in enumerate(parts) if part.startswith('<main>'))
+        parts.insert(index + 1, banner)
     if plan.get("model"):
         parts.append(f'<p class="muted">Topics chosen by {e(plan["model"])} and checked against program keyword hints.</p>')
     else:
@@ -649,6 +683,54 @@ def page_html(plan, topics):
     checks += [f"{a['from']}: same content as {a['same_as']}; not copied again." for a in skips]
     if checks:
         parts.append('<h2>Check these first</h2><article><ul>' + ''.join(f'<li>{e(item)}</li>' for item in checks) + '</ul></article>')
+    reuse = plan.get("reuse")
+    if reuse:
+        if reuse.get("state") == "partial":
+            parts.append('<article role="alert"><h2>Reuse analysis is incomplete</h2><p>The plan was saved, '
+                         'but some files or project matches were not checked. Build the plan again to retry; '
+                         'completed assessments are cached. See the reasons below.</p></article>')
+        parts.append('<h2>Additional topic placements</h2><p>A file can belong to more than one topic. '
+                     'Extra copies go under the additional topic folder. Continue with preflight and execute. '
+                     'This does not split projects or connect code between projects.</p>')
+        parts.append(f'<p>Code files screened: {reuse.get("considered_files", 0)}. '
+                     f'Files with all candidate checks completed: {reuse.get("assessed_files", 0)}. '
+                     f'Files with no additional topic candidates: {reuse.get("files_without_candidates", 0)}. '
+                     f'Files excluded: {len(reuse.get("skipped_files", []))}. '
+                     f'Cached assessments: {reuse.get("cache_hits", 0)}.</p>')
+        if reuse.get("unsupported_matches"):
+            parts.append(f'<p>{reuse["unsupported_matches"]} weak AI matches were excluded because no concrete '
+                         'use was demonstrated.</p>')
+        if reuse.get("skipped_files"):
+            parts.append('<details><summary>Files excluded from reuse</summary>')
+            for skipped in reuse["skipped_files"]:
+                parts.append(f'<p class="note">{e(skipped["file"])}: {e(skipped["reason"])}</p>')
+            parts.append('</details>')
+        if reuse.get("runtime_exclusions"):
+            parts.append(f'<details><summary>{len(reuse["runtime_exclusions"])} combinations excluded before AI '
+                         'because they require a language or framework change</summary>')
+            for excluded in reuse["runtime_exclusions"]:
+                parts.append(f'<p>{e(excluded["file"])} → {e(excluded["target"])}: {e(excluded["reason"])}</p>')
+            parts.append('</details>')
+        for error in reuse.get("errors", []):
+            parts.append(f'<p class="note">{e(error["source"])}: {e(error["reason"])}</p>')
+        for suggestion in reuse.get("suggestions", []):
+            payload = json.dumps({"plan_id": plan.get("plan_id"), "suggestion_id": suggestion["id"],
+                                  "accept": suggestion["state"] != "accepted"}, indent=2)
+            destination = next((u["folder"] for u in units if u["id"] == suggestion["target"]), suggestion["target"])
+            parts.append(f'<article><h3>{e(suggestion.get("source_file", suggestion["source"]))} → {e(destination)} '
+                         f'({e(suggestion["kind"])})</h3><p>{e(suggestion["reason"])}</p>'
+                         f'<p>Assessment: {e(suggestion["verdict"])} · Review: {e(suggestion["state"])}</p>')
+            for label, key in (() if suggestion["kind"] == "topic" else (("Integration requirements", "requirements"), ("Unknowns", "unknowns"))):
+                parts.append(f'<p>{label}: {e("; ".join(suggestion[key]) or "None reported by the model.")}</p>')
+            parts.append('<ul>' + ''.join(f'<li>{e(c.get("evidence_id", ""))} {e(c["group"])} / {e(c["file"])}: {e(c["quote"])}</li>'
+                                         for c in suggestion["evidence"]) + '</ul>')
+            parts.append('<details><summary>Proposed additional copies</summary><ul>' +
+                         ''.join(f'<li><code>{e(path)}</code></li>' for path in suggestion.get("destinations", [])) +
+                         '</ul></details>')
+            parts.append('<details><summary>Optional override</summary><p>Send to '
+                         '<code>POST /organization/reuse/review</code> to exclude an included copy or include a '
+                         'suggestion left out. This is optional. It returns a new plan ID.</p><pre>' + e(payload) +
+                         '</pre></details></article>')
     parts.append('<h2>Proposed folders</h2>')
     for topic in topics["topics"]:
         members = [u for u in units if u["folder"].split("/")[0] == topic["id"]]

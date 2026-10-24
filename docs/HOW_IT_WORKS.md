@@ -164,6 +164,19 @@ usage, dependencies, related files, unknowns, and evidence (line numbers with a 
 
 ## Planning, copying and history
 
+### Additional topic placements
+
+The workflow is **build plan -> preflight -> execute**. AI can assign up to two additional topics
+based on a file's saved explanation. Extra copies go under those topic folders, with supporting
+local files where needed. No project compatibility comparisons or `_reuse` project folders are
+created by new plans. Existing project grouping rules are unchanged.
+
+Topic hints shortlist candidates; AI decides which additional labels fit. Sharing the same primary
+topic does not create an extra copy. An ML-only test collection can correctly have no extra topics.
+Completed decisions and explanations are cached. `organization.suggest_reuse: false` disables extra
+placements; `reuse_batch_size` controls batching. Failed assessments can be retried by rebuilding.
+Old executed copies are retained until explicitly undone; a new plan does not delete old output.
+
 ```mermaid
 sequenceDiagram
     actor You

@@ -835,7 +835,7 @@ class ExecutionService:
             if report.get("state") == "undone" or Path(report["library_path"]) != library:
                 continue
             for item in report["results"]:
-                if (item["action"] == "copy" and item["status"] in ("done", "updated", "already-done")
+                if (item["action"] == "copy" and not item.get("reuse_id") and item["status"] in ("done", "updated", "already-done")
                         and item.get("from_path") not in placed and (library / item["to"]).is_file()):
                     placed[item["from_path"]] = item["to"]
         return placed

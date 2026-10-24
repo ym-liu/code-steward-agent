@@ -44,7 +44,8 @@ DEFAULTS = {
         "analyze_types": ["script", "wrapper"],
         "max_attempts": 3,
     },
-    "organization": {"topics_file": "ai/settings/topics.json", "library_path": "library", "git": True},
+    "organization": {"topics_file": "ai/settings/topics.json", "library_path": "library", "git": True,
+                     "suggest_reuse": True, "reuse_max_groups": 12, "reuse_max_pairs": 1, "reuse_batch_size": 3},
 }
 LOG_LEVELS = ("DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL")
 SECRET_WORDS = ("password", "passwd", "secret", "token", "api_key", "apikey", "credential", "private_key")
@@ -222,6 +223,10 @@ def validate(loaded, platform=None):
                 problems.append(f"scanning.root_paths {root!r} is inside organization.library_path; "
                                 "the library is never scanned, so choose folders that do not contain each other")
     flag("organization", "git")
+    flag("organization", "suggest_reuse")
+    number("organization", "reuse_batch_size", 1, 6, whole=True)
+    number("organization", "reuse_max_pairs", 0, 10, whole=True)
+    number("organization", "reuse_max_groups", 1, 200, whole=True)
     if problems:
         raise ValueError("Invalid configuration: " + "; ".join(problems) + ".")
     return config
