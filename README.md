@@ -354,10 +354,7 @@ All answers are JSON; errors look like `{"detail": "..."}`. Details and examples
 | `GET /organization/plan` | The latest plan as JSON |
 | `GET /organization/plan/page` | The latest plan as a readable page |
 | `GET /organization/topics` | The topic folders the plan chooses from |
-| `GET /organization/reuse/candidates` | Optional candidate pairs, without AI |
-| `POST /organization/reuse/check` | Optional check of one project pair |
-| `GET /organization/reuse/status` | Optional check result and new plan ID |
-| `POST /organization/reuse/review` | Optional override of automatic reuse copies |
+| `POST /organization/reuse/review` | Optional accept/reject override of an additional-topic placement |
 | `POST /organization/preflight` | What executing a plan would do now; writes nothing |
 | `POST /organization/execute` | Copy a reviewed plan into the library (202) |
 | `GET /organization/execution/status` | The running operation and the last run |
