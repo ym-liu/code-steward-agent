@@ -16,6 +16,7 @@ from pathlib import Path
 from .common import SETTINGS, AIError, digest, read_json
 from .explain.facts import comment_lines, parse_python
 from .explain.files import EXTENSIONS
+from .imports import direct_imports
 
 ORGANIZE_VERSION = "1"
 TOPIC_PROMPT = (SETTINGS / "topic_prompt.txt").read_text(encoding="utf-8").strip()
@@ -274,6 +275,22 @@ def build_units(records, links, packages):
     taken = {p for unit in units for p in unit["members"]}
     leader = {p: p for p in paths if p not in taken}
 
+    # Follow each independent entry point. Shared helpers must not bridge otherwise
+    # separate programs into one connected component.
+    incoming = {target for source, targets in links.items() if source in leader for target in targets}
+    entries = [p for p in leader if p not in incoming and links.get(p)
+               and (by_path[p].get("role") == "tool" or by_path[p]["type"] == "wrapper")]
+    users = defaultdict(set)
+    for entry in entries:
+        pending, visited = [entry], set()
+        while pending:
+            path = pending.pop()
+            if path in visited or path not in leader:
+                continue
+            visited.add(path)
+            users[path].add(entry)
+            pending.extend(links.get(path, []))
+
     def find(p):
         while leader[p] != p:
             leader[p] = leader[leader[p]]
@@ -281,7 +298,7 @@ def build_units(records, links, packages):
         return p
 
     def join(a, b):
-        if a in leader and b in leader:
+        if a in leader and b in leader and users[a] == users[b]:
             leader[find(a)] = find(b)
     for source, targets in links.items():
         for target in targets:
@@ -290,6 +307,14 @@ def build_units(records, links, packages):
         for other in paths:
             if other.endswith(".py") and parent(other) == parent(source):
                 join(source, other)
+    shared = {}
+    for path, consumers in list(users.items()):
+        if len(consumers) > 1:
+            key = frozenset(consumers)
+            if key in shared:
+                join(path, shared[key])
+            else:
+                shared[key] = path
     groups = defaultdict(list)
     for p in leader:
         groups[find(p)].append(p)
@@ -297,7 +322,10 @@ def build_units(records, links, packages):
     for members in groups.values():
         members.sort()
         if any(by_path[m]["type"] in ("script", "wrapper") for m in members):
-            units.append({"kind": "linked" if len(members) > 1 else "single", "root": common_root(members), "members": members})
+            unit = {"kind": "linked" if len(members) > 1 else "single", "root": common_root(members), "members": members}
+            if users[members[0]]:
+                unit["grouped_by"] = "shared-imports" if len(users[members[0]]) > 1 else "program-imports"
+            units.append(unit)
         else:
             loose.extend(members)
     # Unlinked documents, data and samples stay with the one group whose code sits in their folder,
@@ -423,6 +451,10 @@ def choose_topic(ai, rule):
 
 
 def unit_name(unit, by_path, ai):
+    if unit.get("grouped_by") == "shared-imports":
+        return "shared-utilities"
+    if unit.get("grouped_by") == "program-imports" and ai and ai.get("folder_name"):
+        return slug(ai["folder_name"])
     if unit["kind"] != "single" and unit["root"] != ".":
         return slug(posixpath.basename(unit["root"]))
     main = ordered_code(unit, by_path)[0]["path"]
@@ -585,6 +617,11 @@ def plan_for(records, sources, facts, client=None, tag=None, topics=None, progre
         links[rel] = sorted(found)
         if package:
             packages.add(rel)
+    import_records = {( "", r["path"]): r for r in records}
+    for (_, target), evidence in direct_imports(import_records, sources=sources).items():
+        for item in evidence:
+            importer = item["importer"][1]
+            links[importer] = sorted(set(links.get(importer, [])) | {target})
     for rel, targets in links.items():
         by_path[rel]["local_dependencies"] = sorted(targets)
         for target in targets:

@@ -208,6 +208,13 @@ curl http://localhost:8000/organization/status
 
 ### Additional topic placements
 
+Before choosing topics, the planner follows local imports to keep a program and its helpers together.
+Helpers used by several independent programs form a shared-utilities group, so they do not merge those
+programs into one project. Qualified Python imports can match flattened files when the filename and
+imported symbols identify a unique module. Ambiguous imports are left unresolved. This step needs no
+AI calls; existing README-marked project boundaries remain intact. Rebuilding proposes the new layout
+but does not remove folders created by earlier executions.
+
 The workflow is **build plan -> preflight -> execute**. AI can assign up to two additional topics
 based on a file's saved explanation. Extra copies go under those topic folders, with supporting
 local files where needed. No project compatibility comparisons or `_reuse` project folders are
