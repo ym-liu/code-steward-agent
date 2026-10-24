@@ -160,12 +160,15 @@ def code_role(rel, facts, analysis, source, suffix):
     return "tool", 0.5, "No clear sign either way; assumed to be started directly."
 
 
-def mark_duplicates(records):
+def mark_duplicates(records, checkpoint=None):
+    wait = checkpoint or (lambda: None)
     groups = defaultdict(list)
     for record in records:
+        wait()
         if record["size"] >= 16:
             groups[record["sha256"]].append(record)
     for group in groups.values():
+        wait()
         if len(group) > 1:
             keep = min(group, key=lambda r: (bool(COPY_MARK.search(r["path"])), r["path"].count("/"), len(r["path"]), r["path"]))
             for record in group:
@@ -256,15 +259,20 @@ def links_for(rel, source, suffix, facts, files):
     return found, package
 
 
-def build_units(records, links, packages):
+def build_units(records, links, packages, checkpoint=None):
+    wait = checkpoint or (lambda: None)
     by_path = {r["path"]: r for r in records}
     paths = sorted(by_path)
     marked = sorted({parent(p) for p in paths if MARKER.match(posixpath.basename(p)) and parent(p) != "."}, key=len)
     project_roots = []
     for folder in marked:
+        wait()
         if not any(within(folder, root) for root in project_roots):
             project_roots.append(folder)
-    units = [{"kind": "project", "root": root, "members": [p for p in paths if under(p, root)]} for root in project_roots]
+    units = []
+    for root in project_roots:
+        wait()
+        units.append({"kind": "project", "root": root, "members": [p for p in paths if under(p, root)]})
     taken = {p for unit in units for p in unit["members"]}
     leader = {p: p for p in paths if p not in taken}
 
@@ -278,17 +286,23 @@ def build_units(records, links, packages):
         if a in leader and b in leader:
             leader[find(a)] = find(b)
     for source, targets in links.items():
+        wait()
         for target in targets:
+            wait()
             join(source, target)
     for source in packages:
+        wait()
         for other in paths:
+            wait()
             if other.endswith(".py") and parent(other) == parent(source):
                 join(source, other)
     groups = defaultdict(list)
     for p in leader:
+        wait()
         groups[find(p)].append(p)
     loose = []
     for members in groups.values():
+        wait()
         members.sort()
         if any(by_path[m]["type"] in ("script", "wrapper") for m in members):
             units.append({"kind": "linked" if len(members) > 1 else "single", "root": common_root(members), "members": members})
@@ -297,6 +311,7 @@ def build_units(records, links, packages):
     # Unlinked documents, data and samples stay with the one group whose code sits in their folder,
     # or below the group's top folder when that folder holds group code itself.
     for path in list(loose):
+        wait()
         homes = [u for u in units if u["kind"] == "linked" and any(
             parent(path) == parent(m) or (parent(m) == u["root"] != "." and under(path, u["root"])) for m in u["members"])]
         if len(homes) == 1 and by_path[path]["type"] not in ("binary", "unknown"):
@@ -304,6 +319,7 @@ def build_units(records, links, packages):
             loose.remove(path)
     units.sort(key=lambda u: (u["root"], u["members"][0]))
     for number, unit in enumerate(units, 1):
+        wait()
         unit["id"] = f"u{number:03d}"
         unit["members"].sort()
         code = [by_path[m] for m in unit["members"] if by_path[m]["type"] in ("script", "wrapper")]
@@ -474,16 +490,18 @@ def kept_folder(unit, placed, used):
     return folder if folder and folder.lower() not in used else None
 
 
-def build_plan(units, loose, by_path, topics, taken=None, placed=None):
+def build_plan(units, loose, by_path, topics, taken=None, placed=None, checkpoint=None):
     """Copy, skip, keep-out-of-git and README actions. taken: target names already used by other roots.
 
     Every folder and file target is reserved in taken, so no two actions write the same place.
     placed: library targets of files an earlier run copied. Their group keeps that folder (even if the
     model now suggests another name), so a changed file updates its copy instead of being copied again.
     """
+    wait = checkpoint or (lambda: None)
     actions, used, placed = [], taken if taken is not None else set(), placed or {}
     kept = {}
     for unit in units:
+        wait()
         if unit["duplicate_of"]:
             continue
         base = f"{unit['topic']}/{unit['name']}" if unit["topic_confidence"] >= 0.5 else f"needs-review/{unit['name']}"
@@ -497,6 +515,7 @@ def build_plan(units, loose, by_path, topics, taken=None, placed=None):
         unit["folder"] = folder
         root = unit["root"]
         for member in unit["members"]:
+            wait()
             target = f"{folder}/{inside(unit, member)}"
             kept[member] = target
             used.add(target.lower())
@@ -511,12 +530,15 @@ def build_plan(units, loose, by_path, topics, taken=None, placed=None):
         actions.append({"action": "write", "to": unused(f"{folder}/{readme}", used), "unit": unit["id"],
                         "content": readme_for(unit, by_path, topic_line, original)})
     for unit in units:
+        wait()
         if unit["duplicate_of"]:
             for member in unit["members"]:
+                wait()
                 same = by_path[member]["duplicate_of"]
                 actions.append({"action": "skip", "from": member, "same_as": same, "kept_at": kept.get(same),
                                 "reason": "Exact duplicate; one copy is kept and this one is recorded as the same file."})
     for path in loose:
+        wait()
         record = by_path[path]
         if record["duplicate_of"] and record["duplicate_of"] in kept:
             actions.append({"action": "skip", "from": path, "same_as": record["duplicate_of"], "kept_at": kept[record["duplicate_of"]],
@@ -542,7 +564,7 @@ def topic_key(unit, by_path, topics, tag):
 
 
 def plan_for(records, sources, facts, client=None, tag=None, topics=None, progress=say, topic_cache=None, taken=None,
-             placed=None):
+             placed=None, checkpoint=None):
     """Group the files, choose a topic per group and propose folders (used by OrganizationService).
 
     records: one dict per file with a path relative to the scanned folder (type, role, summary,
@@ -551,24 +573,29 @@ def plan_for(records, sources, facts, client=None, tag=None, topics=None, progre
     target names unique across several folders; placed keeps files where an earlier run copied them.
     Nothing is copied or moved.
     """
+    wait = checkpoint or (lambda: None)
+    wait()
     topics = topics or load_topics()
     by_path = {r["path"]: r for r in records}
     files = set(by_path)
     links, packages = {}, set()
     for rel, source in sources.items():
+        wait()
         found, package = links_for(rel, source, Path(rel).suffix.lower(), facts.get(rel) or {}, files)
         links[rel] = sorted(found)
         if package:
             packages.add(rel)
     for rel, targets in links.items():
+        wait()
         for target in targets:
             by_path[target].setdefault("used_by", []).append(rel)
-    units, loose = build_units(records, links, packages)
+    units, loose = build_units(records, links, packages, checkpoint=wait)
     work = [u for u in units if not u["duplicate_of"]]
     if client is not None:
         progress(f"Choosing a topic for {len(work)} group{'s' if len(work) != 1 else ''} of files with {tag}...")
     asking = client is not None
     for number, unit in enumerate(work, 1):
+        wait()
         rule, scores = keyword_topic(unit, by_path, topics)
         ai = None
         if asking:
@@ -589,9 +616,10 @@ def plan_for(records, sources, facts, client=None, tag=None, topics=None, progre
         unit["name"] = unit_name(unit, by_path, ai)
         if client is not None:
             progress(f"  {number}/{len(work)}  {topic:<24} {unit['name']}  ({unit['ai_seconds']} s)")
-    actions = build_plan(units, loose, by_path, topics, taken, placed)
+    actions = build_plan(units, loose, by_path, topics, taken, placed, checkpoint=wait)
     folders = {u["id"]: u.get("folder") for u in units}
     for record in records:
+        wait()
         record.pop("usage", None)
         record.pop("unknowns", None)
     return {"version": ORGANIZE_VERSION, "mode": "dry-run", "topics_version": topics["version"],

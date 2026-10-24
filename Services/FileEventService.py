@@ -6,6 +6,8 @@ from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 from watchdog.observers.polling import PollingObserver
 
+from Services.GovernedPolling import GovernedPollingObserver
+
 logger = logging.getLogger("code-steward.file-events")
 
 
@@ -97,8 +99,12 @@ class FileEventService:
         wanted = self.scan_service.setting("watch_mode", "auto")
         modes = {"auto": ["events", "polling"], "events": ["events"], "polling": ["polling"]}.get(wanted, ["events", "polling"])
         for mode in modes:
-            observer = Observer() if mode == "events" else PollingObserver(
-                timeout=self.scan_service.setting("polling_interval_seconds", 30))
+            governor = getattr(self, "resource_governor", None)
+            observer = Observer() if mode == "events" else (
+                GovernedPollingObserver(governor, timeout=self.scan_service.setting("polling_interval_seconds", 30),
+                    on_initial_snapshot=lambda: self.event_handler.aggregator.request_full_scan("polling-baseline-scan"))
+                if governor is not None else PollingObserver(
+                    timeout=self.scan_service.setting("polling_interval_seconds", 30)))
             try:
                 for directory in self.watched:
                     observer.schedule(self.event_handler, directory, recursive=True)

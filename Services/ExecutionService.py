@@ -21,6 +21,7 @@ from Services.ConfigService import select_system_path
 from Services.OrganizationService import plan_digest
 from Services.ScanService import _is_link
 from Services.VersionService import GitError, ignore_pattern
+from Services.ResourceGovernor import ResourceCancelled, checkpoint as resource_checkpoint
 
 logger = logging.getLogger("code-steward.execution")
 PROGRAM_FOLDER = Path(__file__).resolve().parents[1]
@@ -217,10 +218,14 @@ class ExecutionService:
                 actual = self._hash(stream)
             return "already-done" if actual == expected else "conflict"
 
-    @staticmethod
-    def _hash(stream, output=None):
+    def _hash(self, stream, output=None, *, governed=True):
         digest = hashlib.sha256()
-        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+        while True:
+            if governed:
+                resource_checkpoint(self)
+            chunk = stream.read(1024 * 1024)
+            if not chunk:
+                break
             digest.update(chunk)
             if output is not None:
                 output.write(chunk)
@@ -436,6 +441,10 @@ class ExecutionService:
     def _background(self, report, work, token=None):
         try:
             work(report)
+        except ResourceCancelled as error:
+            report["state"], report["last_error"] = "interrupted", str(error)
+            self._save(report)
+            logger.info("Organization operation interrupted safely for shutdown: %s", report["run_id"])
         except Exception as error:
             report["state"], report["last_error"] = "failed", f"{type(error).__name__}: {error}"
             self._save(report)
@@ -452,6 +461,7 @@ class ExecutionService:
         records = {(r["root_folder"], r["path"]): r for r in report["plan"]["files"]}
         safety = True
         for result in report["results"]:
+            resource_checkpoint(self)
             started = time.monotonic()
             logger.info("Organization action %s: %s -> %s", result["action"], result.get("from_path", ""), result.get("to", ""))
             if result["action"] in ("copy", "write"):
@@ -560,12 +570,12 @@ class ExecutionService:
                     except OSError:
                         logger.warning("Temporary ownership witness retained: %s", temp_path)
 
-    def _hash_at(self, fd, parent, name):
+    def _hash_at(self, fd, parent, name, *, governed=True):
         opened = os.open(name if fd is not None else parent / name,
                          os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_BINARY", 0) | getattr(os, "O_NONBLOCK", 0),
                          **({"dir_fd": fd} if fd is not None else {}))
         with os.fdopen(opened, "rb") as stream:
-            return self._hash(stream) if stat.S_ISREG(os.fstat(stream.fileno()).st_mode) else None
+            return self._hash(stream, governed=governed) if stat.S_ISREG(os.fstat(stream.fileno()).st_mode) else None
 
     def _set_aside(self, fd, parent, name, result, report):
         """Move the previous version out of the way for an update; it must still be the committed one."""
@@ -580,7 +590,9 @@ class ExecutionService:
         except OSError:
             result.pop("update_aside", None)  # nothing was moved
             raise
-        if self._hash_at(fd, parent, aside) != result["previous_hash"]:
+        # Finish this integrity check without waiting while the public target is
+        # temporarily renamed. CPU priority stays low throughout this atomic step.
+        if self._hash_at(fd, parent, aside, governed=False) != result["previous_hash"]:
             self._put_back(fd, parent, aside, name, result)
             raise ExecutionError("The library copy was edited during the update; it is retained.")
         return aside
@@ -646,6 +658,7 @@ class ExecutionService:
         interrupted = False
         undone = {item["index"] for item in report["undo_results"] if item["status"] in ("removed", "restored")}
         for result in reversed(report["results"]):
+            resource_checkpoint(self)
             if result["status"] not in ("done", "updated") or not result.get("identity") or result["index"] in undone:
                 continue
             item = {"index": result["index"], "to": result["to"], "status": "retained", "reason": None}
@@ -678,7 +691,9 @@ class ExecutionService:
                                 **({"dir_fd": fd} if fd is not None else {}))
                         with os.fdopen(opened, "rb") as stream:
                             info = os.fstat(stream.fileno())
-                            unchanged = stat.S_ISREG(info.st_mode) and identity(info) == result["identity"] and self._hash(stream) == result["written_hash"]
+                            # Do not pause while the public copy is quarantined;
+                            # preserve the existing rename/check/restore sequence.
+                            unchanged = stat.S_ISREG(info.st_mode) and identity(info) == result["identity"] and self._hash(stream, governed=False) == result["written_hash"]
                         if not unchanged:
                             raise ExecutionError("Copy was edited or replaced; it is retained.")
                         if result["status"] == "updated":

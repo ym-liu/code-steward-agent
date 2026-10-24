@@ -14,6 +14,8 @@ from Services.OrganizationService import OrganizationService
 from Services.ScanService import CHECKPOINT_FILE, ScanService
 from Services.SystemService import SystemService
 from Services.FileEventService import FileEventService
+from Services.ResourceGovernor import ResourceGovernor
+from Services.GovernedOllamaClient import GovernedOllamaClient
 from service import CodeStewardService
 
 PROGRAM_FOLDER = Path(__file__).resolve().parents[1]
@@ -36,6 +38,8 @@ class ServiceContainer:
 
     def __init__(self):
         self.config_service = ConfigService()
+        self.resource_governor = ResourceGovernor(self.config_service.get("resource_control"))
+        self.resource_governor.start()
         log_path = program_path(self.config_service.get("storage", "log_path"))
         self._configure_logging(log_path)
         logging.getLogger("code-steward.config").info("Config loaded from %s", config_file.CONFIG_PATH)
@@ -52,7 +56,11 @@ class ServiceContainer:
         self.scan_service.own_folder = str(PROGRAM_FOLDER)
         self._create_watched_folders()
 
-        self.analysis_service = AnalysisService(self.config_service, self.artifacts_service)
+        self.scan_service.resource_governor = self.resource_governor
+        self.analysis_service = AnalysisService(
+            self.config_service, self.artifacts_service,
+            client_factory=lambda settings: GovernedOllamaClient(settings, self.resource_governor))
+        self.analysis_service.resource_governor = self.resource_governor
         self.analysis_service.name_for = self._name_below_root
         self.scan_service.listeners.append(self.analysis_service)
         self.organization_service = OrganizationService(
@@ -64,11 +72,14 @@ class ServiceContainer:
             self.config_service, self.artifacts_service, self.organization_service, self.scan_service,
             self.version_service)
         self.organization_service.placements = self.execution_service.placements  # plans keep library folders
+        self.organization_service.resource_governor = self.resource_governor
+        self.execution_service.resource_governor = self.resource_governor
 
         self.file_event_service = FileEventService(
             aggregator=self.aggregator,
             scan_service=self.scan_service,
         )
+        self.file_event_service.resource_governor = self.resource_governor
 
         self.code_steward_service = CodeStewardService(
             file_event_service=self.file_event_service,
@@ -76,6 +87,7 @@ class ServiceContainer:
             aggregator=self.aggregator,
             analysis_service=self.analysis_service,
         )
+        self.code_steward_service.resource_governor = self.resource_governor
         # No signal handlers here: uvicorn handles Ctrl+C and shutdown, and the API's lifespan
         # (CodeSteward.py) then stops this service cleanly. Own handlers would block uvicorn's.
 
@@ -121,6 +133,7 @@ class ServiceContainer:
         storage.database_path takes effect at the next start of the API.
         """
         log_path = program_path(settings["storage"]["log_path"])
+        self.resource_governor.configure(settings["resource_control"])
         self._configure_logging(log_path)
         self.logs_service.log_file = log_path
         self._set_own_paths(log_path)

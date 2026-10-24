@@ -32,7 +32,7 @@ def repair_once(client, tag, case, raw, first, issues):
     try:
         response = client.repair(tag, case, raw, feedback)
     except AIError as error:
-        if error.code in {"timeout", "connection_error", "response_error"}:
+        if error.code in {"timeout", "connection_error", "response_error", "resource_busy"}:
             raise  # transport failures still stop the run
         return {"requested_for": issues, "used": False, "error": str(error)}
     message = response.get("message") if isinstance(response.get("message"), dict) else {}

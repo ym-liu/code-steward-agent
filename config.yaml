@@ -3,6 +3,20 @@
 # Invalid values are rejected with a message and the previous settings stay in use.
 # Settings that are left out use the defaults written in Services/ConfigService.py.
 
+# Mandatory low-priority background policy. CPU percentages are system-wide averages.
+# Windows uses Idle process priority; macOS/Linux use nice 19.
+resource_control:
+  sample_seconds: 1
+  slow_cpu_percent: 50
+  pause_cpu_percent: 80
+  resume_cpu_percent: 40
+  resume_samples: 3
+  max_sample_age_seconds: 3
+  # Maximum pause inserted at each safe work checkpoint under moderate pressure.
+  max_delay_seconds: 0.02
+  # A stable cap, also respecting a lower ai.num_thread value. Models/prompts stay unchanged.
+  ai_max_threads: 2
+
 service:
   # Start the background service together with the API
   auto_start: true

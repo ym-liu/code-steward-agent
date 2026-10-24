@@ -10,6 +10,7 @@ import sys
 import yaml
 
 from Services.ClassificationService import TYPES
+from Services.ResourcePolicy import DEFAULTS as RESOURCE_DEFAULTS, validate_policy
 
 logger = logging.getLogger("code-steward.config")
 
@@ -20,6 +21,7 @@ CONFIG_PATH = os.environ.get("CODE_STEWARD_CONFIG") or str(PROGRAM_FOLDER / "con
 
 # Every setting and its default. A value missing from config.yaml uses the default below.
 DEFAULTS = {
+    "resource_control": RESOURCE_DEFAULTS,
     "service": {"auto_start": True, "tick_seconds": 5},
     "scanning": {
         "root_paths": ["watched"],
@@ -222,6 +224,10 @@ def validate(loaded, platform=None):
                 problems.append(f"scanning.root_paths {root!r} is inside organization.library_path; "
                                 "the library is never scanned, so choose folders that do not contain each other")
     flag("organization", "git")
+    try:
+        config["resource_control"] = validate_policy(config["resource_control"])
+    except ValueError as error:
+        problems.append(str(error))
     if problems:
         raise ValueError("Invalid configuration: " + "; ".join(problems) + ".")
     return config

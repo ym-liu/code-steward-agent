@@ -19,11 +19,12 @@ from ai.explain.ollama_client import OllamaClient
 from ai.explain.pipeline import result_for
 from ai.explain.request import INPUT_VERSION, PROMPT
 from Services.ClassificationService import PLACEHOLDER, SECRET
+from Services.ResourceGovernor import ResourceCancelled, checkpoint as resource_checkpoint
 
 logger = logging.getLogger("code-steward.analysis")
 PROGRAM_FOLDER = Path(__file__).resolve().parents[1]
 # Problems on the Ollama side: the file waits and is tried again later; it is not the file's fault.
-WAIT_FOR_OLLAMA = {"connection_error", "timeout", "response_error", "busy", "missing_model", "cloud_model"}
+WAIT_FOR_OLLAMA = {"connection_error", "timeout", "response_error", "busy", "missing_model", "cloud_model", "resource_busy"}
 WAITING_REASONS = {
     "connection_error": "Ollama is not running; open Ollama",
     "timeout": "Ollama did not answer in time",
@@ -31,6 +32,7 @@ WAITING_REASONS = {
     "busy": "another model is loaded in Ollama",
     "missing_model": "the model is not installed; run: ollama pull {tag}",
     "cloud_model": "the model runs in the cloud; choose a local model",
+    "resource_busy": "CPU resources are busy; waiting to yield to other programs",
 }
 
 
@@ -340,6 +342,8 @@ class AnalysisService:
                     return
             try:
                 worked = self.step()
+            except ResourceCancelled:
+                worked = False  # Shutdown cancelled a resource wait, not a failed file.
             except Exception as error:
                 self.last_error = f"{type(error).__name__}: {error}"
                 logger.exception("AI analysis step failed unexpectedly.")
@@ -359,6 +363,12 @@ class AnalysisService:
         """
         if not self.enabled or not self._service_running() or time.time() < self._wait_until:
             return False
+        governor = getattr(self, "resource_governor", None)
+        if governor is not None and not governor.can_work():
+            self.state = "waiting: CPU resources"
+            return False
+        if self.state == "waiting: CPU resources":
+            self.state = "ready" if self._client is not None else "ready to start"
         with self._connect() as connection:
             job = connection.execute("""
                 SELECT * FROM analysis_jobs WHERE status = 'queued' AND next_try <= ? ORDER BY queued_at LIMIT 1
@@ -382,7 +392,13 @@ class AnalysisService:
             connection.execute("UPDATE analysis_jobs SET status = 'running', attempts = attempts + 1 "
                                "WHERE artifact_id = ? AND hash = ?", (job["artifact_id"], job["hash"]))
         try:
+            resource_checkpoint(self)
             self._explain(job, artifact, request)
+        except ResourceCancelled:
+            with self._connect() as connection:
+                connection.execute("UPDATE analysis_jobs SET status = 'queued', attempts = MAX(0, attempts - 1), next_try = 0 "
+                                   "WHERE artifact_id = ? AND hash = ?", (job["artifact_id"], job["hash"]))
+            raise
         except Exception:
             with self._connect() as connection:  # try this file again later instead of leaving it "running"
                 connection.execute("UPDATE analysis_jobs SET status = 'queued', next_try = ? WHERE artifact_id = ? AND hash = ?",
@@ -446,6 +462,10 @@ class AnalysisService:
         return client, tag, installed.get("digest")
 
     def _wait_for_ollama(self, error):
+        if error.code == "resource_busy":
+            self._wait_until = time.time() + self.IDLE_SECONDS
+            self.state, self.last_error = "waiting: CPU resources", str(error)
+            return  # CPU contention is not an Ollama outage or a consumed attempt.
         self._client = None
         self._waiting_streak += 1
         pause = min(30 * 2 ** (self._waiting_streak - 1), self.MAX_WAIT_SECONDS)
@@ -457,6 +477,7 @@ class AnalysisService:
 
     def _case(self, artifact, ai_settings):
         """The model's input for one file: text, hash and facts, with written secrets hidden."""
+        resource_checkpoint(self)
         case = snapshot(Path(artifact["path"]), self.name_for(artifact["path"]), ai_settings["max_source_chars"])
         if "source" in case:
             case["source"], case["hidden_secrets"] = hide_secrets(case["source"])
@@ -504,7 +525,7 @@ class AnalysisService:
             logger.info("Explained %s (%.1f s, %s tok/s).", artifact["path"], seconds, row.get("tokens_per_second"))
         elif row["status"] in WAIT_FOR_OLLAMA:
             with self._connect() as connection:
-                connection.execute("UPDATE analysis_jobs SET status = 'queued', attempts = attempts - 1 "
+                connection.execute("UPDATE analysis_jobs SET status = 'queued', attempts = MAX(0, attempts - 1) "
                                    "WHERE artifact_id = ? AND hash = ?", (job["artifact_id"], job["hash"]))
             self._wait_for_ollama(AIError(row.get("error", ""), row["status"]))
         else:
