@@ -171,7 +171,7 @@ class OrganizationService:
             part = plan_for(records, sources, facts, client, tag, topics, progress=self._report,
                             topic_cache=topic_cache, taken=taken, placed=here)
             self._merge(plan, part, root, f"r{number}-")
-        if self.config_service.get("organization", "suggest_reuse", default=True):
+        if self.config_service.get("organization", "suggest_reuse", default=True) and client is not None:
             plan["reuse"] = collection_reuse(plan, topics, client, tag, topic_cache,
                 self.config_service.get("organization", "reuse_batch_size", default=3), self._report, topics_only=True)
         else:
