@@ -192,6 +192,8 @@ curl http://localhost:8000/analysis/PASTE_ARTIFACT_ID
 
 1. `POST /organization/plan` starts building a plan (the AI chooses a topic per group).
 2. `GET /organization/status` until `"state": "ready"`. It also shows the plan's `plan_id`.
+   `partial` means a plan was saved but reuse checks remain unfinished; the response explains why.
+   Build again to retry them using the completed assessments already saved.
 3. Open **[http://localhost:8000/organization/plan/page](http://localhost:8000/organization/plan/page)**:
    the groups, their topics and proposed folders, and a "Check these first" list. Nothing is copied yet.
 
@@ -203,6 +205,26 @@ only ask about groups that changed.
 curl -X POST http://localhost:8000/organization/plan
 curl http://localhost:8000/organization/status
 ```
+
+### Additional topic placements
+
+Before choosing topics, the planner follows local imports to keep a program and its helpers together.
+Helpers used by several independent programs form a shared-utilities group, so they do not merge those
+programs into one project. Qualified Python imports can match flattened files when the filename and
+imported symbols identify a unique module. Ambiguous imports are left unresolved. This step needs no
+AI calls; existing README-marked project boundaries remain intact. Rebuilding proposes the new layout
+but does not remove folders created by earlier executions.
+
+The workflow is **build plan -> preflight -> execute**. AI can assign up to two additional topics
+based on a file's saved explanation. Extra copies go under those topic folders, with supporting
+local files where needed. No project compatibility comparisons or `_reuse` project folders are
+created by new plans. Existing project grouping rules are unchanged.
+
+Topic hints shortlist candidates; AI decides which additional labels fit. Sharing the same primary
+topic does not create an extra copy. An ML-only test collection can correctly have no extra topics.
+Completed decisions and explanations are cached. `organization.suggest_reuse: false` disables extra
+placements; `reuse_batch_size` controls batching. Failed assessments can be retried by rebuilding.
+Old executed copies are retained until explicitly undone; a new plan does not delete old output.
 
 ### Step 5: Check the plan before copying (preflight)
 
@@ -328,10 +350,11 @@ All answers are JSON; errors look like `{"detail": "..."}`. Details and examples
 | `GET /analysis/{artifact_id}` | One file's AI explanation, or its place in the queue |
 | `POST /analysis/{artifact_id}` | Explain one file again (202) |
 | `POST /organization/plan` | Build a new plan in the background (202) |
-| `GET /organization/status` | Plan state (building, ready, failed), its `plan_id` and summary |
+| `GET /organization/status` | Plan state (building, ready, partial, failed), its `plan_id` and summary |
 | `GET /organization/plan` | The latest plan as JSON |
 | `GET /organization/plan/page` | The latest plan as a readable page |
 | `GET /organization/topics` | The topic folders the plan chooses from |
+| `POST /organization/reuse/review` | Optional accept/reject override of an additional-topic placement |
 | `POST /organization/preflight` | What executing a plan would do now; writes nothing |
 | `POST /organization/execute` | Copy a reviewed plan into the library (202) |
 | `GET /organization/execution/status` | The running operation and the last run |

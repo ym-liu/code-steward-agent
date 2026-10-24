@@ -6,7 +6,7 @@ import sqlite3
 import threading
 import time
 from collections import Counter
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from datetime import datetime, timezone
 from pathlib import Path
 from types import SimpleNamespace
@@ -14,6 +14,8 @@ from types import SimpleNamespace
 from ai.common import AIError
 from ai.explain.facts import static_facts
 from ai.organize import code_role, load_topics, mark_duplicates, page_html, plan_for, short_dependency
+from ai.reuse import assess_pair, copy_actions, fast_client, profiles, project_candidates
+from ai.collection_reuse import collection_reuse
 from Services.AnalysisService import waiting_reason
 
 logger = logging.getLogger("code-steward.organization")
@@ -53,6 +55,7 @@ class OrganizationService:
         self.placements = None  # callable set by ServiceContainer: where earlier runs copied files
         self._building = False
         self._thread = None
+        self._reuse_check = {"state": "idle"}
         with self._connect() as connection:
             connection.execute("""
                 CREATE TABLE IF NOT EXISTS organization_plans (
@@ -69,7 +72,8 @@ class OrganizationService:
                 )
             """)
             if connection.execute("SELECT 1 FROM organization_plans").fetchone():
-                self.state = "ready"
+                saved = json.loads(connection.execute("SELECT plan FROM organization_plans").fetchone()[0])
+                self.state = "partial" if saved.get("reuse", {}).get("state") == "partial" else "ready"
 
     @contextmanager
     def _connect(self):
@@ -133,7 +137,9 @@ class OrganizationService:
         if not _claimed and not self.operation_lock.acquire(blocking=False):
             raise ValueError("An organization operation is already in progress.")
         try:
-            return self._build(use_ai)
+            self.progress = "Waiting for the current file explanation to finish (if any)."
+            with self.analysis_service.foreground() if hasattr(self.analysis_service, "foreground") else nullcontext():
+                return self._build(use_ai)
         finally:
             if not _claimed:
                 self.operation_lock.release()
@@ -143,6 +149,7 @@ class OrganizationService:
         started = time.monotonic()
         topics = self.topics()
         client, tag, model_digest, topics_from = self._client(use_ai)
+        client = fast_client(client)
         # Saved answers belong to one model version: a newer download of the same model asks again.
         topic_cache = SimpleNamespace(get=lambda key: self.get(f"{model_digest}:{key}"),
                                       put=lambda key, answer: self.put(f"{model_digest}:{key}", answer))
@@ -164,6 +171,11 @@ class OrganizationService:
             part = plan_for(records, sources, facts, client, tag, topics, progress=self._report,
                             topic_cache=topic_cache, taken=taken, placed=here)
             self._merge(plan, part, root, f"r{number}-")
+        if self.config_service.get("organization", "suggest_reuse", default=True) and client is not None:
+            plan["reuse"] = collection_reuse(plan, topics, client, tag, topic_cache,
+                self.config_service.get("organization", "reuse_batch_size", default=3), self._report, topics_only=True)
+        else:
+            plan["reuse"] = {"state": "disabled", "suggestions": []}
         work = [unit for unit in plan["units"] if not unit["duplicate_of"]]
         without_answer = sum(unit.get("ai_topic") is None for unit in work)  # failed, unreadable or not asked
         if client is not None and without_answer:
@@ -179,13 +191,16 @@ class OrganizationService:
                      "code_files_not_explained_yet": sum(record["type"] in CODE_TYPES and not record["explained"]
                                                          for record in plan["files"]),
                      "groups": len(work), "folders": len({unit["folder"] for unit in work if unit.get("folder")}),
+                     "reuse_suggestions": len(plan["reuse"]["suggestions"]),
+                     "accepted_reuse": sum(s["state"] == "accepted" for s in plan["reuse"]["suggestions"]),
+                     "reuse_copy_files": sum(a["action"] == "copy" and bool(a.get("reuse_id")) for a in plan["actions"]),
                      "needs_review": sum(action["action"] == "copy" and action["to"].startswith("needs-review/")
                                          for action in plan["actions"])})
         with self._connect() as connection:
             plan["plan_id"] = plan_digest(plan)
             connection.execute("INSERT OR REPLACE INTO organization_plans (id, created_at, plan) VALUES (1, ?, ?)",
                                (plan["created_at"], json.dumps(plan)))
-        self.state, self.progress = "ready", None
+        self.state, self.progress = ("partial" if plan["reuse"]["state"] == "partial" else "ready"), None
         logger.info("Organization plan ready: %d groups, %d proposed folders (%s, %.1f s).",
                     plan["summary"]["groups"], plan["summary"]["folders"], topics_from, plan["seconds"])
         return plan
@@ -243,9 +258,12 @@ class OrganizationService:
                 record["reasons"].append("Changed or unreadable while the plan was built; check it again.")
             if analysis is not None:
                 record["usage"], record["unknowns"] = analysis.get("usage") or [], analysis.get("unknowns") or []
+                record["inputs"], record["outputs"] = analysis.get("inputs") or [], analysis.get("outputs") or []
             if kind in CODE_TYPES and source is not None:
                 suffix = Path(rel).suffix.lower()
                 sources[rel], facts[rel] = source, static_facts(source, suffix)
+                record["interfaces"] = [{"name": definition["name"], "kind": definition.get("kind")}
+                                        for definition in facts[rel].get("definitions", [])[:12]]
                 if kind == "script":
                     record["role"] = code_role(rel, facts[rel], analysis, source, suffix)[0]
             records.append(record)
@@ -303,6 +321,50 @@ class OrganizationService:
 
     # Reading the plan
 
+    def reuse_candidates(self):
+        return {"candidates": [], "groups": [], "message": "Reuse now suggests additional topics only."}
+
+    def reuse_status(self):
+        return dict(self._reuse_check)
+
+    def start_reuse_check(self, plan_id, source, target):
+        raise ValueError("Project reuse checks have been retired. Build a plan to suggest additional topics.")
+
+    def review_reuse(self, plan_id, suggestion_id, accept):
+        """Review is a plan edit; it invalidates the old plan_id and shares execution's operation lock."""
+        if not self.operation_lock.acquire(blocking=False):
+            raise ValueError("An organization operation is already in progress.")
+        try:
+            plan = self.latest()
+            if plan is None or plan_id != plan.get("plan_id") or plan_id != plan_digest(plan):
+                raise ValueError("The plan changed. Read it again and use its current plan_id.")
+            suggestion = next((s for s in plan.get("reuse", {}).get("suggestions", []) if s["id"] == suggestion_id), None)
+            if suggestion is None:
+                raise ValueError("Reuse suggestion not found in this plan.")
+            if accept and suggestion.get("kind") != "topic":
+                raise ValueError("Project reuse has been retired. Build a new plan for additional topics.")
+            # Remove an earlier acceptance before accepting or rejecting again.
+            plan["actions"] = [a for a in plan["actions"] if a.get("reuse_id") != suggestion_id]
+            if accept:
+                additions = copy_actions(plan, suggestion)
+                destinations = [a["to"].casefold().split("/") for a in plan["actions"] + additions
+                                if a["action"] in ("copy", "write")]
+                for i, left in enumerate(destinations):
+                    if any(left[:len(right)] == right or right[:len(left)] == left for right in destinations[i + 1:]):
+                        raise ValueError("Reuse destination conflicts with another plan action.")
+                plan["actions"].extend(additions)
+            suggestion["state"] = "accepted" if accept else "rejected"
+            plan["summary"]["accepted_reuse"] = sum(s["state"] == "accepted" for s in plan["reuse"]["suggestions"])
+            plan["summary"]["reuse_copy_files"] = sum(a["action"] == "copy" and bool(a.get("reuse_id"))
+                                                       for a in plan["actions"])
+            plan["plan_id"] = plan_digest(plan)
+            with self._connect() as connection:
+                connection.execute("UPDATE organization_plans SET plan = ? WHERE id = 1", (json.dumps(plan),))
+            logger.info("Reuse suggestion %s %s in plan %s.", suggestion_id, suggestion["state"], plan["plan_id"])
+            return {"plan_id": plan["plan_id"], "suggestion": suggestion, "summary": plan["summary"]}
+        finally:
+            self.operation_lock.release()
+
     def latest(self):
         with self._connect() as connection:
             row = connection.execute("SELECT plan FROM organization_plans WHERE id = 1").fetchone()
@@ -313,12 +375,19 @@ class OrganizationService:
 
     def page(self):
         plan = self.latest()
-        return page_html(plan, self.topics()) if plan else None
+        return page_html(plan, self.topics(), {"state": self.state, "progress": self.progress}) if plan else None
 
     def status(self):
         plan = self.latest()
+        reuse = (plan or {}).get("reuse", {})
         return {"state": self.state, "progress": self.progress, "last_error": self.last_error,
                 "plan_id": plan["plan_id"] if plan else None,  # send it to /organization/preflight and /execute
                 "last_plan_at": plan["created_at"] if plan else None,
                 "summary": plan["summary"] if plan else None,
+                "reuse_status": {key: reuse[key] for key in
+                                 ("state", "code_files", "considered_files", "eligible_files", "assessed_files",
+                                  "unassessed_files", "projects", "candidate_pairs", "assessed_pairs",
+                                  "deferred_pairs", "files_without_candidates", "model_calls", "cache_hits",
+                                  "verification_calls", "verification_pending", "rejected_matches", "unsupported_matches", "runtime_exclusions",
+                                  "skipped_files", "errors") if key in reuse},
                 "topics_from": plan["topics_from"] if plan else None}

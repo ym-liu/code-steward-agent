@@ -89,6 +89,14 @@ ai:
   max_attempts: 3
 
 organization:
+  # Include additional topic copies in the plan automatically.
+  suggest_reuse: true
+  # Assess additional topic labels in batches using cached file explanations.
+  reuse_batch_size: 3
+  # Legacy setting (ignored): there is no longer a global one-pair limit.
+  reuse_max_pairs: 1
+  # Legacy setting (ignored): all code files are considered, including files in large projects.
+  reuse_max_groups: 3
   # Organized copies go here: a folder inside the program folder (code-steward-agent/library),
   # the same on Windows and Mac. It must not be inside a watched folder.
   library_path: library

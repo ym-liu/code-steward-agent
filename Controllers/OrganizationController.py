@@ -11,7 +11,7 @@ NO_PLAN = {404: {"description": "No plan has been built yet; POST /organization/
 
 @router.post("/plan", status_code=202, responses={409: {"description": "A plan is already being built."}})
 def build_plan(use_ai: bool = Query(default=True, description="false uses keyword hints only, without the model")):
-    """Build a new organization plan in the background: groups, a topic per group and proposed folders.
+    """Build a plan: groups, primary topics, proposed folders and optional AI reuse suggestions.
     Nothing is copied, moved or deleted. Follow it with GET /organization/status."""
     if not services.organization_service.start(use_ai):
         return JSONResponse(status_code=409, content={"detail": "An organization operation is already in progress."})
@@ -57,6 +57,49 @@ class ReviewedPlan(BaseModel):
 
 class UndoRun(BaseModel):
     run_id: str = Field(min_length=1, description="The last execution run to undo")
+
+
+class ReuseReview(ReviewedPlan):
+    suggestion_id: str = Field(min_length=1)
+    accept: bool = Field(description="true adds separate copies to the plan; false removes that suggestion's copies")
+
+
+class ReuseCheck(ReviewedPlan):
+    source: str = Field(min_length=1, description="Source group ID from /organization/reuse/candidates")
+    target: str = Field(min_length=1, description="Target group ID")
+
+
+@router.get("/reuse/candidates")
+def reuse_candidates():
+    """Shortlist potential project pairs using saved data, with no AI requests."""
+    try:
+        return services.organization_service.reuse_candidates()
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+
+
+@router.post("/reuse/check", status_code=202)
+def check_reuse(request: ReuseCheck):
+    """Check ONE source/target pair on demand. Poll /organization/reuse/status for the new plan_id."""
+    try:
+        return services.organization_service.start_reuse_check(request.plan_id, request.source, request.target)
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+
+
+@router.get("/reuse/status")
+def reuse_status():
+    return services.organization_service.reuse_status()
+
+
+@router.post("/reuse/review")
+def review_reuse(request: ReuseReview):
+    """Accept/reject an AI reuse suggestion. Use the returned NEW plan_id for further reviews and execution.
+    This edits the plan only. Copies preserve source group layout; target imports are not modified."""
+    try:
+        return services.organization_service.review_reuse(request.plan_id, request.suggestion_id, request.accept)
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
 
 
 def execution_call(method, value):

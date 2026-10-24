@@ -114,6 +114,8 @@ class AnalysisService:
         # Settings, the Ollama connection and the worker thread change together under this lock. A request
         # takes one consistent copy of them (see _connection), so a settings reload cannot mix two models.
         self._lock = threading.Lock()
+        self._inference_lock = threading.Lock()
+        self._foreground_waiters = 0
         self._client = None
         self._model_digest = None
         self._own_models = set()  # models this service loaded itself; they never count as "busy"
@@ -351,7 +353,34 @@ class AnalysisService:
     def _service_running(self):
         return self.code_steward_service is None or self.code_steward_service.state.value == "running"
 
+    @contextmanager
+    def foreground(self):
+        """Let the in-flight explanation finish, then reserve inference for interactive work."""
+        with self._lock:
+            self._foreground_waiters += 1
+        try:
+            with self._inference_lock:
+                yield
+        finally:
+            with self._lock:
+                self._foreground_waiters -= 1
+            self._wake.set()
+
     def step(self):
+        with self._lock:
+            if self._foreground_waiters:
+                return False
+        if not self._inference_lock.acquire(blocking=False):
+            return False
+        try:
+            with self._lock:
+                if self._foreground_waiters:
+                    return False
+            return self._background_step()
+        finally:
+            self._inference_lock.release()
+
+    def _background_step(self):
         """Explain the next waiting file. Returns True when a file was handled.
 
         After a start or a settings change Ollama is checked even when no file waits, so that a newer
