@@ -199,7 +199,8 @@ curl http://localhost:8000/analysis/PASTE_ARTIFACT_ID
 
 Build the plan after most files are explained (step 3); files that are not explained yet are planned
 with less information. The first plan asks the AI about every group (a few seconds each); later plans
-only ask about groups that changed.
+only ask about groups that changed. Plan mode can be set to `manual` or `automatic`. In automatic mode,
+a new plan is rebuilt whenever a newly explained file arrives.
 
 ```bash
 curl -X POST http://localhost:8000/organization/plan

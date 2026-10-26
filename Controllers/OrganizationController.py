@@ -51,6 +51,26 @@ def get_topics():
             "topics": [{"id": topic["id"], "description": topic["description"]} for topic in topics["topics"]]}
 
 
+class PlanModeRequest(BaseModel):
+    mode: str = Field(..., description="manual or automatic")
+
+
+@router.get("/mode")
+def get_plan_mode():
+    """Current plan mode: manual or automatic."""
+    plan = services.organization_service.latest()
+    return {"mode": services.organization_service.plan_mode, "plan_id": plan["plan_id"] if plan else None}
+
+
+@router.post("/mode")
+def set_plan_mode(request: PlanModeRequest):
+    """Toggle the plan refresh mode for the current plan. Automatic refreshes the latest plan when a new file finishes explaining."""
+    try:
+        return services.organization_service.set_plan_mode(request.mode)
+    except ValueError as error:
+        raise HTTPException(status_code=422, detail=str(error)) from error
+
+
 class ReviewedPlan(BaseModel):
     plan_id: str = Field(min_length=1, description="plan_id of the plan you reviewed")
 

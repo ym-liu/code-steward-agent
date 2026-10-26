@@ -57,6 +57,7 @@ class ServiceContainer:
         self.scan_service.listeners.append(self.analysis_service)
         self.organization_service = OrganizationService(
             self.config_service, self.artifacts_service, self.analysis_service, self.scan_service)
+        self.analysis_service.on_analysis_done = self.organization_service.on_analysis_done
         # The library's Git history; the local model writes each commit's subject line.
         self.version_service = VersionService(self.config_service,
                                               subject_writer=lambda facts: ai_subject(self.analysis_service, facts))
@@ -126,6 +127,7 @@ class ServiceContainer:
         self._set_own_paths(log_path)
         self._configure_aggregator()
         self.analysis_service.reload_settings()
+        self.organization_service.set_plan_mode(self.config_service.get("organization", "plan_mode", default="manual"), quiet=True)
         self._create_watched_folders()
         if self.code_steward_service.state.value != "stopped":
             self.file_event_service.restart()

@@ -108,6 +108,9 @@ flowchart TD
 Everything runs inside one Python process started by `uvicorn CodeSteward:app`. The API answers requests
 while a background loop and two worker threads (AI explanations; plan building or copying) do the work.
 
+Organization plan refresh can be `manual` or `automatic`. In automatic mode, a newly explained file
+triggers a fresh plan build without you needing to press Build again.
+
 ## Follow one file through the system
 
 Say you save `train.py` in the watched folder.
