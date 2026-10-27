@@ -42,16 +42,24 @@ uv run pre-commit install
 - `uv sync`: installs Python 3.12 if missing, then the exact dependency versions from `uv.lock` into `.venv/`
 - `pre-commit install`: runs ruff and basic file checks on every `git commit`
 
+**3. Create your config:**
+
+```bash
+cp config.example.yaml config.yaml
+```
+
+Then set `watched_folders` to the folders you want scanned.
+
 ## Run
 
 Start the server:
 
 ```bash
-uv run uvicorn app.main:app --reload
+uv run uvicorn app.main:create_app --factory --reload
 ```
 
 - `uv run`: runs the command inside `.venv/`, no activation needed
-- `app.main:app`: the `app` object in `app/main.py`
+- `app.main:create_app --factory`: builds the app with `create_app()` in `app/main.py`, which loads `config.yaml`
 - `--reload`: restarts the server when code changes
 
 Then open:
