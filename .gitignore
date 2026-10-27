@@ -4,5 +4,8 @@ __pycache__/
 # legacy: the old setup created venv/ instead of .venv/
 venv/
 
+# Local config: copy config.example.yaml
+/config.yaml
+
 # OS
 .DS_Store

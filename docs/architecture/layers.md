@@ -74,6 +74,7 @@ app/
     └── git/             # later: versioning the organized library
 
 tests/
+├── core/                # temp config files
 ├── services/            # temp SQLite, fake events
 ├── db/                  # temp SQLite
 ├── integrations/        # real watchdog

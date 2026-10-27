@@ -1,0 +1,25 @@
+# Copy this file to config.yaml and edit it. config.yaml is not committed.
+# Paths must be full paths, e.g. ~/scripts or C:/scripts.
+
+# Folders to scan. A missing folder (e.g. an unplugged drive) is allowed.
+watched_folders:
+  - ~/scripts
+
+# Extra folders that are never read, on top of the system folders.
+deny_paths: []
+
+# Folder names skipped everywhere inside the watched folders.
+exclude_folders:
+  - .git
+  - node_modules
+  - __pycache__
+  - .venv
+
+# Bigger files are tracked, but not hashed.
+max_file_size_mb: 100
+
+# Days between full scans, on top of the one at startup.
+full_scan_interval_days: 30
+
+# Where artifacts are saved.
+database_path: ~/.code-kamaji/kamaji.sqlite3
