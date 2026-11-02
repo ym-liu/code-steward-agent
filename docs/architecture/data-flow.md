@@ -47,8 +47,8 @@ flowchart TB
 
 ## Steps
 
-- **Scope rules**: `services/rules/scope.py` skips excluded and protected folders, temp files and symlinks. Used by the watcher (passed in by `main.py`), the walk and the API.
-- **Walk**: a full scan walks every watched folder. A batch only checks its own paths. A moved or deleted folder counts as every path under it.
+- **Scope rules**: `services/rules/scope.py` skips protected and ignored paths. Used by the watcher (passed in by `main.py`), the walk and the API.
+- **Walk**: a full scan walks every watched folder. A batch only checks its own paths. A moved or deleted folder counts as every path under it. Skips symlinks.
 - **Check each file**: hash only if size or `modified_at` changed.
 - **Compare with DB**: sorts files into new, modified, moved and deleted. A batch only judges its own paths. A move is one path vanishing and another appearing in the same batch.
 - **Classify**: new and modified files, plus files classified by older rules (`classifier_version`).

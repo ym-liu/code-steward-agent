@@ -102,7 +102,7 @@ classDiagram
 
 - **`WatchedRoot.path` + `relative_path`**: the artifact's full location.
 - **`id`**: not derived from the path, so it survives renames.
-- **`hash`**: content fingerprint. Empty for files over the size limit.
+- **`hash`**: content fingerprint. `None` for files over the size limit.
 - **`size` + `modified_at`**: if both are unchanged, the file isn't hashed again.
 - **`kind`**: what the file is (`ArtifactKind`).
   - **`script`**: code you run directly, e.g. `backup.py`, `deploy.sh`.
@@ -115,7 +115,12 @@ classDiagram
   - **`unknown`**: anything Code Kamaji can't classify yet.
 - **`classifier_version`**: version of the rules that set `kind`. Better rules only redo older results.
 - **`status`**: see [states](states.md).
-- **`error`**: last problem reading the file, e.g. permission denied. Not a state.
+- **`Artifact.error`**: the current problem reading the file, e.g. permission denied. `None` if there is none. Not a state.
+- **`ScanRun.trigger`**: why a full scan ran (`ScanTrigger`).
+  - **`startup`**: every time Code Kamaji starts.
+  - **`scheduled`**: every `full_scan_interval_days`.
+  - **`manual`**: `POST /scans`.
+  - **`folder_added`**: a watched folder was added in the config while Code Kamaji is running. Scans just that folder.
 
 ## Rules
 

@@ -24,7 +24,7 @@ def test_defaults_fill_missing_settings(tmp_path):
     config = load_config(write_config(tmp_path, "watched_folders: [~/scripts]\n"))
 
     assert config.max_file_size_mb == 100
-    assert ".git" in config.exclude_folders
+    assert ".git/" in config.ignore
 
 
 def test_missing_watched_folder_is_allowed(tmp_path):
@@ -43,13 +43,14 @@ def test_home_is_expanded(tmp_path):
     "text",
     [
         "watched_folders: []\n",
-        "exclude_folders: [.git]\n",
+        "ignore: [.git/]\n",
         "watched_folders: [~/scripts]\nwatched_folder: [typo]\n",
         "watched_folders: [~/scripts]\nmax_file_size_mb: big\n",
         "watched_folders: [~/scripts]\nmax_file_size_mb: 0\n",
         "watched_folders: [~/scripts]\nfull_scan_interval_days: 0\n",
         "watched_folders: [scripts]\n",
         "watched_folders: [~/scripts]\ndatabase_path: kamaji.sqlite3\n",
+        "watched_folders: [~/scripts]\nignore: ['foo\\']\n",
     ],
     ids=[
         "no watched folders",
@@ -60,6 +61,7 @@ def test_home_is_expanded(tmp_path):
         "interval not positive",
         "relative watched folder",
         "relative database path",
+        "bad ignore pattern",
     ],
 )
 def test_invalid_config_is_rejected(tmp_path, text):

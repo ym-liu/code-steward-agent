@@ -40,7 +40,7 @@ stateDiagram-v2
     Missing --> Active: folder back, file found
     Missing --> Deleted: folder back, file gone
     Active --> Deleted: file deleted
-    Active --> Untracked: excluded by config
+    Active --> Untracked: ignored by config
     Untracked --> Active: included again, file found
     Untracked --> Deleted: included again, file gone
 ```
@@ -49,7 +49,7 @@ stateDiagram-v2
 | --------- | ------------------------------------------------ |
 | Active    | Tracked and up to date                           |
 | Missing   | Watched folder unavailable, e.g. unplugged drive |
-| Untracked | Still exists, but excluded by config             |
+| Untracked | Still exists, but ignored by config              |
 | Deleted   | Gone from disk                                   |
 
 - **Records**: never removed. An artifact keeps its ID through every state.

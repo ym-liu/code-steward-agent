@@ -28,7 +28,7 @@ How real tools keep track of millions of files, and what Code Kamaji borrows fro
 | Watcher + snapshot + rescan | ✅ Watcher, the DB, and full scans at startup, monthly  |
 | Diff, don't redo            | ✅ "Compare with DB" step                               |
 | First run vs after          | ✅ Size + `modified_at` check. No OS change log (admin) |
-| Excluded folders            | ✅ `exclude_folders` in config                          |
+| Excluded folders            | ✅ `ignore` in config, with .gitignore rules            |
 | Low process priority        | ✅ In the design (context, data flow)                   |
 | Versioned processing        | ✅ `classifier_version` per artifact                    |
 | Plugins per file type       | 🔜 Later: fits "recognize any file type", and AI later  |

@@ -56,7 +56,9 @@ app/
 │       ├── system.py    # /system/health, /system/status, /system/start, /system/stop
 │       └── logs.py      # /logs
 ├── services/
-│   ├── models.py        # Artifact, Family, ScanRun, WatchedRoot
+│   ├── models/
+│   │   ├── artifact.py  # Artifact, its kinds and statuses
+│   │   └── scan.py      # ScanRun, its triggers and statuses
 │   ├── agent.py         # the service loop
 │   ├── inbox.py         # batches changed paths and scan requests
 │   ├── scanner.py       # walks folders, hashes files, finds what changed

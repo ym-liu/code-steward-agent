@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import Annotated
 
 import yaml
+from pathspec import GitIgnoreSpec
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 
 
@@ -12,7 +13,13 @@ def _require_full_path(path: Path) -> Path:
     return path
 
 
+def _require_ignore_pattern(pattern: str) -> str:
+    GitIgnoreSpec.from_lines([pattern])  # raises ValueError if invalid
+    return pattern
+
+
 FullPath = Annotated[Path, AfterValidator(_require_full_path)]
+IgnorePattern = Annotated[str, AfterValidator(_require_ignore_pattern)]
 
 
 class Config(BaseModel):
@@ -20,8 +27,8 @@ class Config(BaseModel):
 
     # What to scan
     watched_folders: list[FullPath] = Field(min_length=1)
-    deny_paths: list[FullPath] = Field(default_factory=list)
-    exclude_folders: list[str] = Field(default_factory=lambda: [".git", "node_modules", "__pycache__", ".venv"])
+    deny_paths: list[FullPath] = []
+    ignore: list[IgnorePattern] = [".git/", "node_modules/", "__pycache__/", ".venv/"]
     max_file_size_mb: int = Field(default=100, gt=0)
 
     # When to scan
