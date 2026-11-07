@@ -89,6 +89,8 @@ ai:
   max_attempts: 3
 
 organization:
+  # Plan mode: manual rebuilds only, or automatic refresh when new explained files are added.
+  plan_mode: manual
   # Include additional topic copies in the plan automatically.
   suggest_reuse: true
   # Assess additional topic labels in batches using cached file explanations.

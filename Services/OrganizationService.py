@@ -47,6 +47,7 @@ class OrganizationService:
         self.analysis_service = analysis_service
         self.scan_service = scan_service
         self.database_path = artifacts_service.database_path
+        self.plan_mode = self.config_service.get("organization", "plan_mode", default="manual")
         self.state = "no plan yet"
         self.progress = None
         self.last_error = None
@@ -56,6 +57,7 @@ class OrganizationService:
         self._building = False
         self._thread = None
         self._reuse_check = {"state": "idle"}
+        self._pending_rebuild = False
         with self._connect() as connection:
             connection.execute("""
                 CREATE TABLE IF NOT EXISTS organization_plans (
@@ -101,6 +103,32 @@ class OrganizationService:
             connection.execute("INSERT OR REPLACE INTO topic_answers (key, created_at, answer) VALUES (?, ?, ?)",
                                (key, datetime.now(timezone.utc).isoformat(), json.dumps(answer)))
 
+    # Plan mode and automatic refresh
+
+    def set_plan_mode(self, mode, *, quiet=False):
+        """Set the current plan mode: manual or automatic. Automatic refreshes the latest plan after new files finish explaining."""
+        if mode not in {"manual", "automatic"}:
+            raise ValueError("Plan mode must be 'manual' or 'automatic'.")
+        self.plan_mode = mode
+        if not quiet:
+            logger.info("Organization plan mode set to %s.", mode)
+        if mode == "automatic" and not self._building:
+            self._pending_rebuild = False
+            self.start(use_ai=True)
+        return {"mode": self.plan_mode, "plan_id": self.latest()["plan_id"] if self.latest() else None}
+
+    def on_analysis_done(self, artifact=None):
+        """Trigger a plan refresh when an explained file is added and automatic mode is enabled."""
+        if self.plan_mode != "automatic":
+            return False
+        if self._building:
+            self._pending_rebuild = True
+            return False
+        if self.start(use_ai=True):
+            return True
+        self._pending_rebuild = True
+        return False
+
     # Building a plan
 
     def start(self, use_ai=True):
@@ -132,6 +160,9 @@ class OrganizationService:
             with self._lock:
                 self._building = False
             self.operation_lock.release()
+            if self.plan_mode == "automatic" and self._pending_rebuild:
+                self._pending_rebuild = False
+                self.start(use_ai=True)
 
     def build(self, use_ai=True, _claimed=False):
         if not _claimed and not self.operation_lock.acquire(blocking=False):
@@ -382,6 +413,7 @@ class OrganizationService:
         reuse = (plan or {}).get("reuse", {})
         return {"state": self.state, "progress": self.progress, "last_error": self.last_error,
                 "plan_id": plan["plan_id"] if plan else None,  # send it to /organization/preflight and /execute
+                "plan_mode": self.plan_mode,
                 "last_plan_at": plan["created_at"] if plan else None,
                 "summary": plan["summary"] if plan else None,
                 "reuse_status": {key: reuse[key] for key in

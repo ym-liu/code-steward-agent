@@ -128,6 +128,7 @@ class AnalysisService:
         self.state = "not started"
         self.current = None
         self.last_error = None
+        self.on_analysis_done = None
         self._create_tables()
         self.reload_settings()
 
@@ -529,6 +530,8 @@ class AnalysisService:
                                    "VALUES (?, ?, ?, ?, ?)", (job["hash"], extension_of(artifact["path"]),
                                                               request.profile, result["analyzed_at"], json.dumps(result)))
             self._finish(job, request)
+            if self.on_analysis_done is not None:
+                self.on_analysis_done(artifact)
             self._recent_seconds = (self._recent_seconds + [seconds])[-20:]
             logger.info("Explained %s (%.1f s, %s tok/s).", artifact["path"], seconds, row.get("tokens_per_second"))
         elif row["status"] in WAIT_FOR_OLLAMA:
