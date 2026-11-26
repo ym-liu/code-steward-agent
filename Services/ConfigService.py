@@ -35,6 +35,9 @@ DEFAULTS = {
     "logging": {"level": "INFO", "max_bytes": 5242880, "backup_count": 3},
     "storage": {"database_path": "artifacts.sqlite3", "log_path": "service.log"},
     "testing": {"allow_event_injection": False},
+    "policy": {"enabled": True, "blocked_terms": [], "max_plan_actions": 1000,
+                "max_daily_actions": 5000, "max_plan_bytes": 1073741824, "max_run_seconds": 3600,
+                "max_cpu_seconds_per_run": 900, "max_process_memory_mb": 1024},
     "ai": {
         "enabled": True,
         "model": "qwen-4b",
@@ -199,6 +202,18 @@ def validate(loaded, platform=None):
         if not isinstance(config["storage"][key], str) or not config["storage"][key].strip():
             problems.append(f"storage.{key} must be a file name or path")
     flag("testing", "allow_event_injection")
+    flag("policy", "enabled")
+    text_list("policy", "blocked_terms")
+    if isinstance(config["policy"]["blocked_terms"], list) and all(
+            isinstance(item, str) for item in config["policy"]["blocked_terms"]):
+        config["policy"]["blocked_terms"] = [item.strip() for item in config["policy"]["blocked_terms"]
+                                              if isinstance(item, str) and item.strip()]
+    number("policy", "max_plan_actions", 1, 100000, whole=True)
+    number("policy", "max_daily_actions", 1, 1000000, whole=True)
+    number("policy", "max_plan_bytes", 1, whole=True)
+    number("policy", "max_run_seconds", 1, 86400, whole=True)
+    number("policy", "max_cpu_seconds_per_run", 1, 86400, whole=True)
+    number("policy", "max_process_memory_mb", 128, 65536, whole=True)
     flag("ai", "enabled")
     for key in ("model", "settings_file"):
         if not isinstance(config["ai"][key], str) or not config["ai"][key].strip():

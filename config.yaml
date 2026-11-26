@@ -71,6 +71,20 @@ testing:
   # Allow POST /events/inject to simulate file changes for validation (keep false in normal use)
   allow_event_injection: false
 
+policy:
+  # Check model explanations and organization decisions against these user-defined blocked terms.
+  # A match stops the decision and reports a policy error; comparisons are case-insensitive.
+  enabled: true
+  blocked_terms: []
+  # Maximum planned copy/write actions, cumulative daily completed actions, and bytes per plan.
+  max_plan_actions: 1000
+  max_daily_actions: 5000
+  max_plan_bytes: 1073741824
+  # Stop starting new actions at these per-run wall/CPU/memory budgets.
+  max_run_seconds: 300
+  max_cpu_seconds_per_run: 60
+  max_process_memory_mb: 384
+
 ai:
   # Explain new and changed code files with a local model through Ollama
   # (Ollama must be installed and open; the model is not downloaded automatically)

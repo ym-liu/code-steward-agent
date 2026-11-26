@@ -11,6 +11,7 @@ from Controllers.ConfigController import router as config_router
 from Controllers.EventsController import router as events_router
 from Controllers.LogsController import router as logs_router
 from Controllers.OrganizationController import router as organization_router
+from Controllers.PolicyController import router as policy_router
 from Controllers.ScanController import router as scan_router
 from Controllers.SystemController import router as system_router
 from Controllers.StartupController import router as startup_router
@@ -52,6 +53,7 @@ app.include_router(events_router)
 app.include_router(logs_router)
 app.include_router(config_router)
 app.include_router(startup_router)
+app.include_router(policy_router)
 
 
 @app.exception_handler(Exception)

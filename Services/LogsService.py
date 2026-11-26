@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 import re
@@ -10,6 +11,28 @@ from datetime import datetime, timezone
 LOG_FILE = Path(__file__).resolve().parents[1] / "service.log"
 LOG_LEVELS = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
 _WRITE_LOCK = threading.RLock()
+_REDACTION_PATHS = []
+_SECRET_VALUE = re.compile(r'''(?i)(\b(?:password|passwd|secret(?:_key)?|api[_-]?key|access[_-]?key|auth[_-]?token|token)\b["']?\s*[:=]\s*["']?)([^\s"',;}]+)''')
+_ABSOLUTE_USER_PATH = re.compile(r'(?i)(?:[A-Z]:\\Users\\[^\\\s]+(?:\\[^\s"\']*)?|/(?:home|Users)/[^/\s]+(?:/[^\s"\']*)?)')
+
+
+def redact_text(value):
+    """Remove common credential values and user-specific absolute paths from log text."""
+    value = _SECRET_VALUE.sub(r"\1<redacted>", str(value))
+    value = _ABSOLUTE_USER_PATH.sub("<user-path>", value)
+    for path in sorted(_REDACTION_PATHS, key=len, reverse=True):
+        value = re.sub(re.escape(path), "<approved-root>", value, flags=re.IGNORECASE if os.name == "nt" else 0)
+    return value
+
+
+class RedactionFilter(logging.Filter):
+    def filter(self, record):
+        record.msg = redact_text(record.getMessage())
+        record.args = ()
+        if record.exc_info:
+            record.exc_text = redact_text(logging.Formatter().formatException(record.exc_info))
+            record.exc_info = None
+        return True
 _HEADER = re.compile(
     r"^(?P<timestamp>\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2}"
     r"(?:[.,]\d+)?(?:Z|[+-]\d{2}:\d{2})?) "
@@ -27,12 +50,14 @@ def _formatter():
     return UTCLogFormatter("%(asctime)s [%(levelname)s] [%(name)s] %(message)s")
 
 
-def configure_logging(log_file=LOG_FILE, level="INFO", max_bytes=0, backup_count=0):
+def configure_logging(log_file=LOG_FILE, level="INFO", max_bytes=0, backup_count=0, redaction_paths=None):
     """Capture project loggers without changing unrelated library loggers.
 
     With max_bytes above 0 the log starts a new file at that size and keeps backup_count
     older files (service.log.1, service.log.2, ...), so a long-running agent cannot fill the disk.
     """
+    global _REDACTION_PATHS
+    _REDACTION_PATHS = [os.path.normpath(str(path)) for path in (redaction_paths or []) if path]
     project_logger = logging.getLogger("code-steward")
     project_logger.setLevel(getattr(logging, str(level).upper(), logging.INFO))
     project_logger.propagate = False
@@ -53,11 +78,13 @@ def configure_logging(log_file=LOG_FILE, level="INFO", max_bytes=0, backup_count
     file_handler._code_steward_log_file = target
     file_handler._code_steward_rotation = rotation
     file_handler.setFormatter(_formatter())
+    file_handler.addFilter(RedactionFilter())
     project_logger.addHandler(file_handler)
     if not any(getattr(handler, "_code_steward_console", False) for handler in project_logger.handlers):
         console = logging.StreamHandler()
         console._code_steward_console = True
         console.setFormatter(_formatter())
+        console.addFilter(RedactionFilter())
         project_logger.addHandler(console)
 
 
@@ -73,6 +100,7 @@ class LogsService:
             raise ValueError("Unsupported log level")
         if context is not None:
             message += " | context=" + json.dumps(context, ensure_ascii=False, default=str)
+        message = redact_text(message)
         record = logging.LogRecord("code-steward.logs", getattr(logging, level), "", 0, message, (), None)
         rendered = _formatter().format(record)
         with _WRITE_LOCK:
@@ -80,6 +108,7 @@ class LogsService:
                 stream.write(rendered + "\n")
         entry = self._parse_header(rendered.splitlines()[0])
         entry["message"] = message
+        entry["message"] = redact_text(entry["message"])
         return entry
 
     @staticmethod
@@ -127,9 +156,10 @@ class LogsService:
                     if entry is None:
                         continuation.append(line)
                         continue
+                    entry["message"] = redact_text(entry["message"])
                     if continuation:
                         entry["message"] += "\n" + "\n".join(reversed(continuation)).rstrip()
-                        entry["message"] = entry["message"].rstrip()
+                        entry["message"] = redact_text(entry["message"].rstrip())
                         continuation = []
                     if level is not None and entry["level"] != level:
                         continue

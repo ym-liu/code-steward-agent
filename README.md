@@ -324,6 +324,9 @@ rejected with the reason, and the previous settings stay in use.
 | `organization.library_path` | Where the organized copies go (`library`, inside the program folder) |
 | `organization.git` | Keep the library's version history in Git (`true`) |
 | `organization.topics_file` | The list of topic folders the AI chooses from (`ai/settings/topics.json`) |
+| `policy.max_plan_actions`, `policy.max_daily_actions`, `policy.max_plan_bytes` | Maximum copy/write actions, daily completed actions, and bytes for an organization run |
+| `policy.max_run_seconds`, `policy.max_cpu_seconds_per_run`, `policy.max_process_memory_mb` | Per-run wall time, process CPU time, and resident memory limits |
+| `policy.enabled`, `policy.blocked_terms` | Check AI explanations and organization decisions against case-insensitive prohibited terms; a match fails the explanation/plan and blocks execution |
 | `storage.database_path`, `storage.log_path` | The database and log file (in the program folder) |
 | `logging.level` | How much the log records (`INFO`) |
 | `testing.allow_event_injection` | Allows `POST /events/inject` to simulate file changes for validation (`false`) |
@@ -340,6 +343,8 @@ All answers are JSON; errors look like `{"detail": "..."}`. Details and examples
 | Endpoint | What it does |
 |---|---|
 | `GET /system/health` | Health check |
+| `GET /policy` | Active policy rules, limits and latest policy decision |
+| `POST /policy/simulate` | Evaluate a JSON decision without changing files or policy state |
 | `GET /system/status` | Service state, waiting file changes, file watcher, last background error |
 | `GET /system/metrics` | CPU time, CPU share, peak memory and threads of Code Steward |
 | `POST /system/start`, `/stop`, `/pause`, `/resume` | Control the background service (409 when not possible) |
@@ -389,8 +394,12 @@ All answers are JSON; errors look like `{"detail": "..."}`. Details and examples
 
 ## Privacy and safety
 
+The project safety policy and its implementation gaps are documented in [docs/SAFETY_POLICY.md](docs/SAFETY_POLICY.md).
+
+
 - The AI model runs locally through Ollama; no code or file leaves the computer, and cloud models are refused.
 - Passwords, keys and tokens written in code are replaced with `<hidden>` before a file is sent to the model.
 - Original files are only read. Copies in the library are never overwritten when someone changed them.
 - Sensitive files are never committed to the library's Git history, and the history has no remote.
 - System folders and folders in `deny_paths` are never read; links are not followed.
+- `policy.blocked_terms` is a configurable screening rule list in `config.yaml`; matches are checked during plan creation and again before execution. It is a guardrail, not a substitute for human review or a complete semantic safety classifier.

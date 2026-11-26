@@ -11,6 +11,7 @@ from Services.ExecutionService import ExecutionService
 from Services.VersionService import VersionService, ai_subject
 from Services.LogsService import LogsService, configure_logging
 from Services.OrganizationService import OrganizationService
+from Services.PolicyService import PolicyService
 from Services.ScanService import CHECKPOINT_FILE, ScanService
 from Services.SystemService import SystemService
 from Services.FileEventService import FileEventService
@@ -36,6 +37,7 @@ class ServiceContainer:
 
     def __init__(self):
         self.config_service = ConfigService()
+        self.policy_service = PolicyService(self.config_service)
         log_path = program_path(self.config_service.get("storage", "log_path"))
         self._configure_logging(log_path)
         logging.getLogger("code-steward.config").info("Config loaded from %s", config_file.CONFIG_PATH)
@@ -56,14 +58,16 @@ class ServiceContainer:
         self.analysis_service.name_for = self._name_below_root
         self.scan_service.listeners.append(self.analysis_service)
         self.organization_service = OrganizationService(
-            self.config_service, self.artifacts_service, self.analysis_service, self.scan_service)
+            self.config_service, self.artifacts_service, self.analysis_service, self.scan_service,
+            policy_service=self.policy_service)
         self.analysis_service.on_analysis_done = self.organization_service.on_analysis_done
         # The library's Git history; the local model writes each commit's subject line.
         self.version_service = VersionService(self.config_service,
                                               subject_writer=lambda facts: ai_subject(self.analysis_service, facts))
         self.execution_service = ExecutionService(
             self.config_service, self.artifacts_service, self.organization_service, self.scan_service,
-            self.version_service)
+            self.version_service, policy_service=self.policy_service)
+        self.analysis_service.policy_service = self.policy_service
         self.organization_service.placements = self.execution_service.placements  # plans keep library folders
 
         self.file_event_service = FileEventService(
@@ -110,7 +114,20 @@ class ServiceContainer:
 
     def _configure_logging(self, log_path):
         settings = self.config_service.get_config()["logging"]
-        configure_logging(log_path, settings["level"], settings["max_bytes"], settings["backup_count"])
+        scanning = self.config_service.get_config().get("scanning", {})
+        roots = []
+        for key in ("root_paths", "deny_paths"):
+            try:
+                roots.extend(config_file.select_system_paths(scanning.get(key, []), setting=f"scanning.{key}"))
+            except ValueError:
+                continue  # invalid settings are rejected during config validation
+        try:
+            roots.append(config_file.select_system_path(
+                self.config_service.get("organization", "library_path", default="library"),
+                setting="organization.library_path"))
+        except ValueError:
+            pass  # invalid settings are rejected during config validation
+        configure_logging(log_path, settings["level"], settings["max_bytes"], settings["backup_count"], roots)
 
     def _configure_aggregator(self):
         events = self.config_service.get_config()["events"]

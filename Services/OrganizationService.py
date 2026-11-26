@@ -41,11 +41,12 @@ class OrganizationService:
     Every file is read again for a plan, so the plan describes the files as they are now.
     """
 
-    def __init__(self, config_service, artifacts_service, analysis_service, scan_service):
+    def __init__(self, config_service, artifacts_service, analysis_service, scan_service, policy_service=None):
         self.config_service = config_service
         self.artifacts_service = artifacts_service
         self.analysis_service = analysis_service
         self.scan_service = scan_service
+        self.policy_service = policy_service
         self.database_path = artifacts_service.database_path
         self.plan_mode = self.config_service.get("organization", "plan_mode", default="manual")
         self.state = "no plan yet"
@@ -182,8 +183,11 @@ class OrganizationService:
         client, tag, model_digest, topics_from = self._client(use_ai)
         client = fast_client(client)
         # Saved answers belong to one model version: a newer download of the same model asks again.
-        topic_cache = SimpleNamespace(get=lambda key: self.get(f"{model_digest}:{key}"),
-                                      put=lambda key, answer: self.put(f"{model_digest}:{key}", answer))
+        def cache_answer(key, answer):
+            if self.policy_service:
+                self.policy_service.check_ai_output(answer, context="AI cached decision")
+            self.put(f"{model_digest}:{key}", answer)
+        topic_cache = SimpleNamespace(get=lambda key: self.get(f"{model_digest}:{key}"), put=cache_answer)
         plan = {"files": [], "units": [], "loose": [], "actions": [], "unavailable_roots": []}
         taken = set()  # proposed names stay unique across all roots
         # Where earlier runs copied each file (absolute source path -> library target); groups keep those folders.
@@ -227,6 +231,9 @@ class OrganizationService:
                      "reuse_copy_files": sum(a["action"] == "copy" and bool(a.get("reuse_id")) for a in plan["actions"]),
                      "needs_review": sum(action["action"] == "copy" and action["to"].startswith("needs-review/")
                                          for action in plan["actions"])})
+        if self.policy_service:
+            self.policy_service.check_plan(plan)
+            self.policy_service.assess_plan_risk(plan)
         with self._connect() as connection:
             plan["plan_id"] = plan_digest(plan)
             connection.execute("INSERT OR REPLACE INTO organization_plans (id, created_at, plan) VALUES (1, ?, ?)",
@@ -385,6 +392,8 @@ class OrganizationService:
                         raise ValueError("Reuse destination conflicts with another plan action.")
                 plan["actions"].extend(additions)
             suggestion["state"] = "accepted" if accept else "rejected"
+            if self.policy_service:
+                self.policy_service.check_plan(plan)
             plan["summary"]["accepted_reuse"] = sum(s["state"] == "accepted" for s in plan["reuse"]["suggestions"])
             plan["summary"]["reuse_copy_files"] = sum(a["action"] == "copy" and bool(a.get("reuse_id"))
                                                        for a in plan["actions"])

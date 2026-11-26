@@ -50,7 +50,6 @@ def get_topics():
     return {"version": topics["version"],
             "topics": [{"id": topic["id"], "description": topic["description"]} for topic in topics["topics"]]}
 
-
 class PlanModeRequest(BaseModel):
     mode: str = Field(..., description="manual or automatic")
 
@@ -69,7 +68,6 @@ def set_plan_mode(request: PlanModeRequest):
         return services.organization_service.set_plan_mode(request.mode)
     except ValueError as error:
         raise HTTPException(status_code=422, detail=str(error)) from error
-
 
 class ReviewedPlan(BaseModel):
     plan_id: str = Field(min_length=1, description="plan_id of the plan you reviewed")
@@ -126,6 +124,10 @@ def execution_call(method, value):
     try:
         return method(value)
     except ExecutionError as error:
+        if error.rule_id:
+            raise HTTPException(status_code=error.status_code, detail={
+                "error": "policy_violation", "rule_id": error.rule_id,
+                "detail": str(error), "decision": "blocked"}) from error
         raise HTTPException(status_code=error.status_code, detail=str(error)) from error
 
 

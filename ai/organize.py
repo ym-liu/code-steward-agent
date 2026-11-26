@@ -543,7 +543,10 @@ def build_plan(units, loose, by_path, topics, taken=None, placed=None):
     for unit in units:
         if unit["duplicate_of"]:
             continue
-        base = f"{unit['topic']}/{unit['name']}" if unit["topic_confidence"] >= 0.5 else f"needs-review/{unit['name']}"
+        uncertain = any(by_path[member]["sensitive"] or by_path[member]["confidence"] < 0.6
+                        or by_path[member]["type"] == "unknown" for member in unit["members"])
+        base = (f"{unit['topic']}/{unit['name']}" if unit["topic_confidence"] >= 0.5 and not uncertain
+                else f"needs-review/{unit['name']}")
         folder = kept_folder(unit, placed, used)
         unit["folder_kept"] = folder is not None
         if folder is None:
@@ -695,7 +698,7 @@ def page_html(plan, topics, build_status=None):
              '.muted{color:#617080;font-size:14px}.note{color:#965514;background:#fff5e6;padding:12px;border-radius:8px}'
              'table{border-collapse:collapse;width:100%;font-size:14px}td,th{text-align:left;padding:5px 8px;border-top:1px solid #edf0f3;vertical-align:top}'
              'code{font-size:13px;overflow-wrap:anywhere}details{margin-top:8px}summary{cursor:pointer;color:#375c78}'
-             '.low{color:#965514;font-weight:600}p,td,h3{overflow-wrap:anywhere}</style>',
+             '.low,.medium{color:#965514;font-weight:600}.high{color:#9b2525;font-weight:700}p,td,h3{overflow-wrap:anywhere}</style>',
              '<main><h1>File Organization Plan</h1>',
              '<p class="note">This page is a proposal: building it copied, moved or deleted nothing. To copy the files into '
              'the library, send this plan\'s ID to <code>POST /organization/preflight</code> and then '
@@ -714,6 +717,10 @@ def page_html(plan, topics, build_status=None):
         parts.append(f'<p class="muted">Topics chosen by {e(plan["model"])} and checked against program keyword hints.</p>')
     else:
         parts.append('<p class="muted">No AI was used for topics: the program chose them from keyword hints.</p>')
+    if plan.get("risk"):
+        parts.append(f'<article class="{e(plan["risk"])}"><strong>Plan risk: {e(plan["risk"]).upper()}</strong>'
+                     + (f'<p>{e("; ".join(plan.get("risk_reasons", [])))}</p>' if plan.get("risk_reasons") else '')
+                     + '</article>')
     checks = [f"{u['folder']}/: {u['topic_note']}" for u in units if u["topic_confidence"] < 0.7]
     checks += [f"{r['path']}: {r['sensitive_reason']} It stays out of Git." for r in plan["files"] if r["sensitive"]]
     checks += [f"{r['path']}: the file type ({r['type']}) is uncertain." for r in plan["files"] if r["confidence"] < 0.6]
@@ -782,6 +789,7 @@ def page_html(plan, topics, build_status=None):
                       f'<p>{e(unit.get("ai_reason") or unit["topic_note"])}</p>',
                       f'<p class="muted">From <code>{e(origin)}</code> · topic confidence '
                       f'<span class="{"low" if confidence < 0.7 else ""}">{confidence:.2f}</span> · {e(unit["topic_note"])}'
+                      + f' · risk {e(unit.get("risk", "unknown")).upper()}'
                       + (' · kept in the folder an earlier run used' if unit.get("folder_kept") else '') + '</p>',
                       f'<details><summary>{len(copies[unit["id"]])} file(s)</summary><table><tr><th>Now</th><th>Proposed</th></tr>{rows}</table></details></article>']
     loose = [a for a in copies[None]]

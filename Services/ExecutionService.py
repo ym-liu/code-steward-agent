@@ -51,9 +51,10 @@ def inside(path, folder):
 
 
 class ExecutionError(ValueError):
-    def __init__(self, message, status_code=409):
+    def __init__(self, message, status_code=409, rule_id=None):
         super().__init__(message)
         self.status_code = status_code
+        self.rule_id = rule_id
 
 
 def target_parts(target):
@@ -69,11 +70,13 @@ def target_parts(target):
 
 
 class ExecutionService:
-    def __init__(self, config_service, artifacts_service, organization_service, scan_service, version_service=None):
+    def __init__(self, config_service, artifacts_service, organization_service, scan_service, version_service=None,
+                 policy_service=None):
         self.config_service = config_service
         self.organization_service = organization_service
         self.scan_service = scan_service
         self.version_service = version_service  # commits every run and undo to the library's Git history
+        self.policy_service = policy_service
         self.database_path = artifacts_service.database_path
         self._thread = None
         self._active = None
@@ -363,7 +366,19 @@ class ExecutionService:
     def _prepare(self, plan_id):
         self._running()
         plan, library = self._plan(plan_id), self._library()
+        if self.policy_service:
+            try:
+                self.policy_service.check_plan(plan)
+            except ValueError as error:
+                raise ExecutionError(str(error), getattr(error, "status_code", 422),
+                                     getattr(error, "rule_id", "SAFE-014")) from error
         actions = self._actions(plan)
+        policy = self.config_service.get("policy", default={}) or {}
+        proposed_actions = sum(action.get("action") in ("copy", "write") for action in actions)
+        if proposed_actions > policy.get("max_plan_actions", 1000):
+            if self.policy_service:
+                self.policy_service._audit("blocked", "SAFE-007", "preflight", "Per-plan action limit exceeded.")
+            raise ExecutionError("Policy blocked the plan: action limit exceeded.", 422, "SAFE-007")
         records = {(record["root_folder"], record["path"]): record for record in plan["files"]}
         planned_ignores = {item["to"] for item in actions if item["action"] in ("copy", "write") and Path(item["to"]).name == ".gitignore"}
         for action in actions:
@@ -388,6 +403,20 @@ class ExecutionService:
         required = sum((records[(self.scan_service.root_of(item["from_path"]), item["from"])].get("size", 0)
                         if item["action"] == "copy" else len(item.get("content", "").encode("utf-8")))
                        for item in results if item["status"] in ("would-copy", "would-update"))
+        if required > policy.get("max_plan_bytes", 1073741824):
+            if self.policy_service:
+                self.policy_service._audit("blocked", "SAFE-007", "preflight", "Per-plan byte limit exceeded.")
+            raise ExecutionError("Policy blocked the plan: byte limit exceeded.", 422, "SAFE-007")
+        today = datetime.now(timezone.utc).date().isoformat()
+        with self._connect() as db:
+            reports = [json.loads(row[0]) for row in db.execute(
+                "SELECT report FROM execution_runs WHERE created_at >= ?", (today,))]
+        used_today = sum(1 for previous in reports for item in previous.get("results", [])
+                         if item.get("status") in ("done", "updated", "staged"))
+        if used_today + proposed_actions > policy.get("max_daily_actions", 5000):
+            if self.policy_service:
+                self.policy_service._audit("blocked", "SAFE-007", "preflight", "Daily action quota would be exceeded.")
+            raise ExecutionError("Policy blocked the plan: daily action quota would be exceeded.", 429, "SAFE-007")
         free = shutil.disk_usage(library if library.exists() else library.parent).free
         return {"plan_id": plan_id, "library_path": str(library), "mode": "preflight", "plan": plan,
                 "results": results, "summary": dict(Counter(item["status"] for item in results)),
@@ -451,9 +480,30 @@ class ExecutionService:
         library = Path(report["library_path"])
         records = {(r["root_folder"], r["path"]): r for r in report["plan"]["files"]}
         safety = True
-        for result in report["results"]:
+        started_run = time.monotonic()
+        started_cpu = time.process_time()
+        policy = self.config_service.get("policy", default={}) or {}
+        for index, result in enumerate(report["results"]):
+            memory_bytes = self.policy_service.process_memory_bytes() if self.policy_service else 0
+            limit_bytes = policy.get("max_process_memory_mb", 1024) * 1024 * 1024
+            reason = None
+            if time.monotonic() - started_run > policy.get("max_run_seconds", 3600):
+                reason = "Policy SAFE-007 blocked remaining actions: wall-time quota exceeded."
+            elif time.process_time() - started_cpu > policy.get("max_cpu_seconds_per_run", 900):
+                reason = "Policy SAFE-007 blocked remaining actions: CPU-time quota exceeded."
+            elif memory_bytes is None or memory_bytes > limit_bytes:
+                reason = "Policy SAFE-007 blocked remaining actions: memory budget exceeded or unavailable."
+            if reason:
+                if self.policy_service:
+                    self.policy_service._audit("blocked", "SAFE-007", "organization execution", reason)
+                for pending in report["results"][index:]:
+                    if pending["status"] in ("would-copy", "would-update"):
+                        pending["status"], pending["reason"] = "skipped", reason
+                report["state"], report["last_error"] = "blocked", reason
+                self._save(report)
+                break
             started = time.monotonic()
-            logger.info("Organization action %s: %s -> %s", result["action"], result.get("from_path", ""), result.get("to", ""))
+            logger.info("Organization action %d started: %s", result["index"], result["action"])
             if result["action"] in ("copy", "write"):
                 try:
                     self._running()
@@ -485,10 +535,12 @@ class ExecutionService:
             result["seconds"] += round(time.monotonic() - started, 3)
             self._save(report)
             logger.log(logging.WARNING if result["status"] in ("failed", "conflict") else logging.INFO,
-                       "Organization result %s: %s (%s)", result["status"], result.get("to", result.get("from_path", "")), result["reason"])
+                       "Organization action %d result: %s (%s)", result["index"], result["status"], result["reason"])
         report["summary"] = dict(Counter(item["status"] for item in report["results"]))
-        self._commit(report, "execute")  # before "complete": the run holds the operation until it is committed
-        report["state"], report["finished_at"] = "complete", now()
+        self._commit(report, "execute")  # before completion: the run holds the operation until it is committed
+        if report.get("state") != "blocked":
+            report["state"] = "complete"
+        report["finished_at"] = now()
         self._save(report)
         return report
 

@@ -511,6 +511,20 @@ class AnalysisService:
             self.current = None
         seconds = round(time.monotonic() - started, 1)
         if row["status"] == "valid":
+            policy = getattr(self, "policy_service", None)
+            if policy:
+                try:
+                    for key, value in row["analysis"].items():
+                        if isinstance(value, str):
+                            policy.check_text(value, context=f"AI explanation ({key})")
+                        elif isinstance(value, list):
+                            for item in value:
+                                if isinstance(item, str):
+                                    policy.check_text(item, context=f"AI explanation ({key})")
+                except ValueError as error:
+                    self._finish(job, request, status="failed", error=str(error))
+                    logger.warning("AI explanation blocked by policy for %s: %s", artifact["path"], error)
+                    return
             result = {
                 "analysis": row["analysis"],
                 "model": request.tag,

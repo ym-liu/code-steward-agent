@@ -57,7 +57,11 @@ def ai_subject(analysis_service, facts):
     ]
     schema = {"type": "object", "properties": {"description": {"type": "string"}}, "required": ["description"]}
     response = client.ask(tag, messages, schema, num_predict=48)
-    return json.loads(response["message"]["content"])["description"]
+    description = json.loads(response["message"]["content"])["description"]
+    policy = getattr(analysis_service, "policy_service", None)
+    if policy:
+        policy.check_text(description, context="AI commit description")
+    return description
 
 
 class VersionService:
