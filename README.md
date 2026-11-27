@@ -16,6 +16,9 @@ deletes or runs them. You control it through a REST API; the easiest way is the 
 
 **[How it works: every file and how data moves between them](docs/HOW_IT_WORKS.md)**
 
+The agent runs at low OS priority and automatically slows or defers background
+work under CPU pressure. [Resource policy, live status and limits](docs/RESOURCE_CONTROL.md).
+
 ---
 
 ## What you need

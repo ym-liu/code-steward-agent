@@ -146,6 +146,17 @@ class StartupTests(unittest.TestCase):
         self.services.code_steward_service._thread = live_thread(False)
         self.assertEqual(self.checks()[1]["service"]["state"], "error")
 
+    def test_cpu_deferral_is_pending_with_reason_and_automatic_resume(self):
+        self.services.system["waiting_changes"] = {"full_scan_requested": True}
+        self.services.resource_governor = SimpleNamespace(
+            can_work=lambda: False, snapshot=lambda: {"state": "paused"})
+        response, checks = self.checks()
+        self.assertFalse(response["core_ready"])
+        self.assertEqual(checks["scan"]["state"], "pending")
+        self.assertTrue(checks["scan"]["deferred_by_resources"])
+        self.assertIn("CPU resources", checks["scan"]["detail"])
+        self.assertIn("automatically", checks["scan"]["action"])
+
     def test_background_error_is_visible(self):
         self.services.system["last_error"] = "database is locked"
         checks = self.checks()[1]

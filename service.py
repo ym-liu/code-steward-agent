@@ -5,6 +5,8 @@ import threading
 from datetime import datetime, timezone
 from enum import Enum
 
+from Services.ResourceGovernor import ResourceCancelled
+
 
 #SERVICE STATE
 
@@ -148,6 +150,10 @@ class CodeStewardService:
             try:
                 self.do_work()
                 self._failures = 0
+            except ResourceCancelled:
+                # Keep a complete rescan pending if shutdown cancelled a partial scan.
+                if self.aggregator is not None:
+                    self.aggregator.request_full_scan("resource-resume-scan")
             except Exception as error:
                 # Keep running: storage or disk problems are retried later, with growing pauses.
                 self._failures += 1
@@ -167,6 +173,9 @@ class CodeStewardService:
         logger.debug("Tick #%d - service running.", self.tick_count)
         if self.scan_service is None or self.aggregator is None:
             return
+        governor = getattr(self, "resource_governor", None)
+        if governor is not None and not governor.can_work():
+            return  # Do not consume queued events while CPU resources are unavailable.
         if self.file_event_service is not None and self.file_event_service.refresh():
             self.aggregator.request_full_scan("watch-scan")  # a root folder came back or went away
         now = time.monotonic()

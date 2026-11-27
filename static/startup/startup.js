@@ -136,6 +136,7 @@
       const incoming = result.checks.map(validate);
       if (new Set(incoming.map(check => check.id)).size !== coreIds.length || incoming.some(check => !coreIds.includes(check.id))) throw new Error('The service returned incomplete startup checks.');
       incoming.forEach(check => {
+        if (check.state === 'pending' && check.deferred_by_resources === true) began = Date.now();
         const value = check.state === 'pending' && Date.now()-began >= 120000
           ? {...check,state:'error',detail:'This check is still pending after two minutes.',action:'Large folders can take longer. Review the runtime logs, then run the checks again.'}
           : check;

@@ -122,6 +122,13 @@ def _scan_check(services):
         return _check("scan", "Startup scan", "error", f"The scan task reported an error: {service['last_error']}", "See /logs, resolve the error, then retry.")
     pending = (service.get("waiting_changes") or {}).get("full_scan_requested")
     if status.get("is_scanning") or pending:
+        governor = getattr(services, "resource_governor", None)
+        if governor is not None and not governor.can_work():
+            resource = governor.snapshot()
+            check = _check("scan", "Startup scan", "pending",
+                           f"Waiting for CPU resources ({resource['state']}); background work yields to other applications.",
+                           "The scan resumes automatically. GET /system/resources shows CPU load and scheduling details.")
+            return {**check, "deferred_by_resources": True}
         return _check("scan", "Startup scan", "pending", "Scanning directories." if status.get("is_scanning") else "A full scan is queued for background processing.")
     started = _timestamp(service.get("started_at"))
     finished = _timestamp(status.get("last_full_scan_at"))

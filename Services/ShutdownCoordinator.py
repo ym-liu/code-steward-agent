@@ -100,6 +100,9 @@ class ShutdownCoordinator:
     def _drain(self):
         stage = "operations"
         try:
+            governor = getattr(self.services, "resource_governor", None)
+            if governor is not None:
+                governor.begin_shutdown()
             logger.info("Graceful shutdown requested; waiting for current operations.")
             self._check(stage, "pending", "Waiting for accepted operations to finish, including copying, undoing and organization planning.")
             with self._condition:
@@ -140,14 +143,14 @@ class ShutdownCoordinator:
             self._check(stage, "ready", "The scan thread and file monitoring have stopped.")
 
             stage = "ai"
-            self._check(stage, "pending", "Waiting for the current AI file analysis to finish and save; Ollama will keep running.")
+            self._check(stage, "pending", "Waiting for this application's AI request to finish or yield safely; Ollama will keep running.")
             # CodeStewardService.stop waits only 5 seconds for analysis. Its STOPPED
             # state alone is insufficient evidence that an inference has finished.
             while not self.services.analysis_service.stop(timeout=self.poll_seconds):
                 current = getattr(self.services.analysis_service, "current", None)
-                self._check(stage, "pending", "Waiting for the current AI file analysis to finish and save; Ollama will keep running."
+                self._check(stage, "pending", "Waiting for this application's AI request to finish or yield safely; Ollama will keep running."
                             + (f" Current file: {current}" if current else ""))
-            self._check(stage, "ready", "The application AI analysis thread has stopped; results were saved through the existing workflow. Ollama is still running.")
+            self._check(stage, "ready", "The AI analysis thread has stopped; completed results are saved and interrupted jobs remain queued. Ollama is still running.")
             with self._condition:
                 self._state = "ready"
                 self._timer = threading.Timer(self.grace_seconds, self.commit)

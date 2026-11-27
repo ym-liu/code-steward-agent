@@ -17,6 +17,7 @@ from ai.organize import code_role, load_topics, mark_duplicates, page_html, plan
 from ai.reuse import assess_pair, copy_actions, fast_client, profiles, project_candidates
 from ai.collection_reuse import collection_reuse
 from Services.AnalysisService import waiting_reason
+from Services.ResourceGovernor import ResourceCancelled, checkpoint as resource_checkpoint
 
 logger = logging.getLogger("code-steward.organization")
 PROGRAM_FOLDER = Path(__file__).resolve().parents[1]
@@ -154,6 +155,9 @@ class OrganizationService:
     def _build_in_background(self, use_ai):
         try:
             self.build(use_ai, _claimed=True)
+        except ResourceCancelled as error:
+            self.state, self.last_error = "interrupted", str(error)
+            logger.info("Organization planning interrupted safely for shutdown.")
         except Exception as error:
             self.state, self.last_error = "failed", f"{type(error).__name__}: {error}"
             logger.exception("Building the organization plan failed.")
@@ -178,6 +182,7 @@ class OrganizationService:
 
     def _build(self, use_ai=True):
         """Build, save and return a plan for every root folder."""
+        resource_checkpoint(self)
         started = time.monotonic()
         topics = self.topics()
         client, tag, model_digest, topics_from = self._client(use_ai)
@@ -193,6 +198,7 @@ class OrganizationService:
         # Where earlier runs copied each file (absolute source path -> library target); groups keep those folders.
         placed = self.placements() if self.placements else {}
         for number, root in enumerate(self.scan_service.roots(), 1):
+            resource_checkpoint(self)
             if self.scan_service.is_denied(root) or self.scan_service.in_library(root):
                 continue
             if not os.path.isdir(root):
@@ -204,7 +210,8 @@ class OrganizationService:
             here = {Path(os.path.relpath(path, root)).as_posix(): target for path, target in placed.items()
                     if os.path.dirname(path) == root or os.path.dirname(path).startswith(root.rstrip(os.sep) + os.sep)}
             part = plan_for(records, sources, facts, client, tag, topics, progress=self._report,
-                            topic_cache=topic_cache, taken=taken, placed=here)
+                            topic_cache=topic_cache, taken=taken, placed=here,
+                            checkpoint=lambda: resource_checkpoint(self))
             self._merge(plan, part, root, f"r{number}-")
         if self.config_service.get("organization", "suggest_reuse", default=True) and client is not None:
             plan["reuse"] = collection_reuse(plan, topics, client, tag, topic_cache,
@@ -276,6 +283,7 @@ class OrganizationService:
             artifacts, current = self._read_files(root)
         records, sources, facts = [], {}, {}
         for path, artifact in artifacts.items():
+            resource_checkpoint(self)
             file_hash, source = current[path]
             rel = Path(os.path.relpath(path, root)).as_posix()
             same = file_hash == artifact.get("hash")
@@ -305,7 +313,7 @@ class OrganizationService:
                 if kind == "script":
                     record["role"] = code_role(rel, facts[rel], analysis, source, suffix)[0]
             records.append(record)
-        mark_duplicates(records)
+        mark_duplicates(records, checkpoint=lambda: resource_checkpoint(self))
         return records, sources, facts
 
     def _read_files(self, root):
@@ -314,8 +322,7 @@ class OrganizationService:
                      if self.scan_service.root_of(artifact["path"]) == root}
         return artifacts, {path: self._read(artifact) for path, artifact in artifacts.items()}
 
-    @staticmethod
-    def _read(artifact):
+    def _read(self, artifact):
         """(hash, text) of a saved file as it is now; text only for code files.
 
         A file larger than max_file_size_bytes has no hash (it never had one); a file that is gone,
@@ -326,14 +333,27 @@ class OrganizationService:
             return None, None
         try:
             with open(artifact["path"], "rb") as stream:
-                raw = stream.read() if hashed else stream.read(SOURCE_LIMIT * 4)
+                hasher = hashlib.sha256() if hashed else None
+                head, remaining = [], SOURCE_LIMIT * 4
+                while hashed or remaining:
+                    resource_checkpoint(self)
+                    chunk = stream.read(65536 if hashed else min(65536, remaining))
+                    if not chunk:
+                        break
+                    if hasher is not None:
+                        hasher.update(chunk)
+                    if code and remaining:
+                        part = chunk[:remaining]
+                        head.append(part)
+                        remaining -= len(part)
+                raw = b"".join(head)
         except OSError:
             return None, None
         text = None
         if code:
             text = raw[:SOURCE_LIMIT * 4].decode("utf-8", errors="replace")
             text = None if "\x00" in text else text[:SOURCE_LIMIT]
-        return (hashlib.sha256(raw).hexdigest() if hashed else None), text
+        return (hasher.hexdigest() if hasher is not None else None), text
 
     @staticmethod
     def _merge(plan, part, root, prefix):

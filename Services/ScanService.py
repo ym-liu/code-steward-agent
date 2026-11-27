@@ -8,6 +8,7 @@ from datetime import datetime, timezone
 
 from Services.ClassificationService import HEAD_BYTES, ClassificationService
 from Services.ConfigService import select_system_path, select_system_paths
+from Services.ResourceGovernor import ResourceCancelled, checkpoint as resource_checkpoint
 
 logger = logging.getLogger("code-steward.scanner")
 CHECKPOINT_FILE = "scan_checkpoint.json"
@@ -223,6 +224,7 @@ class ScanService:
             run = {"results": [], "removed": [], "extension_skips": 0,
                    "counts": dict.fromkeys(("created", "modified", "moved", "deleted", "unchanged", "skipped", "errors"), 0)}
             try:
+                resource_checkpoint(self)
                 if self.artifacts_service is None:
                     self._checkpoint = self._load_checkpoint()
                 for item in sorted(files, key=lambda item: item.get("moved_from") is None):
@@ -234,6 +236,9 @@ class ScanService:
                     self._last_full_scan_at = datetime.now(timezone.utc)
                 if self.artifacts_service is None:
                     self._save_checkpoint(self._checkpoint)
+            except ResourceCancelled:
+                logger.info("Scan interrupted safely for shutdown; the next start performs a full scan.")
+                raise
             except Exception:
                 logger.exception("Scan failed unexpectedly.")
                 raise
@@ -260,6 +265,7 @@ class ScanService:
         modification time are unchanged is not read. Event checks always compare contents, because
         some file systems keep the same time.
         """
+        resource_checkpoint(self)
         path = self.canonical(path)
         known = self._known(path)
         if not walked and not self.in_scope(path):
@@ -339,8 +345,10 @@ class ScanService:
 
         A missing root folder (an unplugged drive) is not a deletion: its records are kept.
         """
+        resource_checkpoint(self)
         folder = self.canonical(folder)
         for known_path in self._known_paths():
+            resource_checkpoint(self)
             if _inside(known_path, folder) and os.path.normcase(known_path) != os.path.normcase(folder) \
                     and not os.path.isfile(known_path) and not self._root_unavailable(known_path):
                 self._remove(known_path, run, "folder deleted or moved away")
@@ -351,6 +359,7 @@ class ScanService:
         """Walk every root; then remove records of files that are gone or no longer included."""
         seen, failed, walked, denied = set(), set(), [], []
         for root in self.roots():
+            resource_checkpoint(self)
             if not os.path.isdir(root):
                 logger.warning("Root path does not exist, skipping: %s", root)
                 continue
@@ -363,6 +372,7 @@ class ScanService:
             self._walk(root, source, run, seen, failed)
             walked.append(root)
         for known_path in self._known_paths():
+            resource_checkpoint(self)
             if os.path.normcase(known_path) in seen:
                 continue
             root = self.root_of(known_path)
@@ -387,8 +397,10 @@ class ScanService:
             failed.add(error.filename)
 
         for dirpath, dirnames, filenames in os.walk(top, onerror=unreadable):
+            resource_checkpoint(self)
             kept = []
             for name in dirnames:
+                resource_checkpoint(self)
                 folder = os.path.join(dirpath, name)
                 if name in excluded:
                     logger.log(skipped_level, "Directory skipped by exclude_folders: %s", folder)
@@ -398,6 +410,7 @@ class ScanService:
                     kept.append(name)
             dirnames[:] = kept
             for filename in filenames:
+                resource_checkpoint(self)
                 path = os.path.abspath(os.path.join(dirpath, filename))
                 if not self.in_scope(path):
                     if not self._extension_allowed(filename):
@@ -458,7 +471,11 @@ class ScanService:
         hasher = hashlib.sha256()
         try:
             with open(filepath, "rb") as f:
-                for chunk in iter (lambda: f.read(65536), b""):
+                while True:
+                    resource_checkpoint(self)
+                    chunk = f.read(65536)
+                    if not chunk:
+                        break
                     hasher.update(chunk)
             return hasher.hexdigest()
         except PermissionError:

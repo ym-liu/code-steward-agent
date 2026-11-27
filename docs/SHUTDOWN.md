@@ -24,16 +24,17 @@ Opening the shutdown page does not stop anything. Click **Shut down Code Steward
 2. Wait for file organization, copying, undo, and planning operations to finish.
 3. Call the existing background-service stop method, then wait for the scan and
    file-monitor threads to finish.
-4. Wait for the agent's existing AI worker to finish its current file and save
-   its result. The existing AI stop method is used; no model settings or inference
-   code are changed, and Ollama is neither stopped nor unloaded.
+4. Release CPU-resource waits and let the agent's AI worker stop safely. Completed
+   results stay saved; interrupted requests return to the queue without consuming
+   an attempt. Only this application's request is cancelled. Ollama is neither
+   stopped nor unloaded; see `RESOURCE_CONTROL.md` for scheduling boundaries.
 5. Acknowledge the finish request and ask Uvicorn to exit gracefully. The browser
    shows the final step complete only after the server confirmed background
    cleanup and its API connection has closed.
 
 Progress reflects those actual states. An error is shown with a retry action.
-Long-running file operations or inference remain pending; they are never killed
-to make the animation finish. If the browser closes midway, the coordinator
+File publication and journal cleanup finish safely; worker processes are not
+force-killed to make the animation finish. If the browser closes midway, the coordinator
 continues waiting and exits 15 seconds after cleanup is ready. That grace period
 does not bypass cleanup.
 
@@ -45,9 +46,9 @@ and asks the user to start with `launch.py`; it does not claim a shutdown occurr
 Shutdown POST routes require a per-process nonce, a custom action header, and
 local same-origin access. GET routes never start or finish shutdown. The launcher
 adds the shutdown coordinator and request gate around the existing app. The
-original `CodeSteward.py` remains unchanged apart from its two startup-router
-integration lines; the AI, scanner, service loop, model configuration, and existing
-API controllers retain their upstream contents.
+existing entry points receive the additive resource governor. Scheduling hooks
+yield at safe work boundaries without replacing the scanner, model, prompts or
+organization rules. The existing API controllers keep their routes.
 
 Run regression tests:
 
